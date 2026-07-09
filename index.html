@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Copec Voltex & Flux - Unified Operations Dashboard</title>
+    <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -22,38 +23,29 @@
             }
         }
     </script>
+    <!-- Google Fonts: Inter -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- FontAwesome for Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Chart.js CDN -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         body {
             font-family: 'Inter', sans-serif;
         }
         /* Custom scrollbar styling */
-        ::-webkit-scrollbar {
-            width: 6px;
-            height: 6px;
-        }
-        ::-webkit-scrollbar-track {
-            background: #0f172a;
-        }
-        ::-webkit-scrollbar-thumb {
-            background: #334155;
-            border-radius: 4px;
-        }
-        ::-webkit-scrollbar-thumb:hover {
-            background: #475569;
-        }
-    </style>
-
+<!-- ========================================== -->
+    <!--  CONEXIÓN CORE INTEGRADA CON FIREBASE      -->
+    <!-- ========================================== -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-app.js";
         import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-database.js";
 
-        // Tus credenciales reales del proyecto dashboard-linstelec
+        // Tus credenciales reales de la consola de Firebase
         const firebaseConfig = {
             apiKey: "AIzaSyAGK7ikvWpHTH4tcYqboI1kjmFatd1FXTg",
             authDomain: "dashboard-linstelec.firebaseapp.com",
+            databaseURL: "https://dashboard-linstelec-default-rtdb.firebaseio.com",
             projectId: "dashboard-linstelec",
             storageBucket: "dashboard-linstelec.firebasestorage.app",
             messagingSenderId: "159097185272",
@@ -71,6 +63,21 @@
         window.fbSet = set;
         window.fbOnValue = onValue;
     </script>
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0f172a;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #334155;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #475569;
+        }
+    </style>
 </head>
 <body class="h-full flex flex-col overflow-hidden">
 
@@ -87,6 +94,7 @@
             </div>
         </div>
         <div class="flex items-center space-x-6">
+            <!-- Modification Timestamp and Status Badge with Linstelec and dynamic % -->
             <div class="text-right flex flex-col items-end">
                 <span id="pipeline-status-badge" class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 mb-1">
                     <span class="h-1.5 w-1.5 rounded-full bg-emerald-400 mr-2 animate-pulse"></span>
@@ -105,6 +113,7 @@
 
     <div class="flex flex-1 overflow-hidden">
         
+        <!-- Sidebar Navigation -->
         <aside class="w-64 bg-slate-900/60 border-r border-slate-800 flex flex-col shrink-0 hidden md:flex">
             <div class="p-4">
                 <p class="text-xs font-bold text-slate-500 uppercase tracking-wider px-2">Vistas de Negocio</p>
@@ -140,6 +149,7 @@
             </div>
         </aside>
 
+        <!-- Main Content Area -->
         <main class="flex-1 flex flex-col overflow-y-auto bg-slate-950 p-6">
             
             <div class="bg-slate-900/50 border border-slate-800 rounded-xl p-4 mb-6 flex flex-wrap items-center justify-between gap-4">
@@ -148,7 +158,7 @@
                         <i class="fa-solid fa-filter text-copec-orange text-sm"></i>
                         <span class="text-xs font-bold uppercase text-slate-400">Filtros Activos:</span>
                     </div>
-                    
+                    <!-- Segmenter: Origen -->
                     <select id="filter-origen" onchange="applyFilters()" class="bg-slate-800 border border-slate-700 text-slate-200 text-xs rounded-lg px-3 py-2 focus:ring-1 focus:ring-copec-orange focus:outline-none">
                         <option value="ALL">Todas las Divisiones</option>
                         <option value="VOLTEX">Copec Voltex (Proyectos)</option>
@@ -156,6 +166,7 @@
                         <option value="PV">PostVenta (General)</option>
                     </select>
 
+                    <!-- Segmenter: Estado -->
                     <select id="filter-estado" onchange="applyFilters()" class="bg-slate-800 border border-slate-700 text-slate-200 text-xs rounded-lg px-3 py-2 focus:ring-1 focus:ring-copec-orange focus:outline-none">
                         <option value="ALL">Todos los Estados (Adm 1 o Adm 2)</option>
                         <option value="CERRADO">CERRADO</option>
@@ -164,6 +175,7 @@
                         <option value="NO APLICA">NO APLICA</option>
                     </select>
 
+                    <!-- Segmenter: Meses -->
                     <select id="filter-mes" onchange="applyFilters()" class="bg-slate-800 border border-slate-700 text-slate-200 text-xs rounded-lg px-3 py-2 focus:ring-1 focus:ring-copec-orange focus:outline-none">
                         <option value="ALL">Histórico Completo (Todos los meses)</option>
                         <option value="2026-01">Enero 2026</option>
@@ -175,11 +187,12 @@
                     </select>
                 </div>
                 
+                <!-- Administration actions -->
                 <div class="flex items-center space-x-2">
                     <button onclick="resetFilters()" class="px-3 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg text-xs font-semibold transition-all">
                         Limpiar Filtros
                     </button>
-                    
+                    <!-- Trigger new registration modal -->
                     <button onclick="openFormModal(null)" class="px-3 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-xs font-bold shadow-lg shadow-emerald-500/15 transition-all flex items-center space-x-1.5">
                         <i class="fa-solid fa-circle-plus"></i>
                         <span>+ Añadir Registro</span>
@@ -191,8 +204,11 @@
                 </div>
             </div>
 
+            <!-- Tab: Control General -->
             <div id="tab-dashboard" class="tab-content space-y-6">
+                <!-- KPI Cards Row -->
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <!-- KPI 1 -->
                     <div class="bg-slate-900/40 border border-slate-800 rounded-xl p-5 relative overflow-hidden group hover:border-slate-700 transition-all">
                         <div class="absolute -right-4 -bottom-4 text-slate-800/10 text-7xl font-bold group-hover:scale-110 transition-all">
                             <i class="fa-solid fa-folder-open"></i>
@@ -203,6 +219,7 @@
                             <span class="text-emerald-400 font-semibold mr-1" id="kpi-total-servicios-percent">0%</span> del histórico global
                         </p>
                     </div>
+                    <!-- KPI 2 -->
                     <div class="bg-slate-900/40 border border-slate-800 rounded-xl p-5 relative overflow-hidden group hover:border-slate-700 transition-all">
                         <div class="absolute -right-4 -bottom-4 text-emerald-500/10 text-7xl font-bold group-hover:scale-110 transition-all">
                             <i class="fa-solid fa-circle-check"></i>
@@ -213,6 +230,7 @@
                             Tasa de Éxito del <span class="text-emerald-400 font-semibold mx-1" id="kpi-tasa-cierre">0%</span>
                         </p>
                     </div>
+                    <!-- KPI 3 -->
                     <div class="bg-slate-900/40 border border-slate-800 rounded-xl p-5 relative overflow-hidden group hover:border-slate-700 transition-all">
                         <div class="absolute -right-4 -bottom-4 text-amber-500/10 text-7xl font-bold group-hover:scale-110 transition-all">
                             <i class="fa-solid fa-wallet"></i>
@@ -223,6 +241,7 @@
                             Facturación de hito y cierres parciales (Adm 2)
                         </p>
                     </div>
+                    <!-- KPI 4 -->
                     <div class="bg-slate-900/40 border border-slate-800 rounded-xl p-5 relative overflow-hidden group hover:border-slate-700 transition-all">
                         <div class="absolute -right-4 -bottom-4 text-copec-orange/10 text-7xl font-bold group-hover:scale-110 transition-all">
                             <i class="fa-solid fa-screwdriver-wrench"></i>
@@ -235,7 +254,9 @@
                     </div>
                 </div>
 
+                <!-- Main Charts Grid -->
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <!-- Chart 1: Evolutivo Mensual -->
                     <div class="bg-slate-900/40 border border-slate-800 rounded-xl p-5 lg:col-span-2">
                         <div class="flex items-center justify-between mb-4">
                             <div>
@@ -249,6 +270,7 @@
                         </div>
                     </div>
 
+                    <!-- Chart 2: Distribución por Origen -->
                     <div class="bg-slate-900/40 border border-slate-800 rounded-xl p-5">
                         <div class="flex items-center justify-between mb-4">
                             <div>
@@ -263,7 +285,9 @@
                     </div>
                 </div>
 
+                <!-- Bottom Section: Permisos SEC & Cuellos de Botella -->
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <!-- SEC Permit Tracking -->
                     <div class="bg-slate-900/40 border border-slate-800 rounded-xl p-5 lg:col-span-2">
                         <div class="flex items-center justify-between mb-4">
                             <div>
@@ -291,6 +315,7 @@
                         </div>
                     </div>
 
+                    <!-- Operational Insights & Alertas -->
                     <div class="bg-slate-900/40 border border-slate-800 rounded-xl p-5 flex flex-col justify-between">
                         <div>
                             <h4 class="font-bold text-slate-200 mb-3 flex items-center space-x-2">
@@ -298,7 +323,8 @@
                                 <span>Riesgos & Cuellos de Botella</span>
                             </h4>
                             <div class="space-y-3" id="risk-alerts-container">
-                                </div>
+                                <!-- Dynamic Risk Cards will populate here -->
+                            </div>
                         </div>
                         <div class="pt-4 border-t border-slate-800/60 mt-4">
                             <button onclick="switchTab('calidad')" class="w-full text-center text-xs text-copec-orange hover:text-copec-orangeHover font-semibold flex items-center justify-center space-x-1">
@@ -310,6 +336,7 @@
                 </div>
             </div>
 
+            <!-- Tab: Calidad & Documentación (TOP & Checklist Audit) -->
             <div id="tab-calidad" class="tab-content space-y-6 hidden">
                 <div class="bg-slate-900/40 border border-slate-800 rounded-xl p-5">
                     <div class="flex flex-wrap items-center justify-between gap-4 mb-6">
@@ -333,6 +360,7 @@
                         </div>
                     </div>
 
+                    <!-- Filter / Search inner table -->
                     <div class="flex items-center justify-between mb-4">
                         <input id="quality-search" type="text" onkeyup="renderQualityTable()" placeholder="Buscar proyecto o cliente..." class="bg-slate-800 border border-slate-700 text-slate-200 text-xs rounded-lg px-3 py-2 w-full max-w-md focus:ring-1 focus:ring-copec-orange focus:outline-none">
                         <div class="text-xs text-slate-400" id="quality-table-info">Mostrando 0 de 0 proyectos</div>
@@ -356,14 +384,17 @@
                                 </tr>
                             </thead>
                             <tbody id="quality-table-body" class="text-xs divide-y divide-slate-800 bg-slate-950">
-                                </tbody>
+                                <!-- Dynamic rows populated via Javascript -->
+                            </tbody>
                         </table>
                     </div>
                 </div>
             </div>
 
+            <!-- Tab: Continuidad & PostVenta -->
             <div id="tab-postventa" class="tab-content space-y-6 hidden">
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <!-- Recurrence and Volume stats -->
                     <div class="bg-slate-900/40 border border-slate-800 rounded-xl p-5 lg:col-span-1 space-y-6">
                         <div>
                             <h3 class="font-bold text-lg text-white">Análisis de PostVenta</h3>
@@ -375,7 +406,8 @@
                                 <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">Tasa de Recurrencia del Cliente</p>
                                 <p class="text-xs text-slate-400 mt-1">Clientes con más de 2 asistencias (Ej. Sergio Contreras, Walter Camus)</p>
                                 <div class="mt-4 space-y-2" id="pv-recurrence-list">
-                                    </div>
+                                    <!-- Dynamic recurrence will be loaded here -->
+                                </div>
                             </div>
 
                             <div class="bg-slate-800/30 border border-slate-700/30 p-4 rounded-xl">
@@ -405,6 +437,7 @@
                         </div>
                     </div>
 
+                    <!-- Postventa Table Tracking -->
                     <div class="bg-slate-900/40 border border-slate-800 rounded-xl p-5 lg:col-span-2">
                         <div class="flex items-center justify-between mb-4">
                             <h4 class="font-bold text-slate-200">Historial Reciente de Solicitudes de PostVenta</h4>
@@ -424,13 +457,15 @@
                                     </tr>
                                 </thead>
                                 <tbody id="pv-table-body" class="text-xs divide-y divide-slate-800 bg-slate-950">
-                                    </tbody>
+                                    <!-- Dynamic Rows -->
+                                </tbody>
                             </table>
                         </div>
                     </div>
                 </div>
             </div>
 
+            <!-- Tab: Explorador de Datos Completo -->
             <div id="tab-explorer" class="tab-content space-y-6 hidden">
                 <div class="bg-slate-900/40 border border-slate-800 rounded-xl p-5">
                     <div class="flex flex-wrap items-center justify-between gap-4 mb-4">
@@ -468,20 +503,24 @@
                                 </tr>
                             </thead>
                             <tbody id="explorer-table-body" class="text-xs divide-y divide-slate-800 bg-slate-950">
-                                </tbody>
+                                <!-- Dynamic rows -->
+                            </tbody>
                         </table>
                     </div>
                 </div>
             </div>
 
+            <!-- Tab: Consola de Ingeniería de Datos (ETL) -->
             <div id="tab-etl" class="tab-content space-y-6 hidden">
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <!-- Left: Pipeline Configuration & Controls -->
                     <div class="bg-slate-900/40 border border-slate-800 rounded-xl p-5 space-y-6">
                         <div>
                             <h3 class="font-bold text-lg text-white">Configuración de Linstelec</h3>
                             <p class="text-xs text-slate-400">Automatiza la extracción, transformación y carga del Excel de operaciones de Copec.</p>
                         </div>
 
+                        <!-- Data Source Simulator -->
                         <div class="bg-slate-800/30 border border-slate-700/30 p-4 rounded-xl space-y-4">
                             <h4 class="text-xs font-bold text-slate-300 uppercase tracking-wider">Carga Externa de Archivos (CSV)</h4>
                             <p class="text-xs text-slate-400">Reemplaza o alimenta la base de datos arrastrando un archivo CSV exportado desde la base de datos real de Copec.</p>
@@ -494,6 +533,7 @@
                             </div>
                         </div>
 
+                        <!-- Technical Schema mapping -->
                         <div class="bg-slate-800/30 border border-slate-700/30 p-4 rounded-xl space-y-2">
                             <h4 class="text-xs font-bold text-slate-300 uppercase tracking-wider">Estadísticas de Carga Actual</h4>
                             <div class="flex justify-between text-xs text-slate-400 py-1 border-b border-slate-800">
@@ -511,6 +551,7 @@
                         </div>
                     </div>
 
+                    <!-- Right: Pipeline Logs Terminal -->
                     <div class="bg-slate-900/40 border border-slate-800 rounded-xl p-5 lg:col-span-2 flex flex-col h-[550px]">
                         <div class="flex items-center justify-between mb-4">
                             <div class="flex items-center space-x-2">
@@ -519,8 +560,10 @@
                             </div>
                             <button onclick="clearTerminal()" class="text-[10px] bg-slate-800 hover:bg-slate-700 text-slate-400 px-2 py-1 rounded">Limpiar Log</button>
                         </div>
+                        <!-- Terminal Console -->
                         <div class="flex-1 bg-black rounded-lg p-4 font-mono text-xs text-emerald-400 overflow-y-auto space-y-1 border border-slate-800" id="etl-terminal">
-                            </div>
+                            <!-- Live generated log messages here -->
+                        </div>
                     </div>
                 </div>
             </div>
@@ -528,6 +571,7 @@
         </main>
     </div>
 
+    <!-- Edit/Add Record Modal Dialog -->
     <div id="form-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
         <div class="bg-slate-900 border border-slate-800 rounded-xl max-w-lg w-full max-h-[90vh] flex flex-col overflow-hidden shadow-2xl">
             <div class="p-5 border-b border-slate-800 flex items-center justify-between shrink-0">
@@ -540,9 +584,11 @@
                 </button>
             </div>
             <form id="record-form" onsubmit="saveRecord(event)" class="p-6 overflow-y-auto space-y-4 text-xs">
+                <!-- Hidden operational fields -->
                 <input type="hidden" id="form-action-type" value="NEW">
-                <input type="hidden" id="form-original-id" value="">
+                <input type="hidden" id="form-original-id" value=""> <!-- Stores the system internal _uid -->
 
+                <!-- Error Container -->
                 <div id="form-error" class="hidden text-rose-500 text-xs font-semibold bg-rose-500/10 border border-rose-500/20 p-2.5 rounded-lg"></div>
 
                 <div class="grid grid-cols-2 gap-4">
@@ -622,9 +668,11 @@
                     </div>
                 </div>
 
+                <!-- Dynamic checklist depending on selection (Project vs PV) -->
                 <div class="border-t border-slate-800 pt-4">
                     <h4 class="text-xs font-bold text-slate-300 uppercase tracking-wider mb-3">Entregables y Checklist Operativo</h4>
                     
+                    <!-- Proyectos Docs Block -->
                     <div id="form-checklist-proyectos" class="grid grid-cols-2 gap-3">
                         <div class="flex flex-col">
                             <label class="text-[11px] text-slate-400 mb-1 font-semibold">01 Plano</label>
@@ -676,6 +724,7 @@
                         </div>
                     </div>
 
+                    <!-- PostVenta Docs Block (Hidden initially) -->
                     <div id="form-checklist-postventa" class="grid grid-cols-2 gap-3 hidden">
                         <div class="flex flex-col">
                             <label class="text-[11px] text-slate-400 mb-1 font-semibold">01 Reporte OT</label>
@@ -696,6 +745,7 @@
                     </div>
                 </div>
 
+                <!-- Footer buttons -->
                 <div class="border-t border-slate-800 pt-4 flex items-center justify-end space-x-2 shrink-0">
                     <button type="button" onclick="closeFormModal()" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg text-xs font-semibold transition-all">
                         Cancelar
@@ -708,6 +758,7 @@
         </div>
     </div>
 
+    <!-- Delete Confirmation Modal -->
     <div id="delete-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
         <div class="bg-slate-900 border border-slate-800 rounded-xl max-w-sm w-full p-6 shadow-2xl space-y-4">
             <div class="flex items-center space-x-3 text-rose-500">
@@ -730,8 +781,9 @@
         </div>
     </div>
 
+    <!-- JS Logic Block -->
     <script>
-        // --- DATASET ESTÁTICO DE SEGURIDAD (Se usa si la nube está vacía) ---
+        // --- REAL PRELOADED DATABASE DIRECTLY FROM COPEC DATASET ---
         const rawProyectos = [
             { ORIGEN: "VOLTEX", ID: "VX-01", "CLIENTE/PROYECTO": "Bahia Magica", "Carpeta General ": "Realizado", VT: "ENVIADA", Fecha: "2026-01-13", ADMINIST: "CERRADO", ADMINIST2: "CERRADO", "01 Plano": "Realizado", "02 Memoria": "Realizado", "03 Cert": "Realizado", "04 Gantt": "Realizado", "04 AST": "Realizado" },
             { ORIGEN: "VOLTEX", ID: "VX-02", "CLIENTE/PROYECTO": "Edificio Playa Hornitos", "Carpeta General ": "Realizado", VT: "ENVIADA", Fecha: "2026-03-30", ADMINIST: "EDP", ADMINIST2: "EDP", "01 Plano": "Realizado", "02 Memoria": "No Aplica", "04 AST": "" },
@@ -794,16 +846,17 @@
         let chartOrigenInstance = null;
         let chartTe6Instance = null;
 
+        // Internal Counter for generating Unique Keys (_uid) in memory
         let uidCounter = 1;
 
         // Init App On Window Load
         window.onload = function() {
-            logEtl("SISTEMA INICIADO: Conectando con los pipelines dinámicos de Linstelec...");
+            logEtl("SISTEMA INICIADO: Iniciando compilación del procesamiento Linstelec...");
             loadDatabaseState();
+            triggerEtlExecution();
             setupDragAndDrop();
         };
-
-        // --- ENLACE SÍNCRONO CON LA MINI NUBE FIREBASE REALTIME DATABASE ---
+// --- ENLACE SÍNCRONO CON LA MINI NUBE FIREBASE REALTIME DATABASE ---
         function loadDatabaseState() {
             logEtl("DATALAKE LAYER: Conectando de forma remota a la nube de Firebase...");
             
@@ -823,7 +876,6 @@
                     window.fbSet(dbRefProyectos, dbProyectos);
                     logEtl("DATALAKE LAYER: Nube vacía. Sembrando datos estructurales de Copec.");
                 }
-                // Asegurar identificadores únicos
                 dbProyectos.forEach(p => { if (!p._uid) p._uid = `proj_${uidCounter++}`; });
                 triggerEtlExecution();
             });
@@ -872,16 +924,44 @@
             const targetTime = timestamp || 'Sin modificaciones';
             headerEl.innerHTML = `<i class="fa-regular fa-clock text-copec-orange mr-1"></i> Última modificación: <span class="text-slate-200 font-semibold">${targetTime}</span>`;
         }
+        function saveDatabaseToStorage(isInit = false) {
+            localStorage.setItem('copec_db_proyectos', JSON.stringify(dbProyectos));
+            localStorage.setItem('copec_db_postventa', JSON.stringify(dbPostventa));
+            
+            if (!isInit) {
+                const now = new Date();
+                const formattedDate = `${String(now.getDate()).padStart(2, '0')}/${String(now.getMonth() + 1).padStart(2, '0')}/${now.getFullYear()} ${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}:${String(now.getSeconds()).padStart(2, '0')}`;
+                localStorage.setItem('copec_db_last_modified', formattedDate);
+                renderLastModifiedHeader(formattedDate);
+                logEtl(`DATALAKE UPDATE: Sincronización a almacenamiento local completa de Linstelec.`);
+            } else if (!localStorage.getItem('copec_db_last_modified')) {
+                const now = new Date();
+                const formattedDate = `${String(now.getDate()).padStart(2, '0')}/${String(now.getMonth() + 1).padStart(2, '0')}/${now.getFullYear()} ${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}:${String(now.getSeconds()).padStart(2, '0')}`;
+                localStorage.setItem('copec_db_last_modified', formattedDate);
+                renderLastModifiedHeader(formattedDate);
+            }
+        }
+
+        function renderLastModifiedHeader(timestamp) {
+            const headerEl = document.getElementById('header-last-modified');
+            const targetTime = timestamp || localStorage.getItem('copec_db_last_modified') || 'Sin modificaciones';
+            headerEl.innerHTML = `<i class="fa-regular fa-clock text-copec-orange mr-1"></i> Última modificación: <span class="text-slate-200 font-semibold">${targetTime}</span>`;
+        }
 
         // Switch Active Tab Layout
         function switchTab(tabId) {
+            // Hide all tabs
             document.querySelectorAll('.tab-content').forEach(tab => {
                 tab.classList.add('hidden');
             });
+            // Show selected tab
             document.getElementById(`tab-${tabId}`).classList.remove('hidden');
+
+            // Style Sidebar Items
             document.querySelectorAll('aside nav button, aside p button').forEach(btn => {
                 btn.className = "w-full flex items-center space-x-3 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-400 hover:bg-slate-800/50 hover:text-slate-200 transition-all border-l-2 border-transparent";
             });
+            
             const activeBtn = document.getElementById(`nav-${tabId}`);
             if (activeBtn) {
                 activeBtn.className = "w-full flex items-center space-x-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all bg-gradient-to-r from-copec-orange/20 to-transparent text-copec-orange border-l-2 border-copec-orange";
@@ -892,19 +972,22 @@
         // --- PIPELINE DE INGENIERÍA DE DATOS (ETL RUNTIME) ---
         function triggerEtlExecution() {
             const start = performance.now();
+            logEtl("EJECUTANDO PROCESAMIENTO LINSTELEC: Extrayendo registros de bases transaccionales...");
             
             filteredProyectos = [...dbProyectos];
             filteredPostventa = [...dbPostventa];
-
+            
             filteredProyectos.forEach(p => {
                 p.computedDate = p.Fecha ? new Date(p.Fecha) : null;
                 p.formattedMonth = p.computedDate ? `${p.computedDate.getFullYear()}-${String(p.computedDate.getMonth() + 1).padStart(2, '0')}` : 'Sin Fecha';
             });
+
             filteredPostventa.forEach(pv => {
                 pv.computedDate = pv.Fecha ? new Date(pv.Fecha) : null;
                 pv.formattedMonth = pv.computedDate ? `${pv.computedDate.getFullYear()}-${String(pv.computedDate.getMonth() + 1).padStart(2, '0')}` : 'Sin Fecha';
             });
 
+            // Calculate Dynamic Data Integrity Percent
             const totalRows = dbProyectos.length + dbPostventa.length;
             const completeRows = [...dbProyectos, ...dbPostventa].filter(r => {
                 return r.ID && r.ID.trim() !== "" && 
@@ -915,6 +998,7 @@
 
             const qualityPercent = totalRows > 0 ? ((completeRows / totalRows) * 100).toFixed(1) : "100.0";
             
+            // Update pipeline status badge at header dynamically
             const statusBadge = document.getElementById('pipeline-status-badge');
             if (statusBadge) {
                 statusBadge.innerHTML = `
@@ -931,6 +1015,7 @@
             const end = performance.now();
             const latency = (end - start).toFixed(1);
             document.getElementById('etl-latency').innerText = `${latency} ms`;
+            logEtl(`TRANSFORMACIÓN COMPLETADA: Linstelec procesado exitosamente con integridad al ${qualityPercent}%. Latencia: ${latency}ms`);
             
             applyFilters();
         }
@@ -941,8 +1026,10 @@
             const estadoVal = document.getElementById('filter-estado').value;
             const mesVal = document.getElementById('filter-mes').value;
 
+            // Filter Proyectos (Matches on Adm 1 or Adm 2 to find correct status)
             filteredProyectos = dbProyectos.filter(p => {
                 const matchOrigin = (originVal === 'ALL') || (p.ORIGEN === originVal);
+                
                 const pAdm1 = p.ADMINIST ? p.ADMINIST.trim().toUpperCase() : '';
                 const pAdm2 = p.ADMINIST2 ? p.ADMINIST2.trim().toUpperCase() : '';
                 const matchEstado = (estadoVal === 'ALL') || (pAdm1 === estadoVal || pAdm2 === estadoVal);
@@ -956,8 +1043,10 @@
                 return matchOrigin && matchEstado && matchMes;
             });
 
+            // Filter Postventa
             filteredPostventa = dbPostventa.filter(pv => {
                 const isPV = originVal === 'ALL' || originVal === 'PV' || pv.ORIGEN.includes(originVal);
+                
                 const pvAdm1 = pv.ADMINIST ? pv.ADMINIST.trim().toUpperCase() : '';
                 const pvAdm2 = pv.ADMINIST2 ? pv.ADMINIST2.trim().toUpperCase() : '';
                 const matchEstado = (estadoVal === 'ALL') || (pvAdm1 === estadoVal || pvAdm2 === estadoVal);
@@ -971,6 +1060,8 @@
                 return isPV && matchEstado && matchMes;
             });
 
+            logEtl(`FILTRO APLICADO: Proyectos resultantes: ${filteredProyectos.length} | PostVentas resultantes: ${filteredPostventa.length}`);
+            
             renderKPIs();
             renderCharts();
             renderRiskAlerts();
@@ -983,6 +1074,7 @@
             document.getElementById('filter-origen').value = 'ALL';
             document.getElementById('filter-estado').value = 'ALL';
             document.getElementById('filter-mes').value = 'ALL';
+            logEtl("Filtros restablecidos a valores de fábrica.");
             applyFilters();
         }
 
@@ -998,17 +1090,21 @@
             document.getElementById('kpi-total-servicios').innerText = grandTotal;
             document.getElementById('kpi-total-servicios-percent').innerText = `${percentOfGlobal}%`;
 
+            // Calculate Closed (Adm 1 or Adm 2 equals CERRADO)
             const closedProj = filteredProyectos.filter(p => (p.ADMINIST && p.ADMINIST.trim() === 'CERRADO') || (p.ADMINIST2 && p.ADMINIST2.trim() === 'CERRADO')).length;
             const closedPV = filteredPostventa.filter(pv => (pv.ADMINIST && pv.ADMINIST.trim() === 'CERRADO') || (pv.ADMINIST2 && pv.ADMINIST2.trim() === 'CERRADO')).length;
             const totalClosed = closedProj + closedPV;
             const successRate = grandTotal > 0 ? ((totalClosed / grandTotal) * 100).toFixed(0) : 0;
+
             document.getElementById('kpi-total-cerrados').innerText = totalClosed;
             document.getElementById('kpi-tasa-cierre').innerText = `${successRate}%`;
 
+            // Calculate EDP (Suma correctas de Administrativo 2 en EDP o Administrativo 1 en EDP)
             const edpProj = filteredProyectos.filter(p => (p.ADMINIST2 && p.ADMINIST2.trim() === 'EDP') || (p.ADMINIST && p.ADMINIST.trim() === 'EDP')).length;
             const edpPV = filteredPostventa.filter(pv => (pv.ADMINIST2 && pv.ADMINIST2.trim() === 'EDP') || (pv.ADMINIST && pv.ADMINIST.trim() === 'EDP')).length;
             document.getElementById('kpi-total-edp').innerText = edpProj + edpPV;
 
+            // Calculate Active / Executing
             const execProj = filteredProyectos.filter(p => p.ADMINIST && p.ADMINIST.trim() === 'EJECUTANDO').length;
             const execPV = filteredPostventa.filter(pv => pv.ADMINIST && pv.ADMINIST.trim() === 'EJECUTANDO').length;
             document.getElementById('kpi-total-ejecutando').innerText = execProj + execPV;
@@ -1017,6 +1113,7 @@
         // Render Dynamic Charts
         function renderCharts() {
             const months = ['2026-01', '2026-02', '2026-03', '2026-04', '2026-05', '2026-06'];
+            
             const voltexProjData = months.map(m => {
                 return filteredProyectos.filter(p => p.ORIGEN === 'VOLTEX' && p.Fecha && p.Fecha.startsWith(m)).length;
             });
@@ -1040,16 +1137,38 @@
                 data: {
                     labels: ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio'],
                     datasets: [
-                        { label: 'Proyectos Voltex', data: voltexProjData, backgroundColor: '#00B5AD', borderRadius: 4 },
-                        { label: 'Proyectos Flux', data: fluxProjData, backgroundColor: '#F1C40F', borderRadius: 4 },
-                        { label: 'PostVenta Voltex', data: voltexPvData, backgroundColor: '#38BDF8', borderRadius: 4 },
-                        { label: 'PostVenta Flux', data: fluxPvData, backgroundColor: '#FF4500', borderRadius: 4 }
+                        {
+                            label: 'Proyectos Voltex',
+                            data: voltexProjData,
+                            backgroundColor: '#00B5AD',
+                            borderRadius: 4,
+                        },
+                        {
+                            label: 'Proyectos Flux',
+                            data: fluxProjData,
+                            backgroundColor: '#F1C40F',
+                            borderRadius: 4,
+                        },
+                        {
+                            label: 'PostVenta Voltex',
+                            data: voltexPvData,
+                            backgroundColor: '#38BDF8',
+                            borderRadius: 4,
+                        },
+                        {
+                            label: 'PostVenta Flux',
+                            data: fluxPvData,
+                            backgroundColor: '#FF4500',
+                            borderRadius: 4,
+                        }
                     ]
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    plugins: { legend: { labels: { color: '#94A3B8', font: { family: 'Inter' } } } },
+                    plugins: {
+                        legend: { labels: { color: '#94A3B8', font: { family: 'Inter' } } }
+                    },
                     scales: {
                         x: { grid: { display: false }, ticks: { color: '#94A3B8' } },
                         y: { grid: { color: '#1E293B' }, ticks: { color: '#94A3B8', stepSize: 1 } }
@@ -1064,7 +1183,7 @@
             chartOrigenInstance = new Chart(ctxOrigen, {
                 type: 'doughnut',
                 data: {
-                    labels: ['Copec Voltex', 'Flux'],
+                    labels: ['Copec Voltex (Electromovilidad)', 'Flux'],
                     datasets: [{
                         data: [voltexCount, fluxCount],
                         backgroundColor: ['#00B5AD', '#F1C40F'],
@@ -1075,7 +1194,9 @@
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    plugins: { legend: { position: 'bottom', labels: { color: '#94A3B8', padding: 20 } } },
+                    plugins: {
+                        legend: { position: 'bottom', labels: { color: '#94A3B8', padding: 20 } }
+                    },
                     cutout: '70%'
                 }
             });
@@ -1083,6 +1204,7 @@
             const te6Aprob = filteredProyectos.filter(p => p.INST === 'TE6 APROB').length;
             const te6Emit = filteredProyectos.filter(p => p.INST === 'TE6 EMIT').length;
             const te6Pend = filteredProyectos.filter(p => p.INST !== 'TE6 APROB' && p.INST !== 'TE6 EMIT' && p.INST !== 'NO APLICA').length;
+
             document.getElementById('stat-te6-aprobados').innerText = te6Aprob;
             document.getElementById('stat-te6-emitidos').innerText = te6Emit;
             document.getElementById('stat-te6-pendientes').innerText = te6Pend;
@@ -1093,9 +1215,21 @@
                 data: {
                     labels: ['Estado Trámite SEC (TE6)'],
                     datasets: [
-                        { label: 'Aprobado', data: [te6Aprob], backgroundColor: '#10B981' },
-                        { label: 'Emitido (En espera)', data: [te6Emit], backgroundColor: '#F59E0B' },
-                        { label: 'Pendiente Ingeniería', data: [te6Pend], backgroundColor: '#64748B' }
+                        {
+                            label: 'Aprobado',
+                            data: [te6Aprob],
+                            backgroundColor: '#10B981',
+                        },
+                        {
+                            label: 'Emitido (En espera)',
+                            data: [te6Emit],
+                            backgroundColor: '#F59E0B',
+                        },
+                        {
+                            label: 'Pendiente Ingeniería',
+                            data: [te6Pend],
+                            backgroundColor: '#64748B',
+                        }
                     ]
                 },
                 options: {
@@ -1114,6 +1248,7 @@
         function renderRiskAlerts() {
             const container = document.getElementById('risk-alerts-container');
             container.innerHTML = '';
+
             let risks = [];
 
             const pendingSec = filteredProyectos.filter(p => p.INST === 'TE6 EMIT');
@@ -1130,7 +1265,7 @@
                 risks.push({
                     type: 'high',
                     title: 'Falla Recurrente en Flux',
-                    desc: `Cliente Sergio Contreras acumula ${rawRecurrent.length} incidencias. Requiere auditoría técnica.`
+                    desc: `Cliente Sergio Contreras acumula ${rawRecurrent.length} incidencias. Requiere auditoría técnica en terreno.`
                 });
             }
 
@@ -1144,13 +1279,19 @@
             }
 
             if (risks.length === 0) {
-                container.innerHTML = `<div class="p-3 bg-slate-800/20 text-slate-400 text-xs rounded-lg text-center">No se detectaron anomalías operativas críticas.</div>`;
+                container.innerHTML = `
+                    <div class="p-3 bg-slate-800/20 text-slate-400 text-xs rounded-lg text-center">
+                        No se detectaron anomalías operativas críticas en este periodo.
+                    </div>
+                `;
                 return;
             }
 
             risks.forEach(r => {
                 const badgeColor = r.type === 'high' ? 'bg-rose-500/10 border-rose-500/20 text-rose-400' :
-                                   r.type === 'medium' ? 'bg-amber-500/10 border-amber-500/20 text-amber-400' : 'bg-sky-500/10 border-sky-500/20 text-sky-400';
+                                   r.type === 'medium' ? 'bg-amber-500/10 border-amber-500/20 text-amber-400' :
+                                   'bg-sky-500/10 border-sky-500/20 text-sky-400';
+                
                 const icon = r.type === 'high' ? 'fa-triangle-exclamation' : 'fa-circle-exclamation';
 
                 container.innerHTML += `
@@ -1167,36 +1308,57 @@
 
         function getAdministBadge(val) {
             const cleanVal = val ? val.trim().toUpperCase() : '';
-            if (cleanVal === 'CERRADO') return `<span class="px-2 py-1 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">CERRADO</span>`;
-            if (cleanVal === 'EDP') return `<span class="px-2 py-1 rounded-full text-[10px] font-bold bg-amber-500/10 text-amber-400 border border-amber-500/20">EDP</span>`;
-            if (cleanVal === 'EJECUTANDO') return `<span class="px-2 py-1 rounded-full text-[10px] font-bold bg-blue-500/10 text-blue-400 border border-blue-500/20">EJECUTANDO</span>`;
-            if (cleanVal === 'NO APLICA') return `<span class="px-2 py-1 rounded-full text-[10px] font-bold bg-slate-800 text-slate-400 border border-slate-700">N/A</span>`;
-            return `<span class="px-2 py-1 rounded-full text-[10px] font-bold bg-slate-800/40 text-slate-500 border border-slate-800/60 inline-flex items-center justify-center"><span class="h-1 w-1 rounded-full bg-slate-600 mr-1.5 animate-pulse"></span>PENDIENTE</span>`;
+            if (cleanVal === 'CERRADO') {
+                return `<span class="px-2 py-1 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">CERRADO</span>`;
+            }
+            if (cleanVal === 'EDP') {
+                return `<span class="px-2 py-1 rounded-full text-[10px] font-bold bg-amber-500/10 text-amber-400 border border-amber-500/20">EDP (Estado Pago)</span>`;
+            }
+            if (cleanVal === 'EJECUTANDO') {
+                return `<span class="px-2 py-1 rounded-full text-[10px] font-bold bg-blue-500/10 text-blue-400 border border-blue-500/20">EJECUTANDO</span>`;
+            }
+            if (cleanVal === 'NO APLICA') {
+                return `<span class="px-2 py-1 rounded-full text-[10px] font-bold bg-slate-800 text-slate-400 border border-slate-700">N/A</span>`;
+            }
+            return `<span class="px-2 py-1 rounded-full text-[10px] font-bold bg-slate-800/40 text-slate-500 border border-slate-800/60 flex items-center inline-flex justify-center"><span class="h-1 w-1 rounded-full bg-slate-600 mr-1.5 animate-pulse"></span>PENDIENTE</span>`;
         }
 
         // Quality Document Matrix Renderer
         function renderQualityTable() {
             const tbody = document.getElementById('quality-table-body');
             tbody.innerHTML = '';
+
             const searchTerm = document.getElementById('quality-search').value.toLowerCase();
             
+            // Unify filtered projects and postventa to respond accurately to "Estado" and "Origen" filters on the checklist
             const combined = [
                 ...filteredProyectos.map(p => ({ ...p, type: 'Proyecto' })),
                 ...filteredPostventa.map(pv => ({ ...pv, type: 'PostVenta' }))
             ];
+
             const viewable = combined.filter(r => {
                 return r.ID.toLowerCase().includes(searchTerm) || r['CLIENTE/PROYECTO'].toLowerCase().includes(searchTerm);
             });
+
             document.getElementById('quality-table-info').innerText = `Mostrando ${viewable.length} de ${combined.length} registros`;
 
             if (viewable.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="11" class="p-4 text-center text-slate-500">No se encontraron registros.</td></tr>`;
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="11" class="p-4 text-center text-slate-500">No se encontraron registros con ese criterio de búsqueda.</td>
+                    </tr>
+                `;
                 return;
             }
 
             viewable.forEach(r => {
                 let percent = 0;
-                let planoBadge, memoriaBadge, secOtBadge, ganttBadge, fotomBadge, fotosAstBadge;
+                let planoBadge = '';
+                let memoriaBadge = '';
+                let secOtBadge = '';
+                let ganttBadge = '';
+                let fotomBadge = '';
+                let fotosAstBadge = '';
 
                 if (r.type === 'Proyecto') {
                     const docFields = [r['01 Plano'], r['02 Memoria'], r['03 Cert'] || r.INST, r['04 Gantt'], r['03 Fotom'], r['01 Foto Ini'], r['04 AST']];
@@ -1211,6 +1373,7 @@
                     fotomBadge = getDocBadge(r['03 Fotom'] || r['03 Fotomontaje']);
                     fotosAstBadge = getDocBadge(r['01 Foto Ini'] || r['04 AST']);
                 } else {
+                    // PostVenta
                     const docFields = [r['01 Reporte OT'], r['02 AST']];
                     const validDocs = docFields.filter(f => f !== 'No Aplica' && f !== 'NO APLICA');
                     const completedDocs = validDocs.filter(f => f === 'Realizado' || f === 'REALIZADA' || f === 'REALIZADO').length;
@@ -1218,10 +1381,10 @@
 
                     planoBadge = getDocBadge('No Aplica');
                     memoriaBadge = getDocBadge('No Aplica');
-                    secOtBadge = getDocBadge(r['01 Reporte OT']);
+                    secOtBadge = getDocBadge(r['01 Reporte OT']); // OT goes under SEC/OT
                     ganttBadge = getDocBadge('No Aplica');
                     fotomBadge = getDocBadge('No Aplica');
-                    fotosAstBadge = getDocBadge(r['02 AST']);
+                    fotosAstBadge = getDocBadge(r['02 AST']); // AST goes under Fotos/AST
                 }
 
                 tbody.innerHTML += `
@@ -1260,16 +1423,25 @@
         }
 
         function getDocBadge(val) {
-            if (!val) return `<i class="fa-solid fa-circle-minus text-slate-700 text-sm" title="No cargado"></i>`;
-            if (val === 'Realizado' || val === 'TE6 APROB' || val === 'REALIZADA' || val === 'REALIZADO') return `<i class="fa-solid fa-circle-check text-emerald-500 text-sm" title="Completado"></i>`;
-            if (val === 'No Aplica' || val === 'NO APLICA') return `<span class="text-[10px] text-slate-400 font-extrabold bg-slate-800 px-1.5 py-0.5 rounded border border-slate-700" title="No Aplica">N/A</span>`;
+            if (!val) {
+                return `<i class="fa-solid fa-circle-minus text-slate-700 text-sm" title="No cargado"></i>`;
+            }
+            if (val === 'Realizado' || val === 'TE6 APROB' || val === 'REALIZADA' || val === 'REALIZADO') {
+                return `<i class="fa-solid fa-circle-check text-emerald-500 text-sm" title="Completado"></i>`;
+            }
+            if (val === 'No Aplica' || val === 'NO APLICA') {
+                return `<span class="text-[10px] text-slate-400 font-extrabold bg-slate-800 px-1.5 py-0.5 rounded border border-slate-700" title="No Aplica">N/A</span>`;
+            }
             return `<i class="fa-solid fa-circle-info text-amber-500 text-sm" title="${val}"></i>`;
         }
 
         // Render PostVenta View Analysis
         function renderPostVentaAnalysis() {
             const counts = {};
-            dbPostventa.forEach(pv => { counts[pv.ID] = (counts[pv.ID] || 0) + 1; });
+            dbPostventa.forEach(pv => {
+                counts[pv.ID] = (counts[pv.ID] || 0) + 1;
+            });
+
             const recurrenceContainer = document.getElementById('pv-recurrence-list');
             recurrenceContainer.innerHTML = '';
 
@@ -1277,11 +1449,14 @@
             const uniqueRecurrents = [];
             const seen = new Set();
             recurrentClients.forEach(item => {
-                if (!seen.has(item.ID)) { seen.add(item.ID); uniqueRecurrents.push(item); }
+                if (!seen.has(item.ID)) {
+                    seen.add(item.ID);
+                    uniqueRecurrents.push(item);
+                }
             });
 
             if (uniqueRecurrents.length === 0) {
-                recurrenceContainer.innerHTML = `<p class="text-xs text-slate-500">No hay clientes con visitas repetitivas.</p>`;
+                recurrenceContainer.innerHTML = `<p class="text-xs text-slate-500">No hay clientes con visitas repetitivas en el periodo.</p>`;
             } else {
                 uniqueRecurrents.forEach(c => {
                     const times = counts[c.ID];
@@ -1291,7 +1466,9 @@
                                 <span class="font-bold text-slate-200">${c['CLIENTE/PROYECTO'].split('(')[0]}</span>
                                 <span class="text-[10px] block text-slate-500">ID: ${c.ID}</span>
                             </div>
-                            <span class="px-2 py-0.5 rounded bg-rose-500/10 text-rose-400 border border-rose-500/20 font-bold">${times} Visitas</span>
+                            <span class="px-2 py-0.5 rounded bg-rose-500/10 text-rose-400 border border-rose-500/20 font-bold">
+                                ${times} Visitas
+                            </span>
                         </div>
                     `;
                 });
@@ -1312,6 +1489,7 @@
             const tableBody = document.getElementById('pv-table-body');
             tableBody.innerHTML = '';
             document.getElementById('pv-count-badge').innerText = `${filteredPostventa.length} Registros`;
+
             if (filteredPostventa.length === 0) {
                 tableBody.innerHTML = `<tr><td colspan="7" class="p-4 text-center text-slate-500">No hay registros de PostVenta.</td></tr>`;
                 return;
@@ -1348,24 +1526,30 @@
         function renderExplorer() {
             const tbody = document.getElementById('explorer-table-body');
             tbody.innerHTML = '';
+
             const searchVal = document.getElementById('explorer-search').value.toLowerCase();
             
             const combined = [
                 ...filteredProyectos.map(p => ({...p, type: 'Proyecto'})),
                 ...filteredPostventa.map(pv => ({...pv, type: 'PostVenta'}))
             ];
+
             const viewable = combined.filter(row => {
-                return row.ID.toLowerCase().includes(searchVal) || row['CLIENTE/PROYECTO'].toLowerCase().includes(searchVal) || row.ORIGEN.toLowerCase().includes(searchVal);
+                return row.ID.toLowerCase().includes(searchVal) || 
+                       row['CLIENTE/PROYECTO'].toLowerCase().includes(searchVal) ||
+                       row.ORIGEN.toLowerCase().includes(searchVal);
             });
-            document.getElementById('explorer-count').innerText = `Visualizando ${viewable.length} de ${combined.length} registros`;
+
+            document.getElementById('explorer-count').innerText = `Visualizando ${viewable.length} de ${combined.length} registros consolidados`;
 
             if (viewable.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="10" class="p-4 text-center text-slate-500">Ningún registro coincide.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="10" class="p-4 text-center text-slate-500">Ningún registro coincide con la búsqueda.</td></tr>`;
                 return;
             }
 
             viewable.forEach(r => {
                 const astVal = r.type === 'Proyecto' ? (r['04 AST'] || '') : (r['02 AST'] || '');
+
                 tbody.innerHTML += `
                     <tr class="hover:bg-slate-900/30">
                         <td class="p-3 font-mono font-bold text-slate-300">${r.ID}</td>
@@ -1396,33 +1580,72 @@
             });
         }
 
-        // CSV Exporter engine
+        // CSV Exporter engine with Blob representation
         function exportToCSV() {
             const combined = [
                 ...filteredProyectos.map(p => ({...p, type: 'Proyecto'})),
                 ...filteredPostventa.map(pv => ({...pv, type: 'PostVenta'}))
             ];
-            if (combined.length === 0) return;
+            
+            if (combined.length === 0) {
+                logEtl("EXPORTAR ERROR: No hay datos consolidados para exportar.");
+                return;
+            }
 
+            // UTF-8 Byte Order Mark (BOM) to make Microsoft Excel parse Spanish characters/tildes automatically
             let csvContent = "\uFEFF";
+            
+            // Header columns using ; as separator for Spanish Excel systems
             csvContent += "ID;ORIGEN;CLIENTE_PROYECTO;FECHA_VT;ESTADO_ADM_1;HITO_SEC;AST;ESTADO_ADM_2;FECHA_CIERRE\n";
+
             combined.forEach(r => {
                 const astVal = r.type === 'Proyecto' ? (r['04 AST'] || '') : (r['02 AST'] || '');
                 const cleanClient = (r['CLIENTE/PROYECTO'] || '').replace(/"/g, '""');
-                csvContent += [r.ID || '', r.ORIGEN || '', `"${cleanClient}"`, r.Fecha || '', r.ADMINIST || '', r.INST || '', astVal || '', r.ADMINIST2 || '', r.Fecha2 || ''].join(";") + "\n";
+                const row = [
+                    r.ID || '',
+                    r.ORIGEN || '',
+                    `"${cleanClient}"`,
+                    r.Fecha || '',
+                    r.ADMINIST || '',
+                    r.INST || '',
+                    astVal || '',
+                    r.ADMINIST2 || '',
+                    r.Fecha2 || ''
+                ].join(";");
+                csvContent += row + "\n";
             });
 
-            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-            const url = URL.createObjectURL(blob);
-            const link = document.createElement("a");
-            link.setAttribute("href", url);
-            link.setAttribute("download", "Linstelec_Copec_Flux_Operational_Data.csv");
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            URL.revokeObjectURL(url);
+            try {
+                // Generate a real binary Blob to force standard download prompt instead of raw URL text page loading
+                const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+                const url = URL.createObjectURL(blob);
+                const link = document.createElement("a");
+                
+                link.setAttribute("href", url);
+                link.setAttribute("download", "Linstelec_Copec_Flux_Operational_Data.csv");
+                link.style.visibility = 'hidden';
+                
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                
+                // Release allocation memory
+                URL.revokeObjectURL(url);
+                logEtl("EXPORTADOR DE DATOS: Reporte completo descargado correctamente en formato CSV (BOM UTF-8 con punto y coma).");
+            } catch (err) {
+                logEtl(`FALLBACK EXPORT: Fallo el método Blob por restricciones del navegador. Error: ${err.message}`);
+                // Simple legacy fallback
+                const encodedUri = "data:text/csv;charset=utf-8," + encodeURIComponent(csvContent);
+                const link = document.createElement("a");
+                link.setAttribute("href", encodedUri);
+                link.setAttribute("download", "Linstelec_Copec_Flux_Operational_Data.csv");
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            }
         }
 
+        // Live Log Generator for data processes
         function logEtl(message) {
             const term = document.getElementById('etl-terminal');
             if (!term) return;
@@ -1435,31 +1658,50 @@
             document.getElementById('etl-terminal').innerHTML = '<div>Terminal limpia...</div>';
         }
 
-        // Drag & Drop File Loader
+        // Setup Drag & Drop File Parser for New CSV Uploads
         function setupDragAndDrop() {
             const dropZone = document.getElementById('drop-zone');
             const fileInput = document.getElementById('csv-file-input');
+
             dropZone.addEventListener('click', () => fileInput.click());
-            dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('border-copec-orange'); });
-            dropZone.addEventListener('dragleave', () => dropZone.classList.remove('border-copec-orange'));
+
+            dropZone.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                dropZone.classList.add('border-copec-orange');
+            });
+
+            dropZone.addEventListener('dragleave', () => {
+                dropZone.classList.remove('border-copec-orange');
+            });
+
             dropZone.addEventListener('drop', (e) => {
                 e.preventDefault();
                 dropZone.classList.remove('border-copec-orange');
-                if (e.dataTransfer.files.length > 0) parseCSV(e.dataTransfer.files[0]);
+                const files = e.dataTransfer.files;
+                if (files.length > 0) {
+                    parseCSV(files[0]);
+                }
             });
+
             fileInput.addEventListener('change', (e) => {
-                if (e.target.files.length > 0) parseCSV(e.target.files[0]);
+                if (e.target.files.length > 0) {
+                    parseCSV(e.target.files[0]);
+                }
             });
         }
 
         function parseCSV(file) {
-            logEtl(`TRANSFORMACIÓN LINSTELEC: Procesando archivo '${file.name}'...`);
+            logEtl(`TRANSFORMACIÓN LINSTELEC: Procesando archivo '${file.name}' externo...`);
             const reader = new FileReader();
             reader.onload = function(e) {
                 const text = e.target.result;
                 const lines = text.split('\n');
-                if (lines.length < 2) return;
+                if (lines.length < 2) {
+                    logEtl("ERROR LINSTELEC: El archivo cargado no posee estructura válida.");
+                    return;
+                }
 
+                logEtl(`LINSTELEC INGEST: Limpiando modelos activos. Inyectando registros nuevos...`);
                 const newProyectos = [];
                 for(let i = 1; i < lines.length; i++) {
                     const row = lines[i].split(';');
@@ -1478,8 +1720,11 @@
                         });
                     }
                 }
+
                 dbProyectos = newProyectos;
+                logEtl(`EXITO LINSTELEC: ${newProyectos.length} nuevos registros cargados.`);
                 saveDatabaseToStorage();
+                triggerEtlExecution();
             };
             reader.readAsText(file);
         }
@@ -1496,7 +1741,14 @@
                 document.getElementById('form-original-id').value = uid;
                 document.getElementById('form-id').disabled = false;
 
-                let target = isPostVenta ? dbPostventa.find(pv => pv._uid === uid) : dbProyectos.find(p => p._uid === uid);
+                let target = null;
+                if (isPostVenta) {
+                    target = dbPostventa.find(pv => pv._uid === uid);
+                    document.getElementById('form-origen').value = target.ORIGEN;
+                } else {
+                    target = dbProyectos.find(p => p._uid === uid);
+                    document.getElementById('form-origen').value = target.ORIGEN;
+                }
 
                 if (target) {
                     document.getElementById('modal-title').innerText = `Editar Registro: ${target.ID}`;
@@ -1506,11 +1758,21 @@
                     document.getElementById('form-administ').value = target.ADMINIST ? target.ADMINIST.trim() : 'EJECUTANDO';
                     document.getElementById('form-administ2').value = target.ADMINIST2 ? target.ADMINIST2.trim() : '';
                     document.getElementById('form-inst').value = target.INST || '';
-                    
+
+                    // Load Fecha2 custom NA state
                     const isFecha2NA = target.Fecha2 === 'NO APLICA' || target.Fecha2 === 'No Aplica';
-                    document.getElementById('form-fecha2-na').checked = isFecha2NA;
-                    document.getElementById('form-fecha2').value = isFecha2NA ? '' : (target.Fecha2 || '');
-                    document.getElementById('form-fecha2').disabled = isFecha2NA;
+                    const checkboxFecha2 = document.getElementById('form-fecha2-na');
+                    const inputFecha2 = document.getElementById('form-fecha2');
+
+                    if (isFecha2NA) {
+                        checkboxFecha2.checked = true;
+                        inputFecha2.value = '';
+                        inputFecha2.disabled = true;
+                    } else {
+                        checkboxFecha2.checked = false;
+                        inputFecha2.value = target.Fecha2 || '';
+                        inputFecha2.disabled = false;
+                    }
 
                     if (isPostVenta || target.ORIGEN.includes('PV')) {
                         document.getElementById('sel-ot').value = target['01 Reporte OT'] || '';
@@ -1530,44 +1792,82 @@
                 document.getElementById('form-original-id').value = "";
                 document.getElementById('form-id').disabled = false;
                 document.getElementById('form-origen').value = "VOLTEX";
+                document.getElementById('form-administ2').value = "";
+                
                 document.getElementById('form-fecha2-na').checked = false;
                 document.getElementById('form-fecha2').disabled = false;
+                document.getElementById('form-fecha2').value = "";
+
+                document.getElementById('sel-plano').value = "";
+                document.getElementById('sel-memoria').value = "";
+                document.getElementById('sel-gantt').value = "";
+                document.getElementById('sel-fotomontaje').value = "";
+                document.getElementById('sel-ast-proj').value = "";
+                document.getElementById('sel-fotos-ini').value = "";
+                document.getElementById('sel-ot').value = "";
+                document.getElementById('sel-ast').value = "";
             }
 
             toggleFormDocumentChecklist();
             modal.classList.remove('hidden');
         }
 
-        function closeFormModal() { document.getElementById('form-modal').classList.add('hidden'); }
+        function closeFormModal() {
+            document.getElementById('form-modal').classList.add('hidden');
+        }
 
         function toggleFecha2NA() {
             const checkbox = document.getElementById('form-fecha2-na');
             const input = document.getElementById('form-fecha2');
-            input.value = checkbox.checked ? "" : input.value;
-            input.disabled = checkbox.checked;
+            if (checkbox.checked) {
+                input.value = "";
+                input.disabled = true;
+            } else {
+                input.disabled = false;
+            }
         }
 
         function handleAdminist2Change() {
             const admin2Val = document.getElementById('form-administ2').value;
-            document.getElementById('form-fecha2-na').checked = (admin2Val === 'NO APLICA');
+            const checkbox = document.getElementById('form-fecha2-na');
+            if (admin2Val === 'NO APLICA') {
+                checkbox.checked = true;
+            } else {
+                checkbox.checked = false;
+            }
             toggleFecha2NA();
         }
 
         function toggleFormDocumentChecklist() {
             const originVal = document.getElementById('form-origen').value;
             const isPV = originVal.includes('PV');
-            document.getElementById('form-checklist-proyectos').classList.toggle('hidden', isPV);
-            document.getElementById('form-checklist-postventa').classList.toggle('hidden', !isPV);
+
+            const projSection = document.getElementById('form-checklist-proyectos');
+            const pvSection = document.getElementById('form-checklist-postventa');
+
+            if (isPV) {
+                projSection.classList.add('hidden');
+                pvSection.classList.remove('hidden');
+            } else {
+                projSection.classList.remove('hidden');
+                pvSection.classList.add('hidden');
+            }
         }
 
         function showFormError(msg) {
             const errContainer = document.getElementById('form-error');
-            if (errContainer) { errContainer.innerText = msg; errContainer.classList.remove('hidden'); }
+            if (errContainer) {
+                errContainer.innerText = msg;
+                errContainer.classList.remove('hidden');
+            }
         }
 
         function hideFormError() {
             const errContainer = document.getElementById('form-error');
-            if (errContainer) { errContainer.classList.add('hidden'); }
+            if (errContainer) {
+                errContainer.classList.add('hidden');
+                errContainer.innerText = '';
+            }
         }
 
         function saveRecord(e) {
@@ -1583,13 +1883,27 @@
             const administ = document.getElementById('form-administ').value;
             const administ2 = document.getElementById('form-administ2').value;
             const inst = document.getElementById('form-inst').value;
+            
             const isFecha2NA = document.getElementById('form-fecha2-na').checked;
             const fecha2 = isFecha2NA ? 'NO APLICA' : document.getElementById('form-fecha2').value;
 
-            if (!id) { showFormError("El ID Único no puede estar vacío."); return; }
             const isPV = origen.includes('PV');
 
-            const payload = { ORIGEN: origen, ID: id, "CLIENTE/PROYECTO": cliente, Fecha: fecha, ADMINIST: administ, ADMINIST2: administ2, INST: inst, Fecha2: fecha2 };
+            if (!id) {
+                showFormError("El ID Único no puede estar vacío.");
+                return;
+            }
+
+            const payload = {
+                ORIGEN: origen,
+                ID: id,
+                "CLIENTE/PROYECTO": cliente,
+                Fecha: fecha,
+                ADMINIST: administ,
+                ADMINIST2: administ2,
+                INST: inst,
+                Fecha2: fecha2
+            };
 
             if (isPV) {
                 payload['Carpeta General'] = "Realizado";
@@ -1608,33 +1922,53 @@
             if (action === "EDIT") {
                 if (isPV) {
                     const idx = dbPostventa.findIndex(pv => pv._uid === origUid);
-                    if (idx !== -1) dbPostventa[idx] = { ...dbPostventa[idx], ...payload };
+                    if (idx !== -1) {
+                        dbPostventa[idx] = { ...dbPostventa[idx], ...payload };
+                    }
                 } else {
                     const idx = dbProyectos.findIndex(p => p._uid === origUid);
-                    if (idx !== -1) dbProyectos[idx] = { ...dbProyectos[idx], ...payload };
+                    if (idx !== -1) {
+                        dbProyectos[idx] = { ...dbProyectos[idx], ...payload };
+                    }
                 }
-                logEtl(`LINSTELEC CRUD: Registro '${id}' actualizado.`);
+                logEtl(`LINSTELEC CRUD: Registro '${id}' actualizado con éxito.`);
             } else {
                 payload._uid = isPV ? `pv_${Date.now()}` : `proj_${Date.now()}`;
-                if (isPV) dbPostventa.push(payload); else dbProyectos.push(payload);
-                logEtl(`LINSTELEC CRUD: Nuevo registro '${id}' añadido.`);
+
+                const idExistsProj = dbProyectos.some(p => p.ID === id);
+                const idExistsPV = dbPostventa.some(pv => pv.ID === id);
+                
+                if (idExistsProj || idExistsPV) {
+                    logEtl(`LINSTELEC LOG: Registrando nueva visita/historial para el ID existente [${id}].`);
+                }
+
+                if (isPV) {
+                    dbPostventa.push(payload);
+                } else {
+                    dbProyectos.push(payload);
+                }
+                logEtl(`LINSTELEC CRUD: Nuevo registro '${id}' añadido con éxito.`);
             }
 
             saveDatabaseToStorage();
             closeFormModal();
+            triggerEtlExecution();
         }
 
         function openDeleteModal(uid, isPostVenta) {
             const modal = document.getElementById('delete-modal');
             const target = isPostVenta ? dbPostventa.find(pv => pv._uid === uid) : dbProyectos.find(p => p._uid === uid);
             if (!target) return;
+
             document.getElementById('delete-target-id').innerText = `'${target.ID}' (${target['CLIENTE/PROYECTO']})`;
             document.getElementById('delete-target-uid').value = uid;
             document.getElementById('delete-target-type').value = isPostVenta ? "PV" : "PROJ";
             modal.classList.remove('hidden');
         }
 
-        function closeDeleteModal() { document.getElementById('delete-modal').classList.add('hidden'); }
+        function closeDeleteModal() {
+            document.getElementById('delete-modal').classList.add('hidden');
+        }
 
         function executeDeleteRecord() {
             const uid = document.getElementById('delete-target-uid').value;
@@ -1642,14 +1976,23 @@
 
             if (type === "PV") {
                 const idx = dbPostventa.findIndex(pv => pv._uid === uid);
-                if (idx !== -1) { logEtl(`LINSTELEC CRUD: Registro '${dbPostventa[idx].ID}' eliminado.`); dbPostventa.splice(idx, 1); }
+                if (idx !== -1) {
+                    const deletedId = dbPostventa[idx].ID;
+                    dbPostventa.splice(idx, 1);
+                    logEtl(`LINSTELEC CRUD: Registro de PostVenta '${deletedId}' eliminado.`);
+                }
             } else {
                 const idx = dbProyectos.findIndex(p => p._uid === uid);
-                if (idx !== -1) { logEtl(`LINSTELEC CRUD: Registro '${dbProyectos[idx].ID}' eliminado.`); dbProyectos.splice(idx, 1); }
+                if (idx !== -1) {
+                    const deletedId = dbProyectos[idx].ID;
+                    dbProyectos.splice(idx, 1);
+                    logEtl(`LINSTELEC CRUD: Registro de Proyecto '${deletedId}' eliminado.`);
+                }
             }
 
             saveDatabaseToStorage();
             closeDeleteModal();
+            triggerEtlExecution();
         }
     </script>
 </body>
