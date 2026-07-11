@@ -25,7 +25,6 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <style>
         body { font-family: 'Inter', sans-serif; }
         ::-webkit-scrollbar { width: 6px; height: 6px; }
@@ -479,15 +478,6 @@
                                     <input type="file" id="csv-file-input" class="hidden" accept=".csv">
                                 </div>
                             </div>
-                            <div class="bg-slate-800/30 border border-slate-700/30 p-4 rounded-xl space-y-4">
-                                <h4 class="text-xs font-bold text-slate-300 uppercase tracking-wider">Importar Base de Datos Clientes (Excel)</h4>
-                                <div class="border-2 border-dashed border-slate-700 hover:border-emerald-500/50 rounded-lg p-6 text-center cursor-pointer transition-all" id="excel-drop-zone">
-                                    <i class="fa-solid fa-file-excel text-3xl text-emerald-500 mb-2"></i>
-                                    <p class="text-xs font-semibold text-slate-300">Arrastra tu archivo Excel aquí</p>
-                                    <p class="text-[10px] text-slate-500 mt-1">o haz clic para seleccionar</p>
-                                    <input type="file" id="excel-file-input" class="hidden" accept=".xlsx,.xls">
-                                </div>
-                            </div>
                         </div>
                         <div class="bg-slate-900/40 border border-slate-800 rounded-xl p-5 lg:col-span-2 flex flex-col h-[550px]">
                             <h4 class="font-bold text-slate-200 mb-4">Terminal Log de Linstelec</h4>
@@ -907,95 +897,6 @@
             saveDatabaseToStorage();
             closeFormModal();
         }
-
-        // Función para importar Excel con base de datos de clientes
-        function importExcelDatabase(file) {
-            logEtl("EXCEL IMPORT: Iniciando lectura del archivo Excel...");
-            const reader = new FileReader();
-            
-            reader.onload = function(e) {
-                try {
-                    const data = new Uint8Array(e.target.result);
-                    const workbook = XLSX.read(data, { type: 'array' });
-                    
-                    logEtl(`EXCEL IMPORT: Archivo cargado. Hojas detectadas: ${workbook.SheetNames.join(', ')}`);
-                    
-                    // Procesar cada hoja del Excel
-                    workbook.SheetNames.forEach(sheetName => {
-                        const worksheet = workbook.Sheets[sheetName];
-                        const jsonData = XLSX.utils.sheet_to_json(worksheet);
-                        
-                        logEtl(`EXCEL IMPORT: Procesando hoja "${sheetName}" - ${jsonData.length} registros encontrados`);
-                        
-                        jsonData.forEach(row => {
-                            const record = { ...row };
-                            
-                            // Determinar si es proyecto o postventa según el ORIGEN
-                            if (record.ORIGEN) {
-                                record._uid = `imported_${uidCounter++}`;
-                                
-                                if (record.ORIGEN.includes('PV')) {
-                                    dbPostventa.push(record);
-                                    logEtl(`  → PostVenta importado: ${record.ID || 'Sin ID'}`);
-                                } else {
-                                    dbProyectos.push(record);
-                                    logEtl(`  → Proyecto importado: ${record.ID || 'Sin ID'}`);
-                                }
-                            }
-                        });
-                    });
-                    
-                    logEtl("EXCEL IMPORT: ✓ Importación completada exitosamente");
-                    logEtl(`EXCEL IMPORT: Total proyectos: ${dbProyectos.length}, Total postventa: ${dbPostventa.length}`);
-                    
-                    // Guardar en Firebase y actualizar la interfaz
-                    saveDatabaseToStorage();
-                    triggerEtlExecution();
-                    
-                } catch (error) {
-                    logEtl(`EXCEL IMPORT: ✗ Error al procesar el archivo: ${error.message}`);
-                }
-            };
-            
-            reader.onerror = function() {
-                logEtl("EXCEL IMPORT: ✗ Error al leer el archivo");
-            };
-            
-            reader.readAsArrayBuffer(file);
-        }
-
-        // Configurar el drop zone para Excel
-        document.addEventListener('DOMContentLoaded', function() {
-            const excelDropZone = document.getElementById('excel-drop-zone');
-            const excelFileInput = document.getElementById('excel-file-input');
-            
-            if (excelDropZone && excelFileInput) {
-                excelDropZone.addEventListener('click', () => excelFileInput.click());
-                
-                excelFileInput.addEventListener('change', (e) => {
-                    if (e.target.files.length > 0) {
-                        importExcelDatabase(e.target.files[0]);
-                    }
-                });
-                
-                excelDropZone.addEventListener('dragover', (e) => {
-                    e.preventDefault();
-                    excelDropZone.classList.add('border-emerald-500');
-                });
-                
-                excelDropZone.addEventListener('dragleave', () => {
-                    excelDropZone.classList.remove('border-emerald-500');
-                });
-                
-                excelDropZone.addEventListener('drop', (e) => {
-                    e.preventDefault();
-                    excelDropZone.classList.remove('border-emerald-500');
-                    if (e.dataTransfer.files.length > 0) {
-                        importExcelDatabase(e.dataTransfer.files[0]);
-                    }
-                });
-            }
-        });
     </script>
 </body>
 </html>
