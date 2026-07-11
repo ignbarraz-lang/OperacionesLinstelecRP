@@ -25,6 +25,8 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- LIBRERÍA SHEETJS PARA IMPORTAR/EXPORTAR EXCEL REAL (.xlsx) -->
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
     <style>
         body { font-family: 'Inter', sans-serif; }
         ::-webkit-scrollbar { width: 6px; height: 6px; }
@@ -213,13 +215,23 @@
                         </select>
                     </div>
                     
-                    <div class="flex items-center space-x-2">
+                    <div class="flex items-center space-x-2 flex-wrap gap-2">
                         <button onclick="resetFilters()" class="px-3 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg text-xs font-semibold transition-all">
                             Limpiar Filtros
                         </button>
                         <button onclick="openFormModal(null)" class="px-3 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-xs font-bold shadow-lg shadow-emerald-500/15 transition-all flex items-center space-x-1.5">
                             <i class="fa-solid fa-circle-plus"></i>
                             <span>+ Añadir Registro</span>
+                        </button>
+                        <!-- NUEVOS BOTONES: IMPORTAR Y EXPORTAR EXCEL -->
+                        <button onclick="document.getElementById('excel-file-input').click()" class="px-3 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-xs font-bold shadow-lg shadow-indigo-500/15 transition-all flex items-center space-x-1.5">
+                            <i class="fa-solid fa-file-import"></i>
+                            <span>Importar Excel</span>
+                        </button>
+                        <input type="file" id="excel-file-input" class="hidden" accept=".xlsx,.xls,.csv" onchange="importFromExcel(event)">
+                        <button onclick="exportToExcel()" class="px-3 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-xs font-bold shadow-lg shadow-emerald-500/15 transition-all flex items-center space-x-1.5">
+                            <i class="fa-solid fa-file-excel"></i>
+                            <span>Exportar Excel</span>
                         </button>
                         <button onclick="triggerEtlExecution()" class="px-3 py-2 bg-gradient-to-r from-copec-orange to-amber-500 hover:from-copec-orangeHover text-white rounded-lg text-xs font-bold shadow-lg shadow-copec-orange/15 transition-all flex items-center space-x-1.5">
                             <i class="fa-solid fa-arrows-rotate animate-spin" id="etl-btn-icon" style="animation-duration: 3s;"></i>
@@ -433,8 +445,8 @@
                                 <h3 class="font-bold text-lg text-white">Explorador Master del Data Lakehouse</h3>
                                 <p class="text-xs text-slate-400">Acceso a la base de datos completa unificada y unpivoted en memoria.</p>
                             </div>
-                            <button onclick="exportToCSV()" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-xs font-bold flex items-center space-x-1.5 shadow-lg shadow-emerald-500/10 transition-all">
-                                <i class="fa-solid fa-file-excel"></i><span>Exportar Excel (CSV)</span>
+                            <button onclick="exportToExcel()" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-xs font-bold flex items-center space-x-1.5 shadow-lg shadow-emerald-500/10 transition-all">
+                                <i class="fa-solid fa-file-excel"></i><span>Exportar Excel (.xlsx)</span>
                             </button>
                         </div>
                         <div class="flex items-center justify-between gap-4 mb-4">
@@ -471,11 +483,11 @@
                                 <p class="text-xs text-slate-400">Automatiza la extracción y carga del Excel de Copec.</p>
                             </div>
                             <div class="bg-slate-800/30 border border-slate-700/30 p-4 rounded-xl space-y-4">
-                                <h4 class="text-xs font-bold text-slate-300 uppercase tracking-wider">Carga Externa (CSV)</h4>
-                                <div class="border-2 border-dashed border-slate-700 hover:border-copec-orange/50 rounded-lg p-6 text-center cursor-pointer transition-all" id="drop-zone">
+                                <h4 class="text-xs font-bold text-slate-300 uppercase tracking-wider">Carga Externa (Excel / CSV)</h4>
+                                <div class="border-2 border-dashed border-slate-700 hover:border-copec-orange/50 rounded-lg p-6 text-center cursor-pointer transition-all" id="drop-zone" onclick="document.getElementById('excel-file-input').click()">
                                     <i class="fa-solid fa-cloud-arrow-up text-3xl text-slate-500 mb-2"></i>
-                                    <p class="text-xs font-semibold text-slate-300">Arrastra tu archivo CSV aquí</p>
-                                    <input type="file" id="csv-file-input" class="hidden" accept=".csv">
+                                    <p class="text-xs font-semibold text-slate-300">Arrastra tu archivo Excel/CSV aquí</p>
+                                    <p class="text-[10px] text-slate-500 mt-1">o haz clic para seleccionar (.xlsx, .xls, .csv)</p>
                                 </div>
                             </div>
                         </div>
@@ -897,6 +909,163 @@
             saveDatabaseToStorage();
             closeFormModal();
         }
+
+        // ============================================================
+        // FUNCIONES DE IMPORTAR / EXPORTAR EXCEL (.xlsx) - SHEETJS
+        // ============================================================
+
+        /**
+         * EXPORTAR: Genera un archivo Excel (.xlsx) con dos hojas:
+         *  - "Proyectos": todos los registros de dbProyectos
+         *  - "PostVenta": todos los registros de dbPostventa
+         * Se excluyen los campos internos (_uid) para que el Excel quede limpio.
+         */
+        function exportToExcel() {
+            try {
+                logEtl("EXPORT: Iniciando generación de archivo Excel...");
+
+                // Limpiar campos internos antes de exportar
+                const cleanProyectos = dbProyectos.map(p => {
+                    const { _uid, ...rest } = p;
+                    return rest;
+                });
+                const cleanPostventa = dbPostventa.map(p => {
+                    const { _uid, ...rest } = p;
+                    return rest;
+                });
+
+                // Crear un libro de trabajo nuevo
+                const wb = XLSX.utils.book_new();
+
+                // Hoja 1: Proyectos
+                const wsProyectos = XLSX.utils.json_to_sheet(cleanProyectos);
+                XLSX.utils.book_append_sheet(wb, wsProyectos, "Proyectos");
+
+                // Hoja 2: PostVenta
+                const wsPostventa = XLSX.utils.json_to_sheet(cleanPostventa);
+                XLSX.utils.book_append_sheet(wb, wsPostventa, "PostVenta");
+
+                // Generar nombre de archivo con fecha
+                const now = new Date();
+                const fechaStr = `${now.getFullYear()}${String(now.getMonth()+1).padStart(2,'0')}${String(now.getDate()).padStart(2,'0')}`;
+                const fileName = `Copec_Voltex_Flux_Datos_${fechaStr}.xlsx`;
+
+                // Descargar el archivo
+                XLSX.writeFile(wb, fileName);
+
+                logEtl(`EXPORT: Archivo "${fileName}" generado correctamente. Proyectos: ${cleanProyectos.length}, PostVenta: ${cleanPostventa.length}`);
+                alert(`✅ Archivo Excel exportado correctamente:\n${fileName}\n\nProyectos: ${cleanProyectos.length} registros\nPostVenta: ${cleanPostventa.length} registros`);
+            } catch (err) {
+                logEtl(`EXPORT ERROR: ${err.message}`);
+                alert("❌ Error al exportar el archivo Excel: " + err.message);
+            }
+        }
+
+        /**
+         * IMPORTAR: Lee un archivo Excel (.xlsx, .xls) o CSV y agrega los registros
+         * a dbProyectos / dbPostventa según la hoja de origen.
+         * Si el archivo tiene solo una hoja y los registros tienen ORIGEN con "-PV",
+         * se clasifican automáticamente.
+         */
+        function importFromExcel(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            logEtl(`IMPORT: Leyendo archivo "${file.name}" (${(file.size/1024).toFixed(1)} KB)...`);
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const data = new Uint8Array(e.target.result);
+                    const workbook = XLSX.read(data, { type: 'array' });
+
+                    let nuevosProyectos = 0;
+                    let nuevosPostventa = 0;
+
+                    // Procesar cada hoja del archivo
+                    workbook.SheetNames.forEach(sheetName => {
+                        const sheet = workbook.Sheets[sheetName];
+                        const jsonData = XLSX.utils.sheet_to_json(sheet, { defval: "" });
+
+                        jsonData.forEach(row => {
+                            // Asegurar que el registro tenga los campos mínimos
+                            if (!row.ID && !row['CLIENTE/PROYECTO']) return; // Saltar filas vacías
+
+                            // Asignar _uid único
+                            const uid = `imp_${Date.now()}_${uidCounter++}`;
+                            const record = { ...row, _uid: uid };
+
+                            // Clasificar según el ORIGEN o el nombre de la hoja
+                            const origen = (record.ORIGEN || "").toString().toUpperCase();
+                            const esPostventa = origen.includes('PV') || 
+                                                 sheetName.toLowerCase().includes('postventa') || 
+                                                 sheetName.toLowerCase().includes('postventa');
+
+                            if (esPostventa) {
+                                // Asegurar campos mínimos de PostVenta
+                                if (!record.ORIGEN) record.ORIGEN = "FLUX-PV";
+                                dbPostventa.push(record);
+                                nuevosPostventa++;
+                            } else {
+                                // Asegurar campos mínimos de Proyectos
+                                if (!record.ORIGEN) record.ORIGEN = "VOLTEX";
+                                dbProyectos.push(record);
+                                nuevosProyectos++;
+                            }
+                        });
+                    });
+
+                    // Guardar en Firebase
+                    saveDatabaseToStorage();
+                    triggerEtlExecution();
+
+                    logEtl(`IMPORT: Completado. Nuevos Proyectos: ${nuevosProyectos}, Nuevos PostVenta: ${nuevosPostventa}`);
+                    alert(`✅ Archivo importado correctamente:\n\nProyectos agregados: ${nuevosProyectos}\nPostVenta agregados: ${nuevosPostventa}\n\nLos datos se han sincronizado con la base de datos.`);
+                } catch (err) {
+                    logEtl(`IMPORT ERROR: ${err.message}`);
+                    alert("❌ Error al procesar el archivo: " + err.message);
+                }
+            };
+            reader.onerror = function() {
+                alert("❌ Error al leer el archivo.");
+            };
+            reader.readAsArrayBuffer(file);
+
+            // Resetear el input para permitir re-importar el mismo archivo si se modifica
+            event.target.value = '';
+        }
+
+        // ============================================================
+        // DRAG & DROP para la zona de carga ETL
+        // ============================================================
+        document.addEventListener('DOMContentLoaded', () => {
+            const dropZone = document.getElementById('drop-zone');
+            if (dropZone) {
+                ['dragenter', 'dragover'].forEach(eventName => {
+                    dropZone.addEventListener(eventName, (e) => {
+                        e.preventDefault();
+                        dropZone.classList.add('border-copec-orange', 'bg-copec-orange/5');
+                    });
+                });
+                ['dragleave', 'drop'].forEach(eventName => {
+                    dropZone.addEventListener(eventName, (e) => {
+                        e.preventDefault();
+                        dropZone.classList.remove('border-copec-orange', 'bg-copec-orange/5');
+                    });
+                });
+                dropZone.addEventListener('drop', (e) => {
+                    const files = e.dataTransfer.files;
+                    if (files.length > 0) {
+                        const input = document.getElementById('excel-file-input');
+                        // Simular el evento del input
+                        const dt = new DataTransfer();
+                        dt.items.add(files[0]);
+                        input.files = dt.files;
+                        importFromExcel({ target: input });
+                    }
+                });
+            }
+        });
     </script>
 </body>
 </html>
