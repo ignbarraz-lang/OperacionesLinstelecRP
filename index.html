@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Copec Voltex & Flux - Unified Operations Dashboard</title>
+    <title>Copec Voltex & Flux - Dashboard</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -26,31 +26,38 @@
         ::-webkit-scrollbar-track { background: #0f172a; }
         ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
         ::-webkit-scrollbar-thumb:hover { background: #475569; }
+        .timeline-item { position: relative; padding-left: 30px; }
+        .timeline-item::before { content: ''; position: absolute; left: 10px; top: 0; bottom: 0; width: 2px; background: #334155; }
+        .timeline-item::after { content: ''; position: absolute; left: 5px; top: 5px; width: 12px; height: 12px; border-radius: 50%; background: #FF4500; border: 2px solid #0f172a; }
+        .timeline-item.done::after { background: #10B981; }
+        .timeline-item.pending::after { background: #F59E0B; }
     </style>
 </head>
 <body class="h-full flex flex-col overflow-hidden">
 
-    <!-- LOGIN SCREEN -->
+    <!-- LOGIN -->
     <div id="login-screen" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950 p-4">
         <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-md w-full p-8 shadow-2xl space-y-6 text-center">
             <div class="flex justify-center">
-                <img src="Logo.png" alt="Linstelec" class="h-20 object-contain">
+                <div class="h-20 w-20 rounded-xl bg-gradient-to-tr from-copec-orange to-amber-500 flex items-center justify-center shadow-lg">
+                    <i class="fa-solid fa-bolt text-white text-4xl"></i>
+                </div>
             </div>
             <div>
-                <h2 class="text-xl font-black text-white tracking-tight">Acceso Administrativo Unificado</h2>
-                <p class="text-xs text-slate-400 mt-1">Plataforma Exclusiva Copec Voltex & Flux</p>
+                <h2 class="text-xl font-black text-white tracking-tight">Acceso Administrativo</h2>
+                <p class="text-xs text-slate-400 mt-1">Copec Voltex & Flux</p>
             </div>
             <form id="login-form" class="space-y-4 text-left text-xs">
                 <div id="login-error" class="hidden text-rose-400 font-semibold bg-rose-500/10 border border-rose-500/20 p-3 rounded-lg"></div>
                 <div>
                     <label class="block font-semibold text-slate-400 mb-1">Correo Electrónico</label>
-                    <input type="email" id="login-email" required placeholder="nombre@linstelec.bar" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2.5 text-slate-200 text-xs focus:ring-1 focus:ring-copec-orange focus:outline-none">
+                    <input type="email" id="login-email" required placeholder="admin@linstelec.bar" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2.5 text-slate-200 focus:ring-1 focus:ring-copec-orange focus:outline-none">
                 </div>
                 <div>
                     <label class="block font-semibold text-slate-400 mb-1">Contraseña</label>
-                    <input type="password" id="login-password" required placeholder="••••••••" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2.5 text-slate-200 text-xs focus:ring-1 focus:ring-copec-orange focus:outline-none">
+                    <input type="password" id="login-password" required placeholder="••••••••" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2.5 text-slate-200 focus:ring-1 focus:ring-copec-orange focus:outline-none">
                 </div>
-                <button type="submit" class="w-full py-2.5 bg-gradient-to-r from-copec-orange to-amber-500 hover:from-copec-orangeHover text-white font-bold rounded-lg transition-all shadow-lg shadow-copec-orange/15">
+                <button type="submit" class="w-full py-2.5 bg-gradient-to-r from-copec-orange to-amber-500 text-white font-bold rounded-lg">
                     <i class="fa-solid fa-right-to-bracket mr-2"></i>Iniciar Sesión
                 </button>
             </form>
@@ -61,27 +68,29 @@
     <div id="main-app-layout" class="hidden flex flex-col h-full overflow-hidden">
         <header class="bg-slate-900 border-b border-slate-800 px-6 py-4 flex items-center justify-between shrink-0">
             <div class="flex items-center space-x-3">
-                <img src="Logo.png" alt="Linstelec" class="h-10 object-contain">
-                <div class="border-l border-slate-800 pl-4">
-                    <h1 class="font-extrabold text-lg tracking-tight bg-gradient-to-r from-white via-slate-200 to-slate-400 bg-clip-text text-transparent">COPEC VOLTEX & FLUX</h1>
-                    <p class="text-xs text-slate-400 font-semibold tracking-wider uppercase">Plataforma de Control Operacional & Ingeniería de Datos</p>
+                <div class="h-10 w-10 rounded-lg bg-gradient-to-tr from-copec-orange to-amber-500 flex items-center justify-center shadow-lg">
+                    <i class="fa-solid fa-bolt text-white text-xl"></i>
+                </div>
+                <div>
+                    <h1 class="font-extrabold text-lg bg-gradient-to-r from-white to-slate-400 bg-clip-text text-transparent">COPEC VOLTEX & FLUX</h1>
+                    <p class="text-xs text-slate-400 font-semibold uppercase">Control Operacional & Ingeniería de Datos</p>
                 </div>
             </div>
             <div class="flex items-center space-x-6">
-                <button onclick="openNotificationsPanel()" class="relative p-2 text-slate-400 hover:text-copec-orange transition-colors">
+                <button onclick="openNotificationsPanel()" class="relative p-2 text-slate-400 hover:text-copec-orange">
                     <i class="fa-solid fa-bell text-xl"></i>
                     <span id="notification-count" class="absolute -top-1 -right-1 bg-rose-500 text-white text-[10px] font-bold rounded-full h-5 w-5 flex items-center justify-center hidden">0</span>
                 </button>
                 <div class="text-right flex flex-col items-end">
                     <span id="pipeline-status-badge" class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 mb-1">
                         <span class="h-1.5 w-1.5 rounded-full bg-emerald-400 mr-2 animate-pulse"></span>
-                        Linstelec: Activo (100%)
+                        Linstelec: Activo
                     </span>
-                    <p class="text-[11px] text-slate-400 font-medium" id="header-last-modified">Última modificación: Cargando...</p>
+                    <p class="text-[11px] text-slate-400" id="header-last-modified">Última modificación: Cargando...</p>
                 </div>
                 <div class="text-right hidden sm:block border-l border-slate-800 pl-4">
                     <p class="text-xs text-slate-400" id="user-display-name">Usuario</p>
-                    <button id="logout-btn" class="text-[11px] text-rose-400 hover:text-rose-300 font-bold transition-colors">
+                    <button id="logout-btn" class="text-[11px] text-rose-400 hover:text-rose-300 font-bold">
                         <i class="fa-solid fa-power-off mr-1"></i> Cerrar Sesión
                     </button>
                 </div>
@@ -93,336 +102,33 @@
                 <div class="p-4">
                     <p class="text-xs font-bold text-slate-500 uppercase tracking-wider px-2">Vistas de Negocio</p>
                     <nav class="mt-3 space-y-1">
-                        <button onclick="switchTab('dashboard')" id="nav-dashboard" class="w-full flex items-center space-x-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all bg-gradient-to-r from-copec-orange/20 to-transparent text-copec-orange border-l-2 border-copec-orange">
+                        <button onclick="switchTab('dashboard')" id="nav-dashboard" class="nav-btn w-full flex items-center space-x-3 px-3 py-2.5 rounded-lg text-sm font-medium bg-gradient-to-r from-copec-orange/20 to-transparent text-copec-orange border-l-2 border-copec-orange">
                             <i class="fa-solid fa-chart-pie w-5"></i><span>Control General</span>
                         </button>
-                        <button onclick="switchTab('clientes')" id="nav-clientes" class="w-full flex items-center space-x-3 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-400 hover:bg-slate-800/50 hover:text-slate-200 transition-all border-l-2 border-transparent">
+                        <button onclick="switchTab('clientes')" id="nav-clientes" class="nav-btn w-full flex items-center space-x-3 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-400 hover:bg-slate-800/50 hover:text-slate-200 border-l-2 border-transparent">
                             <i class="fa-solid fa-users w-5"></i><span>Ficha de Clientes</span>
                         </button>
-                        <button onclick="switchTab('facturacion')" id="nav-facturacion" class="w-full flex items-center space-x-3 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-400 hover:bg-slate-800/50 hover:text-slate-200 transition-all border-l-2 border-transparent">
+                        <button onclick="switchTab('facturacion')" id="nav-facturacion" class="nav-btn w-full flex items-center space-x-3 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-400 hover:bg-slate-800/50 hover:text-slate-200 border-l-2 border-transparent">
                             <i class="fa-solid fa-file-invoice-dollar w-5"></i><span>Facturación</span>
                         </button>
-                        <button onclick="switchTab('timeline')" id="nav-timeline" class="w-full flex items-center space-x-3 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-400 hover:bg-slate-800/50 hover:text-slate-200 transition-all border-l-2 border-transparent">
+                        <button onclick="switchTab('timeline')" id="nav-timeline" class="nav-btn w-full flex items-center space-x-3 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-400 hover:bg-slate-800/50 hover:text-slate-200 border-l-2 border-transparent">
                             <i class="fa-solid fa-timeline w-5"></i><span>Timeline Visual</span>
                         </button>
-                        <button onclick="switchTabireccion" value="${cliente.direccion || ''}" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-slate-200"></div>
-                        <div class="col-span-2"><label class="block text-xs font-semibold text-slate-400 mb-1">Persona de Contacto</label><input type="text" id="edit-contacto" value="${cliente.contacto || ''}" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-slate-200"></div>
-                    </div>
-                    <div class="flex justify-end space-x-2 pt-4">
-                        <button type="button" onclick="openClientDetail('${clientId}')" class="px-4 py-2 bg-slate-800 text-slate-300 rounded-lg">Cancelar</button>
-                        <button type="submit" class="px-4 py-2 bg-gradient-to-r from-copec-orange to-amber-500 text-white font-bold rounded-lg">Guardar Cambios</button>
-                    </div>
-                </form>
-            `;
-        }
-
-        async function updateClient(e, clientId) {
-            e.preventDefault();
-            const idx = dbClientes.findIndex(c => c._uid === clientId);
-            if (idx === -1) { alert('Cliente no encontrado'); return; }
-            
-            dbClientes[idx] = {
-                ...dbClientes[idx],
-                nombre: document.getElementById('edit-nombre').value,
-                rut: document.getElementById('edit-rut').value,
-                email: document.getElementById('edit-email').value,
-                telefono: document.getElementById('edit-telefono').value,
-                direccion: document.getElementById('edit-direccion').value,
-                contacto: document.getElementById('edit-contacto').value
-            };
-            
-            const saved = await saveDatabaseToStorage();
-            if (saved) {
-                openClientDetail(clientId);
-                renderClientes();
-                logEtl("✓ Cliente actualizado");
-            }
-        }
-
-        function openNewClientModal() {
-            document.getElementById('new-client-modal').classList.remove('hidden');
-        }
-
-        function closeNewClientModal() {
-            document.getElementById('new-client-modal').classList.add('hidden');
-            document.getElementById('new-client-form').reset();
-        }
-
-        async function saveNewClient(e) {
-            e.preventDefault();
-            const newClient = {
-                _uid: `client_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-                nombre: document.getElementById('nc-nombre').value,
-                rut: document.getElementById('nc-rut').value,
-                email: document.getElementById('nc-email').value,
-                telefono: document.getElementById('nc-telefono').value,
-                direccion: document.getElementById('nc-direccion').value,
-                contacto: document.getElementById('nc-contacto').value
-            };
-            dbClientes.push(newClient);
-            const saved = await saveDatabaseToStorage();
-            if (saved) {
-                closeNewClientModal();
-                renderClientes();
-                logEtl(`✓ Nuevo cliente: ${newClient.nombre}`);
-            }
-        }
-
-        // ========== FACTURACIÓN CON TOTALES POR CLIENTE ==========
-        function renderFacturacion() {
-            const filterCliente = document.getElementById('filter-pago-cliente').value;
-            const filterEstado = document.getElementById('filter-pago-estado').value;
-            const tbody = document.getElementById('facturacion-table-body');
-            const resumenDiv = document.getElementById('facturacion-resumen');
-            
-            let pagosFiltrados = dbPagos;
-            if (filterCliente !== 'ALL') {
-                pagosFiltrados = dbPagos.filter(p => p.clienteId === filterCliente);
-            }
-            if (filterEstado !== 'ALL') {
-                pagosFiltrados = pagosFiltrados.filter(p => p.estado === filterEstado);
-            }
-
-            // Calcular totales por cliente
-            const totalesPorCliente = {};
-            dbClientes.forEach(c => {
-                const pagosCliente = dbPagos.filter(p => p.clienteId === c._uid);
-                const totalInstalacion = pagosCliente.filter(p => p.tipo === 'INSTALACION').reduce((sum, p) => sum + (parseInt(p.monto) || 0), 0);
-                const totalPostventa = pagosCliente.filter(p => p.tipo === 'POSTVENTA').reduce((sum, p) => sum + (parseInt(p.monto) || 0), 0);
-                const totalVisita = pagosCliente.filter(p => p.tipo === 'VISITA_TECNICA').reduce((sum, p) => sum + (parseInt(p.monto) || 0), 0);
-                const totalGeneral = totalInstalacion + totalPostventa + totalVisita;
-                
-                if (totalGeneral > 0) {
-                    totalesPorCliente[c._uid] = {
-                        nombre: c.nombre,
-                        instalacion: totalInstalacion,
-                        postventa: totalPostventa,
-                        visita: totalVisita,
-                        total: totalGeneral
-                    };
-                }
-            });
-
-            // Mostrar resumen
-            if (Object.keys(totalesPorCliente).length > 0) {
-                resumenDiv.innerHTML = Object.entries(totalesPorCliente).map(([id, data]) => `
-                    <div class="bg-slate-800/30 border border-slate-700/30 p-4 rounded-xl">
-                        <h4 class="text-sm font-bold text-slate-200 mb-2">${data.nombre}</h4>
-                        <div class="space-y-1 text-xs">
-                            <div class="flex justify-between"><span class="text-slate-400">Instalación:</span><span class="text-blue-400 font-bold">$${data.instalacion.toLocaleString('es-CL')}</span></div>
-                            <div class="flex justify-between"><span class="text-slate-400">PostVenta:</span><span class="text-emerald-400 font-bold">$${data.postventa.toLocaleString('es-CL')}</span></div>
-                            <div class="flex justify-between"><span class="text-slate-400">Visita Técnica:</span><span class="text-amber-400 font-bold">$${data.visita.toLocaleString('es-CL')}</span></div>
-                            <div class="border-t border-slate-700 pt-1 flex justify-between"><span class="text-slate-300 font-bold">TOTAL:</span><span class="text-copec-orange font-extrabold">$${data.total.toLocaleString('es-CL')}</span></div>
-                        </div>
-                    </div>
-                `).join('');
-            } else {
-                resumenDiv.innerHTML = '';
-            }
-
-            // Actualizar select de clientes
-            const selectCliente = document.getElementById('filter-pago-cliente');
-            if (selectCliente.options.length <= 1) {
-                dbClientes.forEach(c => {
-                    const option = document.createElement('option');
-                    option.value = c._uid;
-                    option.textContent = c.nombre;
-                    selectCliente.appendChild(option);
-                });
-            }
-
-            if (pagosFiltrados.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="8" class="p-4 text-center text-slate-500">No hay pagos registrados</td></tr>';
-                return;
-            }
-
-            tbody.innerHTML = pagosFiltrados.map(p => {
-                const cliente = dbClientes.find(c => c._uid === p.clienteId);
-                return `
-                    <tr class="hover:bg-slate-900/50">
-                        <td class="p-3 font-bold text-slate-200">${cliente ? cliente.nombre : 'Sin cliente'}</td>
-                        <td class="p-3"><span class="px-2 py-1 rounded-full text-[10px] font-bold ${p.tipo === 'INSTALACION' ? 'bg-blue-500/10 text-blue-400' : p.tipo === 'POSTVENTA' ? 'bg-emerald-500/10 text-emerald-400' : 'bg-amber-500/10 text-amber-400'}">${p.tipo}</span></td>
-                        <td class="p-3 text-slate-400">${p.proyecto || '-'}</td>
-                        <td class="p-3 font-bold text-slate-200">$${(parseInt(p.monto) || 0).toLocaleString('es-CL')}</td>
-                        <td class="p-3 text-slate-400">${p.fechaEmision || '-'}</td>
-                        <td class="p-3 text-slate-400">${p.fechaPago || '-'}</td>
-                        <td class="p-3 text-center">
-                            <span class="px-2 py-1 rounded-full text-[10px] font-bold ${p.estado === 'REALIZADO' ? 'bg-emerald-500/10 text-emerald-400' : 'bg-amber-500/10 text-amber-400'}">${p.estado}</span>
-                        </td>
-                        <td class="p-3 text-center">
-                            <div class="flex items-center justify-center space-x-2">
-                                <button onclick="editPayment('${p._uid}')" class="text-slate-400 hover:text-copec-orange" title="Editar monto">
-                                    <i class="fa-solid fa-pen-to-square"></i>
-                                </button>
-                                <button onclick="togglePaymentStatus('${p._uid}')" class="text-slate-400 hover:text-emerald-500" title="Cambiar estado">
-                                    <i class="fa-solid fa-check"></i>
-                                </button>
-                                <button onclick="openDeleteConfirm('payment', '${p._uid}', 'pago')" class="text-slate-400 hover:text-rose-500" title="Eliminar">
-                                    <i class="fa-solid fa-trash"></i>
-                                </button>
-                            </div>
-                        </td>
-                    </tr>
-                `;
-            }).join('');
-        }
-
-        async function togglePaymentStatus(paymentId) {
-            const idx = dbPagos.findIndex(p => p._uid === paymentId);
-            if (idx === -1) return;
-            
-            if (dbPagos[idx].estado === 'PENDIENTE') {
-                dbPagos[idx].estado = 'REALIZADO';
-                dbPagos[idx].fechaPago = new Date().toISOString().split('T')[0];
-            } else {
-                dbPagos[idx].estado = 'PENDIENTE';
-                dbPagos[idx].fechaPago = '';
-            }
-            
-            const saved = await saveDatabaseToStorage();
-            if (saved) {
-                renderFacturacion();
-                updatePaymentKPIs();
-                updateNotificationBadge();
-                logEtl(`✓ Pago ${dbPagos[idx].estado}`);
-            }
-        }
-
-        function editPayment(paymentId) {
-            const pago = dbPagos.find(p => p._uid === paymentId);
-            if (!pago) { alert('Pago no encontrado'); return; }
-            
-            const select = document.getElementById('pm-cliente');
-            select.innerHTML = dbClientes.map(c => `<option value="${c._uid}" ${c._uid === pago.clienteId ? 'selected' : ''}>${c.nombre}</option>`).join('');
-            
-            document.getElementById('payment-modal-title').innerText = 'Editar Pago';
-            document.getElementById('payment-action-type').value = 'EDIT';
-            document.getElementById('payment-original-id').value = paymentId;
-            document.getElementById('pm-tipo').value = pago.tipo;
-            document.getElementById('pm-monto').value = pago.monto;
-            document.getElementById('pm-fecha-emision').value = pago.fechaEmision;
-            document.getElementById('pm-estado').value = pago.estado;
-            document.getElementById('pm-proyecto').value = pago.proyecto || '';
-            document.getElementById('pm-fecha-pago').value = pago.fechaPago || '';
-            
-            document.getElementById('payment-modal').classList.remove('hidden');
-        }
-
-        function openNewPaymentModal() {
-            const select = document.getElementById('pm-cliente');
-            if (dbClientes.length === 0) {
-                alert('Primero debes agregar clientes');
-                return;
-            }
-            select.innerHTML = dbClientes.map(c => `<option value="${c._uid}">${c.nombre}</option>`).join('');
-            
-            document.getElementById('payment-modal-title').innerText = 'Registrar Pago';
-            document.getElementById('payment-action-type').value = 'NEW';
-           ('calidad')" id="nav-calidad" class="w-full flex items-center space-x-3 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-400 hover:bg-slate-800/50 hover:text-slate-200 transition-all border-l-2 border-transparent">
+                        <button onclick="switchTab('calidad')" id="nav-calidad" class="nav-btn w-full flex items-center space-x-3 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-400 hover:bg-slate-800/50 hover:text-slate-200 border-l-2 border-transparent">
                             <i class="fa-solid fa-square-check w-5"></i><span>Auditoría de Calidad</span>
                         </button>
-                        <button onclick="switchTab('postventa')" id="nav-postventa" class="w-full flex items-center space-x-3 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-400 hover:bg-slate-800/50 hover:text-slate-200 transition-all border-l-2 border-transparent">
+                        <button onclick="switchTab('postventa')" id="nav-postventa" class="nav-btn w-full flex items-center space-x-3 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-400 hover:bg-slate-800/50 hover:text-slate-200 border-l-2 border-transparent">
                             <i class="fa-solid fa-clock-rotate-left w-5"></i><span>PostVenta</span>
                         </button>
-                        <button onclick="switchTab('explorer')" id="nav-explorer" class="w-full flex items-center space-x-3 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-400 hover:bg document.getElementById('payment-original-id').value = '';
-            document.getElementById('payment-form').reset();
-            document.getElementById('pm-fecha-emision').value = new Date().toISOString().split('T')[0];
-            document.getElementById('payment-modal').classList.remove('hidden');
-        }
-
-        function closePaymentModal() {
-            document.getElementById('payment-modal').classList.add('hidden');
-        }
-
-        async function savePayment(e) {
-            e.preventDefault();
-            const action = document.getElementById('payment-action-type').value;
-            const origId = document.getElementById('payment-original-id').value;
-            const estado = document.getElementById('pm-estado').value;
-            
-            const paymentData = {
-                clienteId: document.getElementById('pm-cliente').value,
-                tipo: document.getElementById('pm-tipo').value,
-                monto: parseInt(document.getElementById('pm-monto').value),
-                fechaEmision: document.getElementById('pm-fecha-emision').value,
-                estado: estado,
-                proyecto: document.getElementById('pm-proyecto').value,
-                fechaPago: estado === 'REALIZADO' ? (document.getElementById('pm-fecha-pago').value || new Date().toISOString().split('T')[0]) : ''
-            };
-
-            if (action === 'EDIT') {
-                const idx = dbPagos.findIndex(p => p._uid === origId);
-                if (idx !== -1) {
-                    dbPagos[idx] = { ...dbPagos[idx], ...paymentData };
-                    logEtl(`✓ Pago editado - Nuevo monto: $${paymentData.monto.toLocaleString('es-CL')}`);
-                }
-            } else {
-                paymentData._uid = `pago_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-                dbPagos.push(paymentData);
-                logEtl(`✓ Nuevo pago: $${paymentData.monto.toLocaleString('es-CL')}`);
-            }
-            
-            const saved = await saveDatabaseToStorage();
-            if (saved) {
-                closePaymentModal();
-                renderFacturacion();
-                updatePaymentKPIs();
-                update-slate-800/50 hover:text-slate-200 transition-all border-l-2 border-transparent">
+                        <button onclick="switchTab('explorer')" id="nav-explorer" class="nav-btn w-full flex items-center space-x-3 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-400 hover:bg-slate-800/50 hover:text-slate-200 border-l-2 border-transparent">
                             <i class="fa-solid fa-database w-5"></i><span>Explorador de Datos</span>
                         </button>
                     </nav>
                 </div>
                 <div class="p-4 border-t border-slate-800 mt-auto">
-                    <p class="text-xs font-bold text-slate-500 uppercase tracking-wider px-2">Soporte Técnico ETL</p>
-                    <button onclick="switchTab('etl')" id="nav-etl" class="w-full mt-3 flex items-center justify-between px-3 py-2 rounded-lg text-xs font-medium bg-slate-800/50 hover:bg-slate-800 text-slate-300 transition-all">
-                        <span class="flex items-center space-x-2"><i class="NotificationBadge();
-            }
-        }
-
-        // ========== ELIMINAR REGISTROS ==========
-        function openDeleteConfirm(type, id, name)fa-solid fa-gears text-indigo-40 {
-            document.getElementById('delete-target-id').value =0"></i><span>Linstelec Logs & Config</span></span>
-                        <i class id;
-            document.getElementById('delete-target-type').value = type;
-            document.getElementById('delete-target-name').innerText = name;
-            document.getElementById('delete-confirm-modal').classList.remove('hidden');
-        }
-
-        function closeDeleteModal() {
-            document.getElementById('delete-confirm-modal').classList.add('hidden');
-        }
-
-        async function confirmDelete() {
-            const type = document.getElementById('delete-target-type').value;
-            const id = document.getElementById('delete-target-id').value;
-            
-            if (type === 'client') {
-                dbClientes = dbClientes.filter(c => c._uid !== id);
-                logEtl("✓ Cliente eliminado");
-            } else if (type === 'payment') {
-                dbPagos = dbPagos.filter(p => p._uid !== id);
-                logEtl("✓ Pago eliminado");
-            } else if (type === 'project') {
-                dbProyectos = dbProyectos.filter(p => p._uid !== id);
-                logEtl("✓ Proyecto eliminado");
-            } else if (type === 'postventa') {
-                dbPostventa = dbPostventa.filter(p => p._uid !== id);
-                logEtl("✓ PostVenta eliminado");
-            }
-            
-            const saved = await saveDatabaseToStorage();
-            if (saved) {
-                closeDeleteModal();
-                renderClientes();
-                renderFacturacion();
-                renderTimeline();
-                renderQualityTable();
-                renderPostVenta();
-                triggerEtlExecution();
-            }
-        }
-
-        // ========== TIMELINE ==========="fa-solid fa-chevron-right text-slate-500"></i>
+                    <button onclick="switchTab('etl')" id="nav-etl" class="nav-btn w-full flex items-center justify-between px-3 py-2 rounded-lg text-xs font-medium bg-slate-800/50 hover:bg-slate-800 text-slate-300">
+                        <span class="flex items-center space-x-2"><i class="fa-solid fa-gears text-indigo-400"></i><span>Logs & Config</span></span>
+                        <i class="fa-solid fa-chevron-right text-slate-500"></i>
                     </button>
                 </div>
             </aside>
@@ -430,57 +136,21 @@
             <main class="flex-1 flex flex-col overflow-y-auto bg-slate-950 p-6">
                 <div class="bg-slate-900/50 border border-slate-800 rounded-xl p-4 mb-6 flex flex-wrap items-center justify-between gap-4">
                     <div class="flex items-center space-x-4 flex-wrap gap-2">
-                        <div class="flex items-center space-x-2">
-                            <i class="fa-solid fa-filter text-copec-orange text-sm"></i>
-                            <span class="text-xs font-bold uppercase text-slate-400">Filtros Activos:</span>
-                        </div>
-                        <select id="filter-origen" onchange="applyFilters()" class="bg-slate-800 border border-slate-700 text-slate-200 text-xs rounded-lg
-        function renderTimeline() {
-            const select = document.getElementById('timeline-cliente');
-            const clientesUnicos = [...new Set([...dbProyectos, ...dbPostventa].map(p => p.CLIENTE_PROYECTO))].filter(Boolean);
-            
-            // Actualizar select si está vacío
-            if (select.options.length <= 1) {
-                clientesUnicos.forEach(c => {
-                    const option = document.createElement('option');
-                    option.value = c;
-                    option.textContent = c;
-                    select.appendChild(option);
-                });
-            }
-            
-            const filterCliente = select.value;
-            let proyectos = [...dbProyectos, ...dbPostventa];
-            if (filterCliente !== 'ALL') {
-                proyectos = proyectos.filter(p => p.CLIENTE_PROYECTO === filterCliente);
-            }
-
-            proyectos.sort((a, b) => (a.Fecha || '').localeCompare(b.Fecha || ''));
-
-            const container = document.getElementById('timeline-container');
-            if (proyectos.length === 0) {
-                container.innerHTML = '<p class="text-slate-400 text-center py-8">No hay proyectos para mostrar</p>';
-                return;
-            }
-            container.innerHTML = proyectos.map(p => {
-                const estadoClass = p.ADMINIST === 'CERRADO' ? 'done' : p.ADMINIST === 'EJECUTANDO' ? 'pending' : '';
-                return `
-                    px-3 py-2 focus:ring-1 focus:ring-copec-orange focus:outline-none">
+                        <i class="fa-solid fa-filter text-copec-orange text-sm"></i>
+                        <select id="filter-origen" onchange="applyFilters()" class="bg-slate-800 border border-slate-700 text-slate-200 text-xs rounded-lg px-3 py-2">
                             <option value="ALL">Todas las Divisiones</option>
-                            <option value="VOLTEX">Copec Voltex (Proyectos)</option>
-                            <option value="FLUX">Flux (Proyectos)</option>
-                            <option value="PV">PostVenta (General)</option>
+                            <option value="VOLTEX">Copec Voltex</option>
+                            <option value="FLUX">Flux</option>
+                            <option value="PV">PostVenta</option>
                         </select>
-                        <select id="filter-estado" onchange="applyFilters()" class="bg-slate-800 border border-slate-700 text-slate-200 text-xs rounded-lg px-3 py-2 focus:ring-1 focus:ring-copec-orange focus:outline-none">
+                        <select id="filter-estado" onchange="applyFilters()" class="bg-slate-800 border border-slate-700 text-slate-200 text-xs rounded-lg px-3 py-2">
                             <option value="ALL">Todos los Estados</option>
                             <option value="CERRADO">CERRADO</option>
                             <option value="EDP">EDP</option>
                             <option value="EJECUTANDO">EJECUTANDO</option>
-                            <option value="NO APLICA">NO APLICA</option>
                         </select>
- <div class="timeline-item ${estadoClass}">
-                        <select id="filter-mes" onchange="applyFilters()" class="bg-slate-800 border border-slate-700 text-slate-200 text-xs rounded-lg px-3 py-2 focus:ring-1 focus:ring-copec-orange focus:outline-none">
-                            <option value="ALL">Histórico Completo</option>
+                        <select id="filter-mes" onchange="applyFilters()" class="bg-slate-800 border border-slate-700 text-slate-200 text-xs rounded-lg px-3 py-2">
+                            <option value="ALL">Todos los meses</option>
                             <option value="2026-01">Enero 2026</option>
                             <option value="2026-02">Febrero 2026</option>
                             <option value="2026-03">Marzo 2026</option>
@@ -501,13 +171,13 @@
                         <button onclick="syncToGoogleSheets()" class="px-3 py-2 bg-purple-600 hover:bg-purple-500 text-white rounded-lg text-xs font-bold flex items-center space-x-1.5">
                             <i class="fa-solid fa-cloud-arrow-up"></i><span>Sync Nube</span>
                         </button>
-                        <button onclick="triggerEtlExecution()" class="px-3 py-2 bg-gradient-to-r from-copec-orange to-amber-500 hover:from-copec-orangeHover text-white rounded-lg text-xs font-bold flex items-center space-x-1.5">
-                            <i class="fa-solid fa-arrows-rotate animate-spin" style="animation-duration: 3s;"></i><span>Recargar</span>
+                        <button onclick="triggerEtlExecution()" class="px-3 py-2 bg-gradient-to-r from-copec-orange to-amber-500 text-white rounded-lg text-xs font-bold flex items-center space-x-1.5">
+                            <i class="fa-solid fa-arrows-rotate"></i><span>Recargar</span>
                         </button>
                     </div>
                 </div>
 
-                <!-- TAB DASHBOARD -->
+                <!-- DASHBOARD -->
                 <div id="tab-dashboard" class="tab-content space-y-6">
                     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                         <div class="bg-slate-900/40 border border-slate-800 rounded-xl p-5">
@@ -539,33 +209,24 @@
                     </div>
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <div class="bg-emerald-500/10 border border-emerald-500/20 rounded-xl p-5">
-                            <div class="flex items-center justify-between mb-2">
-                                <p class="text-xs font-bold text-emerald-400 uppercase">Pagos Realizados (Mes)</p>
-                                <i class="fa-solid fa-circle-check text-emerald-400 text-2xl"></i>
-                            </div>
-                            <h3 class="text-3xl font-extrabold text-emerald-300" id="kpi-pagos-realizados">$0</h3>
-                            <p class="text-xs text-slate-400 mt-1" id="kpi-pagos-realizados-count">0 facturas pagadas</p>
+                            <p class="text-xs font-bold text-emerald-400 uppercase">Pagos Realizados</p>
+                            <h3 class="text-3xl font-extrabold mt-2 text-emerald-300" id="kpi-pagos-realizados">$0</h3>
+                            <p class="text-xs text-slate-400 mt-1" id="kpi-pagos-realizados-count">0 facturas</p>
                         </div>
                         <div class="bg-amber-500/10 border border-amber-500/20 rounded-xl p-5">
-                            <div class="flex items-center justify-between mb-2">
-                                <p class="text-xs font-bold text-amber-400 uppercase">Pagos Pendientes (Mes)</p>
-                                <i class="fa-solid fa-clock text-amber-400 text-2xl"></i>
-                            </div>
-                            <h3 class="text-3xl font-extrabold text-amber-300" id="kpi-pagos-pendientes">$0</h3>
-                            <p class="text-xs text-slate-400 mt-1" id="kpi-pagos-pendientes-count">0 facturas pendientes</p>
+                            <p class="text-xs font-bold text-amber-400 uppercase">Pagos Pendientes</p>
+                            <h3 class="text-3xl font-extrabold mt-2 text-amber-300" id="kpi-pagos-pendientes">$0</h3>
+                            <p class="text-xs text-slate-400 mt-1" id="kpi-pagos-pendientes-count">0 facturas</p>
                         </div>
                         <div class="bg-blue-500/10 border border-blue-500/20 rounded-xl p-5">
-                            <div class="flex items-center justify-between mb-2">
-                                <p class="text-xs font-bold text-blue-400 uppercase">Total Facturado (Mes)</p>
-                                <i class="fa-solid fa-file-invoice-dollar text-blue-400 text-2xl"></i>
-                            </div>
-                            <h3 class="text-3xl font-extrabold text-blue-300" id="kpi-total-facturado">$0</h3>
-                            <p class="text-xs text-slate-400 mt-1" id="kpi-total-facturado-count">0 servicios facturados</p>
+                            <p class="text-xs font-bold text-blue-400 uppercase">Total Facturado</p>
+                            <h3 class="text-3xl font-extrabold mt-2 text-blue-300" id="kpi-total-facturado">$0</h3>
+                            <p class="text-xs text-slate-400 mt-1" id="kpi-total-facturado-count">0 servicios</p>
                         </div>
                     </div>
                 </div>
 
-                <!-- TAB CLIENTES -->
+                <!-- CLIENTES -->
                 <div id="tab-clientes" class="tab-content space-y-6 hidden">
                     <div class="flex items-center justify-between mb-4">
                         <h3 class="font-bold text-lg text-white">Ficha de Clientes</h3>
@@ -579,7 +240,7 @@
                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" id="clientes-grid"></div>
                 </div>
 
-                <!-- TAB FACTURACIÓN -->
+                <!-- FACTURACIÓN -->
                 <div id="tab-facturacion" class="tab-content space-y-6 hidden">
                     <div class="flex items-center justify-between mb-4">
                         <h3 class="font-bold text-lg text-white">Módulo de Facturación</h3>
@@ -603,12 +264,11 @@
                             <thead class="bg-slate-900 text-xs font-bold text-slate-300 uppercase">
                                 <tr>
                                     <th class="p-3">Cliente</th>
-                                    <th class="p-3">Tipo Servicio</th>
+                                    <th class="p-3">Tipo</th>
                                     <th class="p-3">Proyecto</th>
                                     <th class="p-3">Monto</th>
-                                    <th class="p-3">Fecha Emisión</th>
-                                    <th class="p-3">Fecha Pago</th>
-                                    <th class="p-3 text-center">Estado</th>
+                                    <th class="p-3">Fecha</th>
+                                    <th class="p-3">Estado</th>
                                     <th class="p-3 text-center">Acciones</th>
                                 </tr>
                             </thead>
@@ -617,10 +277,10 @@
                     </div>
                 </div>
 
-                <!-- TAB TIMELINE -->
+                <!-- TIMELINE -->
                 <div id="tab-timeline" class="tab-content space-y-6 hidden">
                     <div class="flex items-center justify-between mb-4">
-                        <h3 class="font-bold text-lg text-white">Timeline Visual de Proyectos</h3>
+                        <h3 class="font-bold text-lg text-white">Timeline Visual</h3>
                         <select id="timeline-cliente" onchange="renderTimeline()" class="bg-slate-800 border border-slate-700 text-slate-200 text-xs rounded-lg px-3 py-2">
                             <option value="ALL">Todos los clientes</option>
                         </select>
@@ -628,7 +288,7 @@
                     <div id="timeline-container" class="space-y-6"></div>
                 </div>
 
-                <!-- TAB CALIDAD -->
+                <!-- CALIDAD -->
                 <div id="tab-calidad" class="tab-content space-y-6 hidden">
                     <div class="bg-slate-900/40 border border-slate-800 rounded-xl p-5">
                         <h3 class="font-bold text-lg text-white mb-4">Matriz de Auditoría Documental</h3>
@@ -656,7 +316,7 @@
                     </div>
                 </div>
 
-                <!-- TAB POSTVENTA -->
+                <!-- POSTVENTA -->
                 <div id="tab-postventa" class="tab-content space-y-6 hidden">
                     <div class="bg-slate-900/40 border border-slate-800 rounded-xl p-5">
                         <h3 class="font-bold text-lg text-white mb-4">PostVenta</h3>
@@ -677,12 +337,12 @@
                     </div>
                 </div>
 
-                <!-- TAB EXPLORER -->
+                <!-- EXPLORER -->
                 <div id="tab-explorer" class="tab-content space-y-6 hidden">
                     <div class="bg-slate-900/40 border border-slate-800 rounded-xl p-5">
                         <div class="flex items-center justify-between mb-4">
                             <h3 class="font-bold text-lg text-white">Explorador de Datos</h3>
-                            <button onclick="exportToCSV()" class="px-3 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg                        <div class="bg-slate-900 text-xs font-bold flex items-center space-x-1.5">
+                            <button onclick="exportToCSV()" class="px-3 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-xs font-bold flex items-center space-x-1.5">
                                 <i class="fa-solid fa-file-excel"></i><span>Exportar CSV</span>
                             </button>
                         </div>
@@ -704,7 +364,7 @@
                     </div>
                 </div>
 
-                <!-- TAB ETL -->
+                <!-- ETL -->
                 <div id="tab-etl" class="tab-content space-y-6 hidden">
                     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                         <div class="bg-slate-900/40 border border-slate-800 rounded-xl p-5 space-y-6">
@@ -724,7 +384,7 @@
                                 <h4 class="text-xs font-bold text-slate-300 uppercase">Carga Externa (CSV)</h4>
                                 <div class="border-2 border-dashed border-slate-700 hover:border-copec-orange/50 rounded-lg p-6 text-center cursor-pointer" id="drop-zone">
                                     <i class="fa-solid fa-cloud-arrow-up text-3xl text-slate-500 mb-2"></i>
-                                    <p class="text-xs font-semibold text-slate-300">Arrastra tu archivo CSV aquí</p>
+                                    <p class="text-xs font-semibold text-slate-300">Arrastra tu archivo CSV</p>
                                     <input type="file" id="csv-file-input" class="hidden" accept=".csv">
                                 </div>
                             </div>
@@ -742,7 +402,7 @@
         </div>
     </div>
 
-    <!-- MODAL: FICHA DE CLIENTE -->
+    <!-- MODAL CLIENTE -->
     <div id="client-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
         <div class="bg-slate-900 border border-slate-800 rounded-xl max-w-4xl w-full max-h-[90vh] flex flex-col overflow-hidden shadow-2xl">
             <div class="p-5 border-b border-slate-800 flex items-center justify-between">
@@ -753,7 +413,7 @@
         </div>
     </div>
 
-    <!-- MODAL: NUEVO CLIENTE -->
+    <!-- MODAL NUEVO CLIENTE -->
     <div id="new-client-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
         <div class="bg-slate-900 border border-slate-800 rounded-xl max-w-lg w-full max-h-[90vh] flex flex-col overflow-hidden shadow-2xl">
             <div class="p-5 border-b border-slate-800 flex items-center justify-between">
@@ -762,7 +422,7 @@
             </div>
             <form id="new-client-form" onsubmit="saveNewClient(event)" class="p-6 overflow-y-auto space-y-4 text-xs">
                 <div class="grid grid-cols-2 gap-4">
-                    <div><label class="block text-xs font-semibold text-slate-400 mb-1">Nombre / Razón Social *</label><input type="text" id="nc-nombre" required class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-slate-200"></div>
+                    <div><label class="block text-xs font-semibold text-slate-400 mb-1">Nombre *</label><input type="text" id="nc-nombre" required class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-slate-200"></div>
                     <div><label class="block text-xs font-semibold text-slate-400 mb-1">RUT</label><input type="text" id="nc-rut" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-slate-200"></div>
                     <div><label class="block text-xs font-semibold text-slate-400 mb-1">Email</label><input type="email" id="nc-email" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-slate-200"></div>
                     <div><label class="block text-xs font-semibold text-slate-400 mb-1">Teléfono</label><input type="tel" id="nc-telefono" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-slate-200"></div>
@@ -770,14 +430,14 @@
                     <div class="col-span-2"><label class="block text-xs font-semibold text-slate-400 mb-1">Persona de Contacto</label><input type="text" id="nc-contacto" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-slate-200"></div>
                 </div>
                 <div class="flex justify-end space-x-2 pt-4">
-                    <button type="button" onclick="closeNewClientModal()" class="px/40 border border-slate-80-4 py-2 bg-slate-800 text-slate-300 rounded-lg">Cancelar</button>
-                    <button type="submit" class="px-4 py-2 bg-gradient-to-r from-copec-orange to-amber-500 text-white font-bold rounded-lg">Guardar Cliente</button>
+                    <button type="button" onclick="closeNewClientModal()" class="px-4 py-2 bg-slate-800 text-slate-300 rounded-lg">Cancelar</button>
+                    <button type="submit" class="px-4 py-2 bg-gradient-to-r from-copec-orange to-amber-500 text-white font-bold rounded-lg">Guardar</button>
                 </div>
             </form>
         </div>
     </div>
 
-    <!-- MODAL: NUEVO PAGO / EDITAR PAGO -->
+    <!-- MODAL PAGO -->
     <div id="payment-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
         <div class="bg-slate-900 border border-slate-800 rounded-xl max-w-lg w-full max-h-[90vh] flex flex-col overflow-hidden shadow-2xl">
             <div class="p-5 border-b border-slate-800 flex items-center justify-between">
@@ -789,13 +449,13 @@
                 <input type="hidden" id="payment-original-id" value="">
                 <div><label class="block text-xs font-semibold text-slate-400 mb-1">Cliente *</label><select id="pm-cliente" required class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-slate-200"></select></div>
                 <div class="grid grid-cols-2 gap-4">
-                    <div><label class="block text-xs font-semibold text-slate-400 mb-1">Tipo Servicio *</label><select id="pm-tipo" required class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-slate-200"><option value="INSTALACION">Instalación</option><option value="POSTVENTA">PostVenta</option><option value="VISITA_TECNICA">Visita Técnica</option></select></div>
+                    <div><label class="block text-xs font-semibold text-slate-400 mb-1">Tipo *</label><select id="pm-tipo" required class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-slate-200"><option value="INSTALACION">Instalación</option><option value="POSTVENTA">PostVenta</option><option value="VISITA_TECNICA">Visita Técnica</option></select></div>
                     <div><label class="block text-xs font-semibold text-slate-400 mb-1">Monto (CLP) *</label><input type="number" id="pm-monto" required class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-slate-200"></div>
-                    <div><label class="block text-xs font-semibold text-slate-400 mb-1">Fecha Emisión *</label><input type="date" id="pm-fecha-emision" required class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-slate-200"></div>
+                    <div><label class="block text-xs font-semibold text-slate-400 mb-1">Fecha *</label><input type="date" id="pm-fecha-emision" required class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-slate-200"></div>
                     <div><label class="block text-xs font-semibold text-slate-400 mb-1">Estado *</label><select id="pm-estado" required class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-slate-200"><option value="PENDIENTE">Pendiente</option><option value="REALIZADO">Realizado</option></select></div>
                 </div>
-                <div><label class="block text-xs font-semibold text-slate-400 mb-1">Proyecto Asociado</label><input type="text" id="pm-proyecto" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-slate-200"></div>
-                <div><label class="block text-xs font-semibold text-slate-400 mb-1">Fecha de Pago (si está realizado)</label><input type="date" id="pm-fecha-pago" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-slate-200"></div>
+                <div><label class="block text-xs font-semibold text-slate-400 mb-1">Proyecto</label><input type="text" id="pm-proyecto" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-slate-200"></div>
+                <div><label class="block text-xs font-semibold text-slate-400 mb-1">Fecha de Pago</label><input type="date" id="pm-fecha-pago" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-slate-200"></div>
                 <div class="flex justify-end space-x-2 pt-4">
                     <button type="button" onclick="closePaymentModal()" class="px-4 py-2 bg-slate-800 text-slate-300 rounded-lg">Cancelar</button>
                     <button type="submit" class="px-4 py-2 bg-gradient-to-r from-copec-orange to-amber-500 text-white font-bold rounded-lg">Guardar</button>
@@ -804,16 +464,16 @@
         </div>
     </div>
 
-    <!-- MODAL: NOTIFICACIONES -->
+    <!-- MODAL NOTIFICACIONES -->
     <div id="notifications-panel" class="fixed top-20 right-6 w-96 max-h-[600px] bg-slate-900 border border-slate-800 rounded-xl shadow-2xl z-50 hidden overflow-hidden">
         <div class="p-4 border-b border-slate-800 flex items-center justify-between">
-            <h3 class="font-bold text-sm text-white">Notificaciones del Mes</h3>
+            <h3 class="font-bold text-sm text-white">Notificaciones</h3>
             <button onclick="closeNotificationsPanel()" class="text-slate-400 hover:text-slate-200"><i class="fa-solid fa-xmark"></i></button>
         </div>
         <div class="overflow-y-auto max-h-[500px] p-4 space-y-2" id="notifications-content"></div>
     </div>
 
-    <!-- MODAL: FORMULARIO REGISTRO -->
+    <!-- MODAL FORMULARIO -->
     <div id="form-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
         <div class="bg-slate-900 border border-slate-800 rounded-xl max-w-lg w-full max-h-[90vh] flex flex-col overflow-hidden shadow-2xl">
             <div class="p-5 border-b border-slate-800 flex items-center justify-between">
@@ -824,7 +484,7 @@
                 <input type="hidden" id="form-action-type" value="NEW">
                 <input type="hidden" id="form-original-id" value="">
                 <div class="grid grid-cols-2 gap-4">
-                    <div><label class="block text-xs font-semibold text-slate-400 mb-1">ID Único *</label><input type="text" id="form-id" required class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-slate-200"></div>
+                    <div><label class="block text-xs font-semibold text-slate-400 mb-1">ID *</label><input type="text" id="form-id" required class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-slate-200"></div>
                     <div><label class="block text-xs font-semibold text-slate-400 mb-1">Origen *</label><select id="form-origen" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-slate-200"><option value="VOLTEX">VOLTEX</option><option value="FLUX">FLUX</option><option value="VOLTEX-PV">VOLTEX-PV</option><option value="FLUX-PV">FLUX-PV</option></select></div>
                 </div>
                 <div><label class="block text-xs font-semibold text-slate-400 mb-1">Cliente / Proyecto *</label><input type="text" id="form-cliente" required class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-slate-200"></div>
@@ -833,7 +493,7 @@
                     <div><label class="block text-xs font-semibold text-slate-400 mb-1">Estado *</label><select id="form-administ" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-slate-200"><option value="EJECUTANDO">EJECUTANDO</option><option value="EDP">EDP</option><option value="CERRADO">CERRADO</option></select></div>
                 </div>
                 <div class="border-t border-slate-800 pt-4">
-                    <h4 class="text-xs font-bold text-slate-300 uppercase mb-3">Checklist Documental</h4>
+                    <h4 class="text-xs font-bold text-slate-300 uppercase mb-3">Checklist</h4>
                     <div class="grid grid-cols-2 gap-3">
                         <div class="flex items-center space-x-2"><input type="checkbox" id="form-plano" class="rounded bg-slate-800 border-slate-700 text-copec-orange"><label class="text-xs text-slate-300">01 Plano</label></div>
                         <div class="flex items-center space-x-2"><input type="checkbox" id="form-memoria" class="rounded bg-slate-800 border-slate-700 text-copec-orange"><label class="text-xs text-slate-300">02 Memoria</label></div>
@@ -849,14 +509,14 @@
         </div>
     </div>
 
-    <!-- MODAL: CONFIRMAR ELIMINACIÓN -->
+    <!-- MODAL ELIMINAR -->
     <div id="delete-confirm-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
         <div class="bg-slate-900 border border-slate-800 rounded-xl max-w-sm w-full p-6 shadow-2xl space-y-4">
             <div class="flex items-center space-x-3 text-rose-500">
                 <i class="fa-solid fa-triangle-exclamation text-2xl"></i>
-                <h3 class="font-bold text-base text-white">¿Eliminar Registro?</h3>
+                <h3 class="font-bold text-base text-white">¿Eliminar?</h3>
             </div>
-            <p class="text-xs text-slate-300">Esta acción eliminará permanentemente el registro <span id="delete-target-name" class="font-bold text-white"></span>. ¿Estás seguro?</p>
+            <p class="text-xs text-slate-300">Se eliminará <span id="delete-target-name" class="font-bold text-white"></span></p>
             <input type="hidden" id="delete-target-id" value="">
             <input type="hidden" id="delete-target-type" value="">
             <div class="flex items-center justify-end space-x-2 pt-2">
@@ -866,7 +526,7 @@
         </div>
     </div>
 
-    <!-- MODAL: IMPORTAR EXCEL -->
+    <!-- MODAL IMPORTAR -->
     <div id="import-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
         <div class="bg-slate-900 border border-slate-800 rounded-xl max-w-2xl w-full max-h-[90vh] flex flex-col overflow-hidden shadow-2xl">
             <div class="p-5 border-b border-slate-800 flex items-center justify-between">
@@ -876,12 +536,11 @@
             <div class="p-6 overflow-y-auto space-y-4">
                 <div class="border-2 border-dashed border-slate-700 rounded-lg p-8 text-center">
                     <i class="fa-solid fa-file-arrow-up text-4xl text-slate-500 mb-3"></i>
-                    <p class="text-sm font-semibold text-slate-300 mb-2">Arrastra tu archivo Excel aquí</p>
+                    <p class="text-sm font-semibold text-slate-300 mb-2">Arrastra tu archivo Excel</p>
                     <input type="file" id="excel-file-input" accept=".xlsx,.xls" class="hidden">
                     <button onclick="document.getElementById('excel-file-input').click()" class="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-lg text-xs font-bold">Seleccionar</button>
                 </div>
                 <div id="import-preview" class="hidden"></div>
-                <div id="import-status" class="hidden"></div>
             </div>
         </div>
     </div>
@@ -928,7 +587,7 @@
     </script>
 
     <script>
-        // ========== ESTADO GLOBAL - BASE DE DATOS VACÍA ==========
+        // ========== ESTADO ==========
         let dbProyectos = [];
         let dbPostventa = [];
         let dbClientes = [];
@@ -937,13 +596,11 @@
         let filteredPostventa = [];
         let chartMensualInstance = null;
         let chartOrigenInstance = null;
-        let uidCounter = 1;
         let gsScriptUrl = localStorage.getItem('gs_script_url') || '';
         let dataLoaded = false;
 
-        // ========== INICIALIZACIÓN ==========
         window.onload = function() {
-            logEtl("SISTEMA INICIADO - Base de datos vacía lista para usar");
+            logEtl("SISTEMA INICIADO");
             if (gsScriptUrl) {
                 document.getElementById('gs-script-url').value = gsScriptUrl;
                 document.getElementById('gs-status').classList.remove('hidden');
@@ -956,16 +613,11 @@
             if (dataLoaded) return;
             logEtl("CONECTANDO A FIREBASE...");
             try {
-                const proyectosRef = window.fbRef(window.fbDatabase, 'copec_db_proyectos');
-                const postventaRef = window.fbRef(window.fbDatabase, 'copec_db_postventa');
-                const clientesRef = window.fbRef(window.fbDatabase, 'copec_db_clientes');
-                const pagosRef = window.fbRef(window.fbDatabase, 'copec_db_pagos');
-
                 const [proyectosSnap, postventaSnap, clientesSnap, pagosSnap] = await Promise.all([
-                    window.fbGet(proyectosRef),
-                    window.fbGet(postventaRef),
-                    window.fbGet(clientesRef),
-                    window.fbGet(pagosRef)
+                    window.fbGet(window.fbRef(window.fbDatabase, 'copec_db_proyectos')),
+                    window.fbGet(window.fbRef(window.fbDatabase, 'copec_db_postventa')),
+                    window.fbGet(window.fbRef(window.fbDatabase, 'copec_db_clientes')),
+                    window.fbGet(window.fbRef(window.fbDatabase, 'copec_db_pagos'))
                 ]);
 
                 dbProyectos = proyectosSnap.val() ? Object.values(proyectosSnap.val()) : [];
@@ -973,11 +625,10 @@
                 dbClientes = clientesSnap.val() ? Object.values(clientesSnap.val()) : [];
                 dbPagos = pagosSnap.val() ? Object.values(pagosSnap.val()) : [];
 
-                // Asegurar que todos tengan _uid
-                dbProyectos.forEach(p => { if (!p._uid) p._uid = `proj_${uidCounter++}`; });
-                dbPostventa.forEach(pv => { if (!pv._uid) pv._uid = `pv_${uidCounter++}`; });
-                dbClientes.forEach(c => { if (!c._uid) c._uid = `client_${uidCounter++}`; });
-                dbPagos.forEach(p => { if (!p._uid) p._uid = `pago_${uidCounter++}`; });
+                dbProyectos.forEach(p => { if (!p._uid) p._uid = `proj_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`; });
+                dbPostventa.forEach(pv => { if (!pv._uid) pv._uid = `pv_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`; });
+                dbClientes.forEach(c => { if (!c._uid) c._uid = `client_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`; });
+                dbPagos.forEach(p => { if (!p._uid) p._uid = `pago_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`; });
 
                 logEtl(`✅ Cargados: ${dbProyectos.length} proyectos, ${dbPostventa.length} postventa, ${dbClientes.length} clientes, ${dbPagos.length} pagos`);
                 dataLoaded = true;
@@ -1007,16 +658,19 @@
                     window.fbSet(window.fbRef(window.fbDatabase, 'copec_db_pagos'), pagosObj)
                 ]);
 
+                const now = new Date();
+                const formattedDate = `${String(now.getDate()).padStart(2, '0')}/${String(now.getMonth() + 1).padStart(2, '0')}/${now.getFullYear()} ${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+                document.getElementById('header-last-modified').innerText = `Modificado: ${formattedDate}`;
                 logEtl("✓ Datos guardados en Firebase");
                 return true;
             } catch (error) {
-                logEtl("❌ Error guardando: " + error.message);
-                alert('Error al guardar en Firebase: ' + error.message);
+                logEtl("❌ Error: " + error.message);
+                alert('Error al guardar: ' + error.message);
                 return false;
             }
         }
 
-        // ========== GOOGLE SHEETS SYNC ==========
+        // ========== GOOGLE SHEETS ==========
         function saveGoogleSheetsConfig() {
             const url = document.getElementById('gs-script-url').value.trim();
             if (!url) { alert('Ingresa la URL'); return; }
@@ -1029,7 +683,7 @@
 
         async function syncToGoogleSheets() {
             if (!gsScriptUrl) { alert('Configura la URL primero'); switchTab('etl'); return; }
-            logEtl("🔄 Sincronizando con Google Sheets...");
+            logEtl("🔄 Sincronizando...");
             try {
                 const allData = [
                     ...dbProyectos.map(p => ({...p, _tipo: 'Proyecto'})),
@@ -1054,11 +708,11 @@
         function switchTab(tabId) {
             document.querySelectorAll('.tab-content').forEach(tab => tab.classList.add('hidden'));
             document.getElementById(`tab-${tabId}`).classList.remove('hidden');
-            document.querySelectorAll('aside nav button').forEach(btn => {
-                btn.className = "w-full flex items-center space-x-3 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-400 hover:bg-slate-800/50 hover:text-slate-200 transition-all border-l-2 border-transparent";
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                btn.className = "nav-btn w-full flex items-center space-x-3 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-400 hover:bg-slate-800/50 hover:text-slate-200 border-l-2 border-transparent";
             });
             const activeBtn = document.getElementById(`nav-${tabId}`);
-            if (activeBtn) activeBtn.className = "w-full flex items-center space-x-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all bg-gradient-to-r from-copec-orange/20 to-transparent text-copec-orange border-l-2 border-copec-orange";
+            if (activeBtn) activeBtn.className = "nav-btn w-full flex items-center space-x-3 px-3 py-2.5 rounded-lg text-sm font-medium bg-gradient-to-r from-copec-orange/20 to-transparent text-copec-orange border-l-2 border-copec-orange";
             
             if (tabId === 'clientes') renderClientes();
             if (tabId === 'facturacion') renderFacturacion();
@@ -1082,16 +736,14 @@
                 const matchOrigin = (originVal === 'ALL') || (p.ORIGEN === originVal);
                 const matchEstado = (estadoVal === 'ALL') || (p.ADMINIST === estadoVal);
                 const pMonth = p.Fecha ? p.Fecha.substring(0, 7) : '';
-                const matchMes = (mesVal === 'ALL') || (pMonth === mesVal);
-                return matchOrigin && matchEstado && matchMes;
+                return matchOrigin && matchEstado && ((mesVal === 'ALL') || (pMonth === mesVal));
             });
 
             filteredPostventa = dbPostventa.filter(pv => {
                 const isPV = originVal === 'ALL' || originVal === 'PV' || pv.ORIGEN.includes(originVal);
                 const matchEstado = (estadoVal === 'ALL') || (pv.ADMINIST === estadoVal);
                 const pvMonth = pv.Fecha ? pv.Fecha.substring(0, 7) : '';
-                const matchMes = (mesVal === 'ALL') || (pvMonth === mesVal);
-                return isPV && matchEstado && matchMes;
+                return isPV && matchEstado && ((mesVal === 'ALL') || (pvMonth === mesVal));
             });
 
             renderKPIs();
@@ -1110,31 +762,26 @@
         function renderKPIs() {
             const grandTotal = filteredProyectos.length + filteredPostventa.length;
             document.getElementById('kpi-total-servicios').innerText = grandTotal;
-            const totalClosed = [...filteredProyectos, ...filteredPostventa].filter(r => r.ADMINIST === 'CERRADO').length;
-            document.getElementById('kpi-total-cerrados').innerText = totalClosed;
+            document.getElementById('kpi-total-cerrados').innerText = [...filteredProyectos, ...filteredPostventa].filter(r => r.ADMINIST === 'CERRADO').length;
             document.getElementById('kpi-total-edp').innerText = [...filteredProyectos, ...filteredPostventa].filter(r => r.ADMINIST === 'EDP').length;
             document.getElementById('kpi-total-ejecutando').innerText = [...filteredProyectos, ...filteredPostventa].filter(r => r.ADMINIST === 'EJECUTANDO').length;
         }
 
         function updatePaymentKPIs() {
-            const currentMonth = new Date().toISOString().substring(0, 7);
-            const pagosMes = dbPagos.filter(p => p.fechaEmision && p.fechaEmision.startsWith(currentMonth));
-            const realizados = pagosMes.filter(p => p.estado === 'REALIZADO');
-            const pendientes = pagosMes.filter(p => p.estado === 'PENDIENTE');
-            
+            const realizados = dbPagos.filter(p => p.estado === 'REALIZADO');
+            const pendientes = dbPagos.filter(p => p.estado === 'PENDIENTE');
             const totalRealizado = realizados.reduce((sum, p) => sum + (parseInt(p.monto) || 0), 0);
             const totalPendiente = pendientes.reduce((sum, p) => sum + (parseInt(p.monto) || 0), 0);
-            const totalFacturado = totalRealizado + totalPendiente;
-
+            
             document.getElementById('kpi-pagos-realizados').innerText = `$${totalRealizado.toLocaleString('es-CL')}`;
-            document.getElementById('kpi-pagos-realizados-count').innerText = `${realizados.length} facturas pagadas`;
+            document.getElementById('kpi-pagos-realizados-count').innerText = `${realizados.length} facturas`;
             document.getElementById('kpi-pagos-pendientes').innerText = `$${totalPendiente.toLocaleString('es-CL')}`;
-            document.getElementById('kpi-pagos-pendientes-count').innerText = `${pendientes.length} facturas pendientes`;
-            document.getElementById('kpi-total-facturado').innerText = `$${totalFacturado.toLocaleString('es-CL')}`;
-            document.getElementById('kpi-total-facturado-count').innerText = `${pagosMes.length} servicios facturados`;
+            document.getElementById('kpi-pagos-pendientes-count').innerText = `${pendientes.length} facturas`;
+            document.getElementById('kpi-total-facturado').innerText = `$${(totalRealizado + totalPendiente).toLocaleString('es-CL')}`;
+            document.getElementById('kpi-total-facturado-count').innerText = `${dbPagos.length} servicios`;
         }
 
-        // ========== GRÁFICOS CON COLORES ==========
+        // ========== GRÁFICOS ==========
         function renderCharts() {
             const months = ['2026-01', '2026-02', '2026-03', '2026-04', '2026-05', '2026-06'];
             const voltexData = months.map(m => filteredProyectos.filter(p => p.ORIGEN === 'VOLTEX' && p.Fecha && p.Fecha.startsWith(m)).length);
@@ -1172,24 +819,19 @@
             });
         }
 
-        // ========== FICHA DE CLIENTES ==========
+        // ========== CLIENTES ==========
         function renderClientes() {
             const grid = document.getElementById('clientes-grid');
             const searchTerm = (document.getElementById('cliente-search').value || '').toLowerCase();
-            
-            const clientesFiltrados = dbClientes.filter(c => 
-                c.nombre.toLowerCase().includes(searchTerm)
-            );
+            const clientesFiltrados = dbClientes.filter(c => c.nombre.toLowerCase().includes(searchTerm));
 
             if (clientesFiltrados.length === 0) {
-                grid.innerHTML = '<p class="text-slate-400 text-center col-span-3 py-8">No hay clientes registrados. Agrega uno nuevo.</p>';
+                grid.innerHTML = '<p class="text-slate-400 text-center col-span-3 py-8">No hay clientes. Agrega uno nuevo.</p>';
                 return;
             }
 
             grid.innerHTML = clientesFiltrados.map(c => {
-                const proyectosCliente = [...dbProyectos, ...dbPostventa].filter(p => 
-                    (p.CLIENTE_PROYECTO || '').toLowerCase() === c.nombre.toLowerCase()
-                );
+                const proyectosCliente = [...dbProyectos, ...dbPostventa].filter(p => (p.CLIENTE_PROYECTO || '').toLowerCase() === c.nombre.toLowerCase());
                 const pagosCliente = dbPagos.filter(p => p.clienteId === c._uid);
                 const totalPagado = pagosCliente.filter(p => p.estado === 'REALIZADO').reduce((sum, p) => sum + (parseInt(p.monto) || 0), 0);
                 const totalPendiente = pagosCliente.filter(p => p.estado === 'PENDIENTE').reduce((sum, p) => sum + (parseInt(p.monto) || 0), 0);
@@ -1210,14 +852,8 @@
                             <div class="flex items-center text-slate-400"><i class="fa-solid fa-folder w-5"></i>${proyectosCliente.length} proyectos</div>
                         </div>
                         <div class="mt-3 pt-3 border-t border-slate-800 grid grid-cols-2 gap-2">
-                            <div class="text-center">
-                                <p class="text-[10px] text-emerald-400 uppercase">Pagado</p>
-                                <p class="text-sm font-bold text-emerald-300">$${totalPagado.toLocaleString('es-CL')}</p>
-                            </div>
-                            <div class="text-center">
-                                <p class="text-[10px] text-amber-400 uppercase">Pendiente</p>
-                                <p class="text-sm font-bold text-amber-300">$${totalPendiente.toLocaleString('es-CL')}</p>
-                            </div>
+                            <div class="text-center"><p class="text-[10px] text-emerald-400 uppercase">Pagado</p><p class="text-sm font-bold text-emerald-300">$${totalPagado.toLocaleString('es-CL')}</p></div>
+                            <div class="text-center"><p class="text-[10px] text-amber-400 uppercase">Pendiente</p><p class="text-sm font-bold text-amber-300">$${totalPendiente.toLocaleString('es-CL')}</p></div>
                         </div>
                     </div>
                 `;
@@ -1228,9 +864,7 @@
             const cliente = dbClientes.find(c => c._uid === clientId);
             if (!cliente) { alert('Cliente no encontrado'); return; }
             
-            const proyectosCliente = [...dbProyectos, ...dbPostventa].filter(p => 
-                (p.CLIENTE_PROYECTO || '').toLowerCase() === cliente.nombre.toLowerCase()
-            );
+            const proyectosCliente = [...dbProyectos, ...dbPostventa].filter(p => (p.CLIENTE_PROYECTO || '').toLowerCase() === cliente.nombre.toLowerCase());
             const pagosCliente = dbPagos.filter(p => p.clienteId === clientId);
             const totalPagado = pagosCliente.filter(p => p.estado === 'REALIZADO').reduce((sum, p) => sum + (parseInt(p.monto) || 0), 0);
             const totalPendiente = pagosCliente.filter(p => p.estado === 'PENDIENTE').reduce((sum, p) => sum + (parseInt(p.monto) || 0), 0);
@@ -1248,50 +882,35 @@
                             <div class="flex items-center"><i class="fa-solid fa-location-dot w-6 text-copec-orange"></i><span class="text-slate-200">${cliente.direccion || 'Sin dirección'}</span></div>
                         </div>
                         <button onclick="editClient('${cliente._uid}')" class="mt-4 w-full px-3 py-2 bg-copec-orange hover:bg-copec-orangeHover text-white rounded-lg text-xs font-bold">
-                            <i class="fa-solid fa-pen-to-square mr-1"></i>Editar Datos
+                            <i class="fa-solid fa-pen-to-square mr-1"></i>Editar
                         </button>
                     </div>
                     <div class="bg-slate-800/30 p-4 rounded-xl">
                         <h4 class="text-xs font-bold text-slate-300 uppercase mb-3">Estado de Cuenta</h4>
                         <div class="space-y-3">
-                            <div class="flex justify-between items-center p-3 bg-emerald-500/10 rounded-lg">
-                                <span class="text-xs text-emerald-400 font-bold">TOTAL PAGADO</span>
-                                <span class="text-xl font-extrabold text-emerald-300">$${totalPagado.toLocaleString('es-CL')}</span>
-                            </div>
-                            <div class="flex justify-between items-center p-3 bg-amber-500/10 rounded-lg">
-                                <span class="text-xs text-amber-400 font-bold">TOTAL PENDIENTE</span>
-                                <span class="text-xl font-extrabold text-amber-300">$${totalPendiente.toLocaleString('es-CL')}</span>
-                            </div>
-                            <div class="flex justify-between items-center p-3 bg-blue-500/10 rounded-lg">
-                                <span class="text-xs text-blue-400 font-bold">TOTAL FACTURADO</span>
-                                <span class="text-xl font-extrabold text-blue-300">$${(totalPagado + totalPendiente).toLocaleString('es-CL')}</span>
-                            </div>
+                            <div class="flex justify-between items-center p-3 bg-emerald-500/10 rounded-lg"><span class="text-xs text-emerald-400 font-bold">PAGADO</span><span class="text-xl font-extrabold text-emerald-300">$${totalPagado.toLocaleString('es-CL')}</span></div>
+                            <div class="flex justify-between items-center p-3 bg-amber-500/10 rounded-lg"><span class="text-xs text-amber-400 font-bold">PENDIENTE</span><span class="text-xl font-extrabold text-amber-300">$${totalPendiente.toLocaleString('es-CL')}</span></div>
+                            <div class="flex justify-between items-center p-3 bg-blue-500/10 rounded-lg"><span class="text-xs text-blue-400 font-bold">TOTAL</span><span class="text-xl font-extrabold text-blue-300">$${(totalPagado + totalPendiente).toLocaleString('es-CL')}</span></div>
                         </div>
                     </div>
                 </div>
                 <div>
                     <h4 class="text-xs font-bold text-slate-300 uppercase mb-3">Proyectos (${proyectosCliente.length})</h4>
                     <div class="space-y-2">
-                        ${proyectosCliente.length === 0 ? '<p class="text-xs text-slate-500">Sin proyectos registrados</p>' : proyectosCliente.map(p => `
+                        ${proyectosCliente.length === 0 ? '<p class="text-xs text-slate-500">Sin proyectos</p>' : proyectosCliente.map(p => `
                             <div class="bg-slate-800/30 p-3 rounded-lg flex items-center justify-between">
-                                <div>
-                                    <p class="text-sm font-bold text-slate-200">${p.ID}</p>
-                                    <p class="text-xs text-slate-400">${p.Fecha || 'Sin fecha'} - ${p.ORIGEN}</p>
-                                </div>
+                                <div><p class="text-sm font-bold text-slate-200">${p.ID}</p><p class="text-xs text-slate-400">${p.Fecha || 'Sin fecha'} - ${p.ORIGEN}</p></div>
                                 <span class="px-2 py-1 rounded-full text-[10px] font-bold ${p.ADMINIST === 'CERRADO' ? 'bg-emerald-500/10 text-emerald-400' : p.ADMINIST === 'EDP' ? 'bg-amber-500/10 text-amber-400' : 'bg-blue-500/10 text-blue-400'}">${p.ADMINIST}</span>
                             </div>
                         `).join('')}
                     </div>
                 </div>
                 <div>
-                    <h4 class="text-xs font-bold text-slate-300 uppercase mb-3">Historial de Pagos (${pagosCliente.length})</h4>
+                    <h4 class="text-xs font-bold text-slate-300 uppercase mb-3">Pagos (${pagosCliente.length})</h4>
                     <div class="space-y-2">
-                        ${pagosCliente.length === 0 ? '<p class="text-xs text-slate-500">Sin pagos registrados</p>' : pagosCliente.map(p => `
+                        ${pagosCliente.length === 0 ? '<p class="text-xs text-slate-500">Sin pagos</p>' : pagosCliente.map(p => `
                             <div class="bg-slate-800/30 p-3 rounded-lg flex items-center justify-between">
-                                <div>
-                                    <p class="text-sm font-bold text-slate-200">${p.tipo} - $${(parseInt(p.monto) || 0).toLocaleString('es-CL')}</p>
-                                    <p class="text-xs text-slate-400">${p.fechaEmision} ${p.fechaPago ? '→ Pago: ' + p.fechaPago : ''}</p>
-                                </div>
+                                <div><p class="text-sm font-bold text-slate-200">${p.tipo} - $${(parseInt(p.monto) || 0).toLocaleString('es-CL')}</p><p class="text-xs text-slate-400">${p.fechaEmision}</p></div>
                                 <div class="flex items-center space-x-2">
                                     <span class="px-2 py-1 rounded-full text-[10px] font-bold ${p.estado === 'REALIZADO' ? 'bg-emerald-500/10 text-emerald-400' : 'bg-amber-500/10 text-amber-400'}">${p.estado}</span>
                                     <button onclick="editPayment('${p._uid}')" class="text-slate-400 hover:text-copec-orange"><i class="fa-solid fa-pen-to-square"></i></button>
@@ -1305,17 +924,14 @@
             document.getElementById('client-modal').classList.remove('hidden');
         }
 
-        function closeClientModal() {
-            document.getElementById('client-modal').classList.add('hidden');
-        }
+        function closeClientModal() { document.getElementById('client-modal').classList.add('hidden'); }
 
         function editClient(clientId) {
             const cliente = dbClientes.find(c => c._uid === clientId);
             if (!cliente) { alert('Cliente no encontrado'); return; }
             
             document.getElementById('client-modal-title').innerText = `Editar: ${cliente.nombre}`;
-            document0 rounded-xl p-4">
-                            <div class.getElementById('client-modal-content').innerHTML = `
+            document.getElementById('client-modal-content').innerHTML = `
                 <form onsubmit="updateClient(event, '${clientId}')" class="space-y-4">
                     <div class="grid grid-cols-2 gap-4">
                         <div><label class="block text-xs font-semibold text-slate-400 mb-1">Nombre</label><input type="text" id="edit-nombre" value="${cliente.nombre}" required class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-slate-200"></div>
@@ -1323,11 +939,11 @@
                         <div><label class="block text-xs font-semibold text-slate-400 mb-1">Email</label><input type="email" id="edit-email" value="${cliente.email || ''}" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-slate-200"></div>
                         <div><label class="block text-xs font-semibold text-slate-400 mb-1">Teléfono</label><input type="tel" id="edit-telefono" value="${cliente.telefono || ''}" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-slate-200"></div>
                         <div class="col-span-2"><label class="block text-xs font-semibold text-slate-400 mb-1">Dirección</label><input type="text" id="edit-direccion" value="${cliente.direccion || ''}" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-slate-200"></div>
-                        <div class="col-span-2"><label class="block text-xs font-semibold text-slate-400 mb-1">Persona de Contacto</label><input type="text" id="edit-contacto" value="${cliente.contacto || ''}" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-slate-200"></div>
+                        <div class="col-span-2"><label class="block text-xs font-semibold text-slate-400 mb-1">Contacto</label><input type="text" id="edit-contacto" value="${cliente.contacto || ''}" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-slate-200"></div>
                     </div>
                     <div class="flex justify-end space-x-2 pt-4">
                         <button type="button" onclick="openClientDetail('${clientId}')" class="px-4 py-2 bg-slate-800 text-slate-300 rounded-lg">Cancelar</button>
-                        <button type="submit" class="px-4 py-2 bg-gradient-to-r from-copec-orange to-amber-500 text-white font-bold rounded-lg">Guardar Cambios</button>
+                        <button type="submit" class="px-4 py-2 bg-gradient-to-r from-copec-orange to-amber-500 text-white font-bold rounded-lg">Guardar</button>
                     </div>
                 </form>
             `;
@@ -1356,14 +972,8 @@
             }
         }
 
-        function openNewClientModal() {
-            document.getElementById('new-client-modal').classList.remove('hidden');
-        }
-
-        function closeNewClientModal() {
-            document.getElementById('new-client-modal').classList.add('hidden');
-            document.getElementById('new-client-form').reset();
-        }
+        function openNewClientModal() { document.getElementById('new-client-modal').classList.remove('hidden'); }
+        function closeNewClientModal() { document.getElementById('new-client-modal').classList.add('hidden'); document.getElementById('new-client-form').reset(); }
 
         async function saveNewClient(e) {
             e.preventDefault();
@@ -1385,7 +995,7 @@
             }
         }
 
-        // ========== FACTURACIÓN CON TOTALES POR CLIENTE ==========
+        // ========== FACTURACIÓN ==========
         function renderFacturacion() {
             const filterCliente = document.getElementById('filter-pago-cliente').value;
             const filterEstado = document.getElementById('filter-pago-estado').value;
@@ -1393,14 +1003,10 @@
             const resumenDiv = document.getElementById('facturacion-resumen');
             
             let pagosFiltrados = dbPagos;
-            if (filterCliente !== 'ALL') {
-                pagosFiltrados = dbPagos.filter(p => p.clienteId === filterCliente);
-            }
-            if (filterEstado !== 'ALL') {
-                pagosFiltrados = pagosFiltrados.filter(p => p.estado === filterEstado);
-            }
+            if (filterCliente !== 'ALL') pagosFiltrados = dbPagos.filter(p => p.clienteId === filterCliente);
+            if (filterEstado !== 'ALL') pagosFiltrados = pagosFiltrados.filter(p => p.estado === filterEstado);
 
-            // Calcular totales por cliente
+            // Totales por cliente
             const totalesPorCliente = {};
             dbClientes.forEach(c => {
                 const pagosCliente = dbPagos.filter(p => p.clienteId === c._uid);
@@ -1408,19 +1014,11 @@
                 const totalPostventa = pagosCliente.filter(p => p.tipo === 'POSTVENTA').reduce((sum, p) => sum + (parseInt(p.monto) || 0), 0);
                 const totalVisita = pagosCliente.filter(p => p.tipo === 'VISITA_TECNICA').reduce((sum, p) => sum + (parseInt(p.monto) || 0), 0);
                 const totalGeneral = totalInstalacion + totalPostventa + totalVisita;
-                
                 if (totalGeneral > 0) {
-                    totalesPorCliente[c._uid] = {
-                        nombre: c.nombre,
-                        instalacion: totalInstalacion,
-                        postventa: totalPostventa,
-                        visita: totalVisita,
-                        total: totalGeneral
-                    };
+                    totalesPorCliente[c._uid] = { nombre: c.nombre, instalacion: totalInstalacion, postventa: totalPostventa, visita: totalVisita, total: totalGeneral };
                 }
             });
 
-            // Mostrar resumen
             if (Object.keys(totalesPorCliente).length > 0) {
                 resumenDiv.innerHTML = Object.entries(totalesPorCliente).map(([id, data]) => `
                     <div class="bg-slate-800/30 border border-slate-700/30 p-4 rounded-xl">
@@ -1449,7 +1047,7 @@
             }
 
             if (pagosFiltrados.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="8" class="p-4 text-center text-slate-500">No hay pagos registrados</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="7" class="p-4 text-center text-slate-500">No hay pagos</td></tr>';
                 return;
             }
 
@@ -1462,21 +1060,12 @@
                         <td class="p-3 text-slate-400">${p.proyecto || '-'}</td>
                         <td class="p-3 font-bold text-slate-200">$${(parseInt(p.monto) || 0).toLocaleString('es-CL')}</td>
                         <td class="p-3 text-slate-400">${p.fechaEmision || '-'}</td>
-                        <td class="p-3 text-slate-400">${p.fechaPago || '-'}</td>
-                        <td class="p-3 text-center">
-                            <span class="px-2 py-1 rounded-full text-[10px] font-bold ${p.estado === 'REALIZADO' ? 'bg-emerald-500/10 text-emerald-400' : 'bg-amber-500/10 text-amber-400'}">${p.estado}</span>
-                        </td>
+                        <td class="p-3 text-center"><span class="px-2 py-1 rounded-full text-[10px] font-bold ${p.estado === 'REALIZADO' ? 'bg-emerald-500/10 text-emerald-400' : 'bg-amber-500/10 text-amber-400'}">${p.estado}</span></td>
                         <td class="p-3 text-center">
                             <div class="flex items-center justify-center space-x-2">
-                                <button onclick="editPayment('${p._uid}')" class="text-slate-400 hover:text-copec-orange" title="Editar monto">
-                                    <i class="fa-solid fa-pen-to-square"></i>
-                                </button>
-                                <button onclick="togglePaymentStatus('${p._uid}')" class="text-slate-400 hover:text-emerald-500" title="Cambiar estado">
-                                    <i class="fa-solid fa-check"></i>
-                                </button>
-                                <button onclick="openDeleteConfirm('payment', '${p._uid}', 'pago')" class="text-slate-400 hover:text-rose-500" title="Eliminar">
-                                    <i class="fa-solid fa-trash"></i>
-                                </button>
+                                <button onclick="editPayment('${p._uid}')" class="text-slate-400 hover:text-copec-orange"><i class="fa-solid fa-pen-to-square"></i></button>
+                                <button onclick="togglePaymentStatus('${p._uid}')" class="text-slate-400 hover:text-emerald-500"><i class="fa-solid fa-check"></i></button>
+                                <button onclick="openDeleteConfirm('payment', '${p._uid}', 'pago')" class="text-slate-400 hover:text-rose-500"><i class="fa-solid fa-trash"></i></button>
                             </div>
                         </td>
                     </tr>
@@ -1487,7 +1076,6 @@
         async function togglePaymentStatus(paymentId) {
             const idx = dbPagos.findIndex(p => p._uid === paymentId);
             if (idx === -1) return;
-            
             if (dbPagos[idx].estado === 'PENDIENTE') {
                 dbPagos[idx].estado = 'REALIZADO';
                 dbPagos[idx].fechaPago = new Date().toISOString().split('T')[0];
@@ -1495,14 +1083,8 @@
                 dbPagos[idx].estado = 'PENDIENTE';
                 dbPagos[idx].fechaPago = '';
             }
-            
             const saved = await saveDatabaseToStorage();
-            if (saved) {
-                renderFacturacion();
-                updatePaymentKPIs();
-                updateNotificationBadge();
-                logEtl(`✓ Pago ${dbPagos[idx].estado}`);
-            }
+            if (saved) { renderFacturacion(); updatePaymentKPIs(); updateNotificationBadge(); }
         }
 
         function editPayment(paymentId) {
@@ -1527,12 +1109,8 @@
 
         function openNewPaymentModal() {
             const select = document.getElementById('pm-cliente');
-            if (dbClientes.length === 0) {
-                alert('Primero debes agregar clientes');
-                return;
-            }
+            if (dbClientes.length === 0) { alert('Primero agrega clientes'); return; }
             select.innerHTML = dbClientes.map(c => `<option value="${c._uid}">${c.nombre}</option>`).join('');
-            
             document.getElementById('payment-modal-title').innerText = 'Registrar Pago';
             document.getElementById('payment-action-type').value = 'NEW';
             document.getElementById('payment-original-id').value = '';
@@ -1541,9 +1119,7 @@
             document.getElementById('payment-modal').classList.remove('hidden');
         }
 
-        function closePaymentModal() {
-            document.getElementById('payment-modal').classList.add('hidden');
-        }
+        function closePaymentModal() { document.getElementById('payment-modal').classList.add('hidden'); }
 
         async function savePayment(e) {
             e.preventDefault();
@@ -1563,14 +1139,10 @@
 
             if (action === 'EDIT') {
                 const idx = dbPagos.findIndex(p => p._uid === origId);
-                if (idx !== -1) {
-                    dbPagos[idx] = { ...dbPagos[idx], ...paymentData };
-                    logEtl(`✓ Pago editado - Nuevo monto: $${paymentData.monto.toLocaleString('es-CL')}`);
-                }
+                if (idx !== -1) dbPagos[idx] = { ...dbPagos[idx], ...paymentData };
             } else {
                 paymentData._uid = `pago_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
                 dbPagos.push(paymentData);
-                logEtl(`✓ Nuevo pago: $${paymentData.monto.toLocaleString('es-CL')}`);
             }
             
             const saved = await saveDatabaseToStorage();
@@ -1582,7 +1154,7 @@
             }
         }
 
-        // ========== ELIMINAR REGISTROS ==========
+        // ========== ELIMINAR ==========
         function openDeleteConfirm(type, id, name) {
             document.getElementById('delete-target-id').value = id;
             document.getElementById('delete-target-type').value = type;
@@ -1590,27 +1162,16 @@
             document.getElementById('delete-confirm-modal').classList.remove('hidden');
         }
 
-        function closeDeleteModal() {
-            document.getElementById('delete-confirm-modal').classList.add('hidden');
-        }
+        function closeDeleteModal() { document.getElementById('delete-confirm-modal').classList.add('hidden'); }
 
         async function confirmDelete() {
             const type = document.getElementById('delete-target-type').value;
             const id = document.getElementById('delete-target-id').value;
             
-            if (type === 'client') {
-                dbClientes = dbClientes.filter(c => c._uid !== id);
-                logEtl("✓ Cliente eliminado");
-            } else if (type === 'payment') {
-                dbPagos = dbPagos.filter(p => p._uid !== id);
-                logEtl("✓ Pago eliminado");
-            } else if (type === 'project') {
-                dbProyectos = dbProyectos.filter(p => p._uid !== id);
-                logEtl("✓ Proyecto eliminado");
-            } else if (type === 'postventa') {
-                dbPostventa = dbPostventa.filter(p => p._uid !== id);
-                logEtl("✓ PostVenta eliminado");
-            }
+            if (type === 'client') dbClientes = dbClientes.filter(c => c._uid !== id);
+            else if (type === 'payment') dbPagos = dbPagos.filter(p => p._uid !== id);
+            else if (type === 'project') dbProyectos = dbProyectos.filter(p => p._uid !== id);
+            else if (type === 'postventa') dbPostventa = dbPostventa.filter(p => p._uid !== id);
             
             const saved = await saveDatabaseToStorage();
             if (saved) {
@@ -1629,7 +1190,6 @@
             const select = document.getElementById('timeline-cliente');
             const clientesUnicos = [...new Set([...dbProyectos, ...dbPostventa].map(p => p.CLIENTE_PROYECTO))].filter(Boolean);
             
-            // Actualizar select si está vacío
             if (select.options.length <= 1) {
                 clientesUnicos.forEach(c => {
                     const option = document.createElement('option');
@@ -1641,15 +1201,12 @@
             
             const filterCliente = select.value;
             let proyectos = [...dbProyectos, ...dbPostventa];
-            if (filterCliente !== 'ALL') {
-                proyectos = proyectos.filter(p => p.CLIENTE_PROYECTO === filterCliente);
-            }
-
+            if (filterCliente !== 'ALL') proyectos = proyectos.filter(p => p.CLIENTE_PROYECTO === filterCliente);
             proyectos.sort((a, b) => (a.Fecha || '').localeCompare(b.Fecha || ''));
 
             const container = document.getElementById('timeline-container');
             if (proyectos.length === 0) {
-                container.innerHTML = '<p class="text-slate-400 text-center py-8">No hay proyectos para mostrar</p>';
+                container.innerHTML = '<p class="text-slate-400 text-center py-8">No hay proyectos</p>';
                 return;
             }
             container.innerHTML = proyectos.map(p => {
@@ -1658,730 +1215,323 @@
                     <div class="timeline-item ${estadoClass}">
                         <div class="bg-slate-900/40 border border-slate-800 rounded-xl p-4">
                             <div class="flex items-center justify-between mb-2">
-                               ="flex items-center justify-between mb-2">
-                                <h4 class="font-bold text-slate-2 <h4 class="font-bold text-slate-200">${p.ID}</h4>
-                               00">${p.ID}</h4>
+                                <h4 class="font-bold text-slate-200">${p.ID}</h4>
                                 <div class="flex space-x-2">
-                                    <div class="flex space-x-2">
-                                    <button onclick="openFormModal('${p._uid} <button onclick="openFormModal('${p._uid}')" class="text-slate-400 hover:text')" class="text-slate-400 hover:text-copec-orange"><i class="fa-solid fa-pen-copec-orange"><i class="fa-solid fa-pen-to-square"></i></button>
-                                   -to-square"></i></button>
-                                    <button onclick="openDeleteConfirm('${p.ORIG <button onclick="openDeleteConfirm('${p.ORIGEN.includes('PV') ? 'postventa'EN.includes('PV') ? 'postventa' : 'project'}', '${p._uid}', '${p : 'project'}', '${p._uid}', '${p.ID}')" class="text-slate-400.ID}')" class="text-slate-400 hover:text-rose-500"><i class=" hover:text-rose-500"><i class="fa-solid fa-trash"></i></button>
-                               fa-solid fa-trash"></i></button>
+                                    <button onclick="openFormModal('${p._uid}')" class="text-slate-400 hover:text-copec-orange"><i class="fa-solid fa-pen-to-square"></i></button>
+                                    <button onclick="openDeleteConfirm('${p.ORIGEN.includes('PV') ? 'postventa' : 'project'}', '${p._uid}', '${p.ID}')" class="text-slate-400 hover:text-rose-500"><i class="fa-solid fa-trash"></i></button>
                                 </div>
                             </div>
-                            <p </div>
-                            </div>
-                            <p class="text-sm text-slate-300">${ class="text-sm text-slate-300">${p.CLIENTE_PROYECTO}</p>
-p.CLIENTE_PROYECTO}</p>
-                            <div class="flex items-center space-x-4                            <div class="flex items-center space-x-4 mt-2 text-xs text-slate-40 mt-2 text-xs text-slate-400">
-                                <span><i class="fa-solid0">
-                                <span><i class="fa-solid fa-calendar mr-1"></i>${p.Fecha fa-calendar mr-1"></i>${p.Fecha || 'Sin fecha'}</span>
-                                || 'Sin fecha'}</span>
-                                <span><i class="fa-solid fa-tag mr- <span><i class="fa-solid fa-tag mr-1"></i>${p.ORIGEN}</span>1"></i>${p.ORIGEN}</span>
+                            <p class="text-sm text-slate-300">${p.CLIENTE_PROYECTO}</p>
+                            <div class="flex items-center space-x-4 mt-2 text-xs text-slate-400">
+                                <span><i class="fa-solid fa-calendar mr-1"></i>${p.Fecha || 'Sin fecha'}</span>
+                                <span><i class="fa-solid fa-tag mr-1"></i>${p.ORIGEN}</span>
                             </div>
                         </div>
-                            </div>
-                        </div>
-                    </div>
-                `;
-            }).
                     </div>
                 `;
             }).join('');
         }
 
-        // ========== NOTjoin('');
-        }
-
         // ========== NOTIFICACIONES ==========
-        function updateNotificationBadge() {IFICACIONES ==========
         function updateNotificationBadge() {
-            const currentMonth = new Date().toISOString().substring
             const currentMonth = new Date().toISOString().substring(0, 7);
-            const pagosMes =(0, 7);
-            const pagosMes = dbPagos.filter(p => p.fechaEmision && p dbPagos.filter(p => p.fechaEmision && p.fechaEmision.startsWith(currentMonth));
-            const count.fechaEmision.startsWith(currentMonth));
-            const count = pagosMes.length;
-            
-            const badge = document = pagosMes.length;
-            
+            const pagosMes = dbPagos.filter(p => p.fechaEmision && p.fechaEmision.startsWith(currentMonth));
             const badge = document.getElementById('notification-count');
-            if (count > .getElementById('notification-count');
-            if (count > 0) {
-                badge.innerText = count;
-0) {
-                badge.innerText = count;
+            if (pagosMes.length > 0) {
+                badge.innerText = pagosMes.length;
                 badge.classList.remove('hidden');
-            } else {                badge.classList.remove('hidden');
             } else {
                 badge.classList.add('hidden');
             }
-
-                badge.classList.add('hidden');
-            }
         }
 
         function openNotificationsPanel() {
-        }
-
-        function openNotificationsPanel() {
-            const currentMonth = new Date().toISOString().substring(            const currentMonth = new Date().toISOString().substring(0, 7);
-            const pagosMes = db0, 7);
-            const pagosMes = dbPagos.filter(p => p.fechaEmision && pPagos.filter(p => p.fechaEmision && p.fechaEmision.startsWith(currentMonth));
-            
-            const.fechaEmision.startsWith(currentMonth));
-            
+            const currentMonth = new Date().toISOString().substring(0, 7);
+            const pagosMes = dbPagos.filter(p => p.fechaEmision && p.fechaEmision.startsWith(currentMonth));
             const content = document.getElementById('notifications-content');
-            if ( content = document.getElementById('notifications-content');
             if (pagosMes.length === 0) {
-                contentpagosMes.length === 0) {
-                content.innerHTML = '<p class="text-xs text-s.innerHTML = '<p class="text-xs text-slate-500 text-center py-8">Nolate-500 text-center py-8">No hay notificaciones este mes</p>';
-            } else hay notificaciones este mes</p>';
+                content.innerHTML = '<p class="text-xs text-slate-500 text-center py-8">Sin notificaciones</p>';
             } else {
-                content.innerHTML = pagosMes.map(p => { {
                 content.innerHTML = pagosMes.map(p => {
-                    const cliente = dbClientes.find(c => c._
                     const cliente = dbClientes.find(c => c._uid === p.clienteId);
-                    return `uid === p.clienteId);
                     return `
-                        <div class="p-3 rounded-lg ${
-                        <div class="p-3 rounded-lg ${p.estado === 'REALIZADO' ? 'bg-emp.estado === 'REALIZADO' ? 'bg-emerald-500/10 border border-emerald-500/10 border border-emerald-500/20' : 'bgerald-500/20' : 'bg-amber-500/10 border border--amber-500/10 border border-amber-500/20'}">
-                           amber-500/20'}">
-                            <div class="flex items-center justify-between mb-1 <div class="flex items-center justify-between mb-1">
-                                <span class="text-xs font-bold text">
-                                <span class="text-xs font-bold text-slate-200">${cliente ?-slate-200">${cliente ? cliente.nombre : 'Sin cliente'}</span cliente.nombre : 'Sin cliente'}</span>
-                                <span class="px-2 py>
-                                <span class="px-2 py-0.5 rounded-full text-[10px]-0.5 rounded-full text-[10px] font-bold ${p.estado === 'REALIZADO' font-bold ${p.estado === 'REALIZADO' ? 'bg-emerald-500/2 ? 'bg-emerald-500/20 text-emerald-400' : 'bg0 text-emerald-400' : 'bg-amber-500/20 text--amber-500/20 text-amber-400'}">${p.estado}</span>amber-400'}">${p.estado}</span>
+                        <div class="p-3 rounded-lg ${p.estado === 'REALIZADO' ? 'bg-emerald-500/10 border border-emerald-500/20' : 'bg-amber-500/10 border border-amber-500/20'}">
+                            <div class="flex items-center justify-between mb-1">
+                                <span class="text-xs font-bold text-slate-200">${cliente ? cliente.nombre : 'Sin cliente'}</span>
+                                <span class="px-2 py-0.5 rounded-full text-[10px] font-bold ${p.estado === 'REALIZADO' ? 'bg-emerald-500/20 text-emerald-400' : 'bg-amber-500/20 text-amber-400'}">${p.estado}</span>
                             </div>
-                            <p class
-                            </div>
-                            <p class="text-xs text-slate-400">${="text-xs text-slate-400">${p.tipo} - $${(parseInt(p.monto)p.tipo} - $${(parseInt(p.monto) || 0).toLocaleString('es-CL')}</ || 0).toLocaleString('es-CL')}</p>
-                            <p class="text-[10p>
-                            <p class="text-[10px] text-slate-500 mt-1px] text-slate-500 mt-1">${p.fechaEmision}</p>
-                       ">${p.fechaEmision}</p>
+                            <p class="text-xs text-slate-400">${p.tipo} - $${(parseInt(p.monto) || 0).toLocaleString('es-CL')}</p>
+                            <p class="text-[10px] text-slate-500 mt-1">${p.fechaEmision}</p>
                         </div>
                     `;
-                }).join(' </div>
-                    `;
                 }).join('');
-            }
-            document.getElementById('notifications-panel').');
             }
             document.getElementById('notifications-panel').classList.remove('hidden');
         }
 
-        functionclassList.remove('hidden');
-        }
+        function closeNotificationsPanel() { document.getElementById('notifications-panel').classList.add('hidden'); }
 
-        function closeNotificationsPanel() {
-            document.getElementById(' closeNotificationsPanel() {
-            document.getElementById('notifications-panel').classList.add('hidden');
-        }
-
-notifications-panel').classList.add('hidden');
-        }
-
-        // ========== CALIDAD CON CHECKBOXES EDITABLES        // ========== CALIDAD CON CHECKBOXES EDITABLES ==========
-        function renderQualityTable() {
-            const ==========
+        // ========== CALIDAD ==========
         function renderQualityTable() {
             const tbody = document.getElementById('quality-table-body');
-            tbody = document.getElementById('quality-table-body');
-            const searchTerm = (document.getElementById('quality-search').value || const searchTerm = (document.getElementById('quality-search').value || '').toLowerCase();
-            const combined = [...dbPro '').toLowerCase();
-            const combined = [...dbProyectos, ...dbPostventa].filter(r => 
-yectos, ...dbPostventa].filter(r => 
-                (r.ID || '').toLowerCase().includes(searchTerm)                (r.ID || '').toLowerCase().includes(searchTerm) || 
-                (r.CLIENTE_PROYECTO || ''). || 
-                (r.CLIENTE_PROYECTO || '').toLowerCase().includes(searchTerm)
-            );
-toLowerCase().includes(searchTerm)
-            );
+            const searchTerm = (document.getElementById('quality-search').value || '').toLowerCase();
+            const combined = [...dbProyectos, ...dbPostventa].filter(r => (r.ID || '').toLowerCase().includes(searchTerm) || (r.CLIENTE_PROYECTO || '').toLowerCase().includes(searchTerm));
             
-            document.getElementById('quality-table-info').innerText = `${            
             document.getElementById('quality-table-info').innerText = `${combined.length} registros`;
-            if (combined.lengthcombined.length} registros`;
             if (combined.length === 0) {
-                tbody.innerHTML = ' === 0) {
-                tbody.innerHTML = '<tr><td colspan="9" class="p<tr><td colspan="9" class="p-4 text-center text-slate-50-4 text-center text-slate-500">No hay registros</td></tr>';
-               0">No hay registros</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="8" class="p-4 text-center text-slate-500">No hay registros</td></tr>';
                 return;
             }
-            tbody.innerHTML = combined return;
-            }
             tbody.innerHTML = combined.map(r => `
-                <tr class="hover.map(r => `
                 <tr class="hover:bg-slate-900/50">
-:bg-slate-900/50">
-                    <td class="p-3"><div class="                    <td class="p-3"><div class="font-bold text-slate-200">${r.IDfont-bold text-slate-200">${r.ID}</div><div class="text-[10px}</div><div class="text-[10px] text-slate-400">${r.CLIENT] text-slate-400">${r.CLIENTE_PROYECTO}</div></td>E_PROYECTO}</div></td>
+                    <td class="p-3"><div class="font-bold text-slate-200">${r.ID}</div><div class="text-[10px] text-slate-400">${r.CLIENTE_PROYECTO}</div></td>
+                    <td class="p-3 text-center"><input type="checkbox" ${r['01_Plano'] === 'Realizado' ? 'checked' : ''} onchange="updateQuality('${r._uid}', '01_Plano', this.checked)" class="rounded bg-slate-800 border-slate-700 text-copec-orange"></td>
+                    <td class="p-3 text-center"><input type="checkbox" ${r['02_Memoria'] === 'Realizado' ? 'checked' : ''} onchange="updateQuality('${r._uid}', '02_Memoria', this.checked)" class="rounded bg-slate-800 border-slate-700 text-copec-orange"></td>
+                    <td class="p-3 text-center"><input type="checkbox" ${r.INST === 'TE6 APROB' || r.INST === 'TE6 EMIT' ? 'checked' : ''} onchange="updateQuality('${r._uid}', 'INST', this.checked)" class="rounded bg-slate-800 border-slate-700 text-copec-orange"></td>
+                    <td class="p-3 text-center"><input type="checkbox" ${r['04_Gantt'] === 'Realizado' ? 'checked' : ''} onchange="updateQuality('${r._uid}', '04_Gantt', this.checked)" class="rounded bg-slate-800 border-slate-700 text-copec-orange"></td>
+                    <td class="p-3 text-center"><input type="checkbox" ${r['04_AST'] === 'Realizado' ? 'checked' : ''} onchange="updateQuality('${r._uid}', '04_AST', this.checked)" class="rounded bg-slate-800 border-slate-700 text-copec-orange"></td>
+                    <td class="p-3 text-center"><span class="px-2 py-1 rounded-full text-[10px] font-bold ${r.ADMINIST === 'CERRADO' ? 'bg-emerald-500/10 text-emerald-400' : 'bg-blue-500/10 text-blue-400'}">${r.ADMINIST}</span></td>
                     <td class="p-3 text-center">
-                    <td class="p-3 text-center"><input type="checkbox" ${r['01_Plano<input type="checkbox" ${r['01_Plano'] === 'Realizado' ? 'checked' :'] === 'Realizado' ? 'checked' : ''} onchange="updateQuality('${r._uid}', ''} onchange="updateQuality('${r._uid}', '01_Plano', this.checked)" class=" '01_Plano', this.checked)" class="rounded bg-slate-800 border-srounded bg-slate-800 border-slate-700 text-copec-orange"></tdlate-700 text-copec-orange"></td>
-                    <td class="p-3 text-center>
-                    <td class="p-3 text-center"><input type="checkbox" ${r['02_M"><input type="checkbox" ${r['02_Memoria'] === 'Realizado' ? 'checked'emoria'] === 'Realizado' ? 'checked' : ''} onchange="updateQuality('${r._ : ''} onchange="updateQuality('${r._uid}', '02_Memoria', this.checked)"uid}', '02_Memoria', this.checked)" class="rounded bg-slate-800 border class="rounded bg-slate-800 border-slate-700 text-copec-orange"></-slate-700 text-copec-orange"></td>
-                    <td class="p-td>
-                    <td class="p-3 text-center"><input type="checkbox" ${r.IN3 text-center"><input type="checkbox" ${r.INST === 'TE6 APROB' || r.INST === 'TE6 APROB' || r.INST === 'TE6 EMIT' ? 'ST === 'TE6 EMIT' ? 'checked' : ''} onchange="updateQuality('${rchecked' : ''} onchange="updateQuality('${r._uid}', 'INST', this.checked)" class="._uid}', 'INST', this.checked)" class="rounded bg-slate-800 border-srounded bg-slate-800 border-slate-700 text-copec-orange"></tdlate-700 text-copec-orange"></td>
-                    <td class="p-3 text-center>
-                    <td class="p-3 text-center"><input type="checkbox" ${r['04_G"><input type="checkbox" ${r['04_Gantt'] === 'Realizado' ? 'checked' :antt'] === 'Realizado' ? 'checked' : ''} onchange="updateQuality('${r._uid}', ' ''} onchange="updateQuality('${r._uid}', '04_Gantt', this.checked)" class="rounded bg04_Gantt', this.checked)" class="rounded bg-slate-800 border-slate-70-slate-800 border-slate-700 text-copec-orange"></td>
-                    0 text-copec-orange"></td>
-                    <td class="p-3 text-center"><input type="<td class="p-3 text-center"><input type="checkbox" ${r['04_AST'] === 'Realcheckbox" ${r['04_AST'] === 'Realizado' ? 'checked' : ''} onchange="updateizado' ? 'checked' : ''} onchange="updateQuality('${r._uid}', '04_AST', thisQuality('${r._uid}', '04_AST', this.checked)" class="rounded bg-slate-800.checked)" class="rounded bg-slate-800 border-slate-700 text-co border-slate-700 text-copec-orange"></td>
-                    <td class="pec-orange"></td>
-                    <td class="p-3 text-center"><span class="px-2p-3 text-center"><span class="px-2 py-1 rounded-full text-[10px] font py-1 rounded-full text-[10px] font-bold ${r.ADMINIST === 'CERRADO' ?-bold ${r.ADMINIST === 'CERRADO' ? 'bg-emerald-500/10 text 'bg-emerald-500/10 text-emerald-400' : 'bg-blue--emerald-400' : 'bg-blue-500/10 text-blue-400500/10 text-blue-400'}">${r.ADMINIST}</span></td>'}">${r.ADMINIST}</span></td>
-                    <td class="p-3 text-center">
-                    <td class="p-3 text-center">
-                        <button onclick="openFormModal('${r._
-                        <button onclick="openFormModal('${r._uid}')" class="text-slate-4uid}')" class="text-slate-400 hover:text-copec-orange mr-200 hover:text-copec-orange mr-2"><i class="fa-solid fa-pen-to-square"></"><i class="fa-solid fa-pen-to-square"></i></button>
-                        <button onclick="openDeletei></button>
-                        <button onclick="openDeleteConfirm('${r.ORIGEN.includes('PV') ? 'Confirm('${r.ORIGEN.includes('PV') ? 'postventa' : 'project'}', '${r._uidpostventa' : 'project'}', '${r._uid}', '${r.ID}')" class="text-slate-}', '${r.ID}')" class="text-slate-400 hover:text-rose-500">400 hover:text-rose-500"><i class="fa-solid fa-trash"></i></button><i class="fa-solid fa-trash"></i></button>
-                    </td>
-                </tr>
-           
+                        <button onclick="openFormModal('${r._uid}')" class="text-slate-400 hover:text-copec-orange mr-2"><i class="fa-solid fa-pen-to-square"></i></button>
+                        <button onclick="openDeleteConfirm('${r.ORIGEN.includes('PV') ? 'postventa' : 'project'}', '${r._uid}', '${r.ID}')" class="text-slate-400 hover:text-rose-500"><i class="fa-solid fa-trash"></i></button>
                     </td>
                 </tr>
             `).join('');
-        }
-
-        async `).join('');
         }
 
         async function updateQuality(uid, field, checked) {
- function updateQuality(uid, field, checked) {
-            let project = dbProyectos.find(p =>            let project = dbProyectos.find(p => p._uid === uid);
-            let post p._uid === uid);
-            let postventa = dbPostventa.find(p => pventa = dbPostventa.find(p => p._uid === uid);
-            
-            if._uid === uid);
-            
-            if (project) {
-                project[field] (project) {
-                project[field] = checked ? 'Realizado' : '';
-            = checked ? 'Realizado' : '';
-            } else if (postventa) {
-                if } else if (postventa) {
-                if (field === 'INST') {
-                    postventa[field (field === 'INST') {
-                    postventa[field] = checked ? 'TE6 APROB'] = checked ? 'TE6 APROB' : '';
-                } else {
-                    postventa : '';
-                } else {
-                    postventa[field] = checked ? 'Realizado' :[field] = checked ? 'Realizado' : '';
-                }
+            let project = dbProyectos.find(p => p._uid === uid);
+            let postventa = dbPostventa.find(p => p._uid === uid);
+            if (project) project[field] = checked ? 'Realizado' : '';
+            else if (postventa) {
+                if (field === 'INST') postventa[field] = checked ? 'TE6 APROB' : '';
+                else postventa[field] = checked ? 'Realizado' : '';
             }
-            
-            '';
-                }
-            }
-            
             await saveDatabaseToStorage();
-            logEtl(` await saveDatabaseToStorage();
-            logEtl(`✓ ${field} actualizado`);
-        }✓ ${field} actualizado`);
         }
-
-        // ========== POSTVENTA ==========
-        function render
 
         // ========== POSTVENTA ==========
         function renderPostVenta() {
-            const tbody = document.getElementById('PostVenta() {
             const tbody = document.getElementById('pv-table-body');
-            const pvDatapv-table-body');
-            const pvData = dbPostventa.filter(p => p.OR = dbPostventa.filter(p => p.ORIGEN.includes('PV'));
-            
-            if (pvIGEN.includes('PV'));
-            
+            const pvData = dbPostventa.filter(p => p.ORIGEN.includes('PV'));
             if (pvData.length === 0) {
-                tbody.innerHTML =Data.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="5" class="p- '<tr><td colspan="5" class="p-4 text-center text-slate-500">No4 text-center text-slate-500">No hay registros de PostVenta</td></tr>';
-                hay registros de PostVenta</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="5" class="p-4 text-center text-slate-500">No hay PostVenta</td></tr>';
                 return;
             }
-            tbody.innerHTML = pv return;
-            }
             tbody.innerHTML = pvData.map(pv => `
-                <tr classData.map(pv => `
-                <tr class="hover:bg-slate-900/50="hover:bg-slate-900/50">
-                    <td class="p-3 font-bold">
+                <tr class="hover:bg-slate-900/50">
                     <td class="p-3 font-bold">${pv.ID}</td>
-                    <td class="">${pv.ID}</td>
-                    <td class="p-3">${pv.CLIENTE_PROYECTOp-3">${pv.CLIENTE_PROYECTO}</td>
-                    <td class="p-3}</td>
-                    <td class="p-3 text-slate-400">${pv.Fecha text-slate-400">${pv.Fecha || '-'}</td>
-                    <td class || '-'}</td>
-                    <td class="p-3"><span class="px-2 py="p-3"><span class="px-2 py-1 rounded-full text-[10px] font-bold-1 rounded-full text-[10px] font-bold ${pv.ADMINIST === 'CERRADO' ? ' ${pv.ADMINIST === 'CERRADO' ? 'bg-emerald-500/10 text-embg-emerald-500/10 text-emerald-400' : 'bg-blue-5erald-400' : 'bg-blue-500/10 text-blue-400'}00/10 text-blue-400'}">${pv.ADMINIST}</span></td>
-                    ">${pv.ADMINIST}</span></td>
+                    <td class="p-3">${pv.CLIENTE_PROYECTO}</td>
+                    <td class="p-3 text-slate-400">${pv.Fecha || '-'}</td>
+                    <td class="p-3"><span class="px-2 py-1 rounded-full text-[10px] font-bold ${pv.ADMINIST === 'CERRADO' ? 'bg-emerald-500/10 text-emerald-400' : 'bg-blue-500/10 text-blue-400'}">${pv.ADMINIST}</span></td>
                     <td class="p-3 text-center">
-                        <td class="p-3 text-center">
-                        <button onclick="openFormModal('${pv._uid}<button onclick="openFormModal('${pv._uid}')" class="text-slate-400 hover:text')" class="text-slate-400 hover:text-copec-orange mr-2"><i class="-copec-orange mr-2"><i class="fa-solid fa-pen-to-square"></i></button>fa-solid fa-pen-to-square"></i></button>
-                        <button onclick="openDeleteConfirm('post
-                        <button onclick="openDeleteConfirm('postventa', '${pv._uid}', '${pv.IDventa', '${pv._uid}', '${pv.ID}')" class="text-slate-400 hover}')" class="text-slate-400 hover:text-rose-500"><i class="fa:text-rose-500"><i class="fa-solid fa-trash"></i></button>
-                    </td-solid fa-trash"></i></button>
+                        <button onclick="openFormModal('${pv._uid}')" class="text-slate-400 hover:text-copec-orange mr-2"><i class="fa-solid fa-pen-to-square"></i></button>
+                        <button onclick="openDeleteConfirm('postventa', '${pv._uid}', '${pv.ID}')" class="text-slate-400 hover:text-rose-500"><i class="fa-solid fa-trash"></i></button>
                     </td>
                 </tr>
-            `).join('>
-                </tr>
             `).join('');
-        }
-
-        // ========== EXPLORER');
         }
 
         // ========== EXPLORER ==========
         function renderExplorer() {
-            const tbody ==========
-        function renderExplorer() {
             const tbody = document.getElementById('explorer-table-body');
-            const = document.getElementById('explorer-table-body');
-            const searchTerm = (document.getElementById('explorer-search').value searchTerm = (document.getElementById('explorer-search').value || '').toLowerCase();
-            const combined = [...dbPro || '').toLowerCase();
-            const combined = [...dbProyectos, ...dbPostventa].filter(r => 
-yectos, ...dbPostventa].filter(r => 
-                (r.ID || '').toLowerCase().includes(searchTerm)                (r.ID || '').toLowerCase().includes(searchTerm) || 
-                (r.CLIENTE_PROYECTO || ''). || 
-                (r.CLIENTE_PROYECTO || '').toLowerCase().includes(searchTerm)
-            );
-           toLowerCase().includes(searchTerm)
-            );
+            const searchTerm = (document.getElementById('explorer-search').value || '').toLowerCase();
+            const combined = [...dbProyectos, ...dbPostventa].filter(r => (r.ID || '').toLowerCase().includes(searchTerm) || (r.CLIENTE_PROYECTO || '').toLowerCase().includes(searchTerm));
             if (combined.length === 0) {
-                tbody if (combined.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="5" class.innerHTML = '<tr><td colspan="5" class="p-4 text-center text-slate-50="p-4 text-center text-slate-500">No hay registros</td></tr>';
-               0">No hay registros</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="5" class="p-4 text-center text-slate-500">No hay registros</td></tr>';
                 return;
             }
-            tbody.innerHTML = combined return;
-            }
             tbody.innerHTML = combined.map(r => `
-                <tr class="hover:bg.map(r => `
                 <tr class="hover:bg-slate-900/50">
-                   -slate-900/50">
-                    <td class="p-3 font-bold">${r.ID <td class="p-3 font-bold">${r.ID}</td>
-                    <td class="p-}</td>
+                    <td class="p-3 font-bold">${r.ID}</td>
                     <td class="p-3">${r.CLIENTE_PROYECTO}</td>
-3">${r.CLIENTE_PROYECTO}</td>
-                    <td class="p-3 text-slate-                    <td class="p-3 text-slate-400">${r.Fecha || '-'}</td400">${r.Fecha || '-'}</td>
-                    <td class="p-3"><span>
-                    <td class="p-3"><span class="px-2 py-1 rounded-full text-[ class="px-2 py-1 rounded-full text-[10px] font-bold ${r.ADMINIST ===10px] font-bold ${r.ADMINIST === 'CERRADO' ? 'bg-emerald- 'CERRADO' ? 'bg-emerald-500/10 text-emerald-40500/10 text-emerald-400' : 'bg-blue-500/10' : 'bg-blue-500/10 text-blue-400'}">${r.ADMINIST0 text-blue-400'}">${r.ADMINIST}</span></td>
-                    <td class="}</span></td>
+                    <td class="p-3 text-slate-400">${r.Fecha || '-'}</td>
+                    <td class="p-3"><span class="px-2 py-1 rounded-full text-[10px] font-bold ${r.ADMINIST === 'CERRADO' ? 'bg-emerald-500/10 text-emerald-400' : 'bg-blue-500/10 text-blue-400'}">${r.ADMINIST}</span></td>
                     <td class="p-3 text-center">
-                        <button onclick="p-3 text-center">
-                        <button onclick="openFormModal('${r._uid}')" class="textopenFormModal('${r._uid}')" class="text-slate-400 hover:text-copec-orange-slate-400 hover:text-copec-orange mr-2"><i class="fa-solid fa-pen mr-2"><i class="fa-solid fa-pen-to-square"></i></button>
-                        <button-to-square"></i></button>
-                        <button onclick="openDeleteConfirm('${r.ORIGEN onclick="openDeleteConfirm('${r.ORIGEN.includes('PV') ? 'postventa' : 'project.includes('PV') ? 'postventa' : 'project'}', '${r._uid}', '${r.ID}')"'}', '${r._uid}', '${r.ID}')" class="text-slate-400 hover:text class="text-slate-400 hover:text-rose-500"><i class="fa-solid-rose-500"><i class="fa-solid fa-trash"></i></button>
-                    </td fa-trash"></i></button>
+                        <button onclick="openFormModal('${r._uid}')" class="text-slate-400 hover:text-copec-orange mr-2"><i class="fa-solid fa-pen-to-square"></i></button>
+                        <button onclick="openDeleteConfirm('${r.ORIGEN.includes('PV') ? 'postventa' : 'project'}', '${r._uid}', '${r.ID}')" class="text-slate-400 hover:text-rose-500"><i class="fa-solid fa-trash"></i></button>
                     </td>
-                </tr>
-            `).join>
                 </tr>
             `).join('');
         }
 
-        // ========== MODALES('');
-        }
-
-        // ========== MODALES ==========
-        function openFormModal(uid) { ==========
+        // ========== FORMULARIO ==========
         function openFormModal(uid) {
             if (uid) {
-                const target =
-            if (uid) {
-                const target = [...dbProyectos, ...dbPostventa].find(r [...dbProyectos, ...dbPostventa].find(r => r._uid === uid);
-                if ( => r._uid === uid);
+                const target = [...dbProyectos, ...dbPostventa].find(r => r._uid === uid);
                 if (target) {
-                    document.getElementById('form-action-type').target) {
                     document.getElementById('form-action-type').value = 'EDIT';
-                    document.getElementById('form-originalvalue = 'EDIT';
                     document.getElementById('form-original-id').value = uid;
-                    document.getElementById('form-id').value = uid;
                     document.getElementById('form-id').value = target.ID;
-                    document.getElementById('-id').value = target.ID;
-                    document.getElementById('form-origen').value = target.ORIGEN;form-origen').value = target.ORIGEN;
-                    document.getElementById('form-cliente').value
+                    document.getElementById('form-origen').value = target.ORIGEN;
                     document.getElementById('form-cliente').value = target.CLIENTE_PROYECTO || '';
-                    = target.CLIENTE_PROYECTO || '';
-                    document.getElementById('form-fecha').value = target.Fecha || document.getElementById('form-fecha').value = target.Fecha || '';
-                    document.getElementById('form-administ').value '';
-                    document.getElementById('form-administ').value = target.ADMINIST || 'EJECUTANDO'; = target.ADMINIST || 'EJECUTANDO';
-                    
-                    // Checklist
-                    document.getElementById('
-                    
-                    // Checklist
-                    document.getElementById('form-plano').checked = target['01form-plano').checked = target['01_Plano'] === 'Realizado';
-                    document_Plano'] === 'Realizado';
-                    document.getElementById('form-memoria').checked = target['.getElementById('form-memoria').checked = target['02_Memoria'] === 'Realizado';
-02_Memoria'] === 'Realizado';
-                    document.getElementById('form-gantt').checked = target['                    document.getElementById('form-gantt').checked = target['04_Gantt'] === 'Realizado';
-                   04_Gantt'] === 'Realizado';
-                    document.getElementById('form-ast').checked = target['0 document.getElementById('form-ast').checked = target['04_AST'] === 'Realizado';
-                }
-4_AST'] === 'Realizado';
+                    document.getElementById('form-fecha').value = target.Fecha || '';
+                    document.getElementById('form-administ').value = target.ADMINIST || 'EJECUTANDO';
+                    document.getElementById('form-plano').checked = target['01_Plano'] === 'Realizado';
+                    document.getElementById('form-memoria').checked = target['02_Memoria'] === 'Realizado';
+                    document.getElementById('form-gantt').checked = target['04_Gantt'] === 'Realizado';
+                    document.getElementById('form-ast').checked = target['04_AST'] === 'Realizado';
                 }
             } else {
-                document.getElementById('form-action-type            } else {
                 document.getElementById('form-action-type').value = 'NEW';
-                document.getElementById('form').value = 'NEW';
                 document.getElementById('form-original-id').value = '';
-                document.getElementById('record-original-id').value = '';
                 document.getElementById('record-form').reset();
-            }
-            document.getElementById('-form').reset();
             }
             document.getElementById('form-modal').classList.remove('hidden');
         }
 
-form-modal').classList.remove('hidden');
-        }
-
-        function closeFormModal() {
-            document.getElementById('        function closeFormModal() {
-            document.getElementById('form-modal').classList.add('hidden');
-        }
-
-form-modal').classList.add('hidden');
-        }
+        function closeFormModal() { document.getElementById('form-modal').classList.add('hidden'); }
 
         async function saveRecord(e) {
-            e.preventDefault        async function saveRecord(e) {
             e.preventDefault();
-            const action = document.getElementById('form-action-type();
             const action = document.getElementById('form-action-type').value;
-            const origUid = document.getElementById').value;
             const origUid = document.getElementById('form-original-id').value;
-           ('form-original-id').value;
             const payload = {
-                ID: document.getElementById('form const payload = {
                 ID: document.getElementById('form-id').value,
-                ORIGEN: document.getElementById('-id').value,
                 ORIGEN: document.getElementById('form-origen').value,
-                CLIENTEform-origen').value,
-                CLIENTE_PROYECTO: document.getElementById('form-cliente')._PROYECTO: document.getElementById('form-cliente').value,
-                Fecha: document.getElementById('form-value,
+                CLIENTE_PROYECTO: document.getElementById('form-cliente').value,
                 Fecha: document.getElementById('form-fecha').value,
-                ADMINIST: document.getElementById('fecha').value,
                 ADMINIST: document.getElementById('form-administ').value,
-                '01_Plform-administ').value,
-                '01_Plano': document.getElementById('form-plano').checked ?ano': document.getElementById('form-plano').checked ? 'Realizado' : '',
-                '0 'Realizado' : '',
-                '02_Memoria': document.getElementById('form-memoria2_Memoria': document.getElementById('form-memoria').checked ? 'Realizado' : '',
-               ').checked ? 'Realizado' : '',
-                '04_Gantt': document.getElementById('form '04_Gantt': document.getElementById('form-gantt').checked ? 'Realizado' : '',-gantt').checked ? 'Realizado' : '',
-                '04_AST': document.getElementById('form-
+                '01_Plano': document.getElementById('form-plano').checked ? 'Realizado' : '',
+                '02_Memoria': document.getElementById('form-memoria').checked ? 'Realizado' : '',
+                '04_Gantt': document.getElementById('form-gantt').checked ? 'Realizado' : '',
                 '04_AST': document.getElementById('form-ast').checked ? 'Realizado' : ''
-           ast').checked ? 'Realizado' : ''
             };
 
             if (action === 'EDIT') {
- };
-
-            if (action === 'EDIT') {
-                const idxP = dbProyectos.findIndex(p => p                const idxP = dbProyectos.findIndex(p => p._uid === origUid);
-                const idxPV._uid === origUid);
-                const idxPV = dbPostventa.findIndex(pv => pv._ = dbPostventa.findIndex(pv => pv._uid === origUid);
-                if (idxPuid === origUid);
-                if (idxP !== -1) dbProyectos[idxP] !== -1) dbProyectos[idxP] = { ...dbProyectos[idxP], ... = { ...dbProyectos[idxP], ...payload };
-                else if (idxPV !== -1payload };
-                else if (idxPV !== -1) dbPostventa[idxPV] = { ...dbPost) dbPostventa[idxPV] = { ...dbPostventa[idxPV], ...payload };
-            } elseventa[idxPV], ...payload };
+                const idxP = dbProyectos.findIndex(p => p._uid === origUid);
+                const idxPV = dbPostventa.findIndex(pv => pv._uid === origUid);
+                if (idxP !== -1) dbProyectos[idxP] = { ...dbProyectos[idxP], ...payload };
+                else if (idxPV !== -1) dbPostventa[idxPV] = { ...dbPostventa[idxPV], ...payload };
             } else {
-                payload._uid = `proj_${Date.now {
                 payload._uid = `proj_${Date.now()}`;
                 dbProyectos.push(payload);
-()}`;
-                dbProyectos.push(payload);
             }
-
-            const saved = await saveDatabaseTo            }
 
             const saved = await saveDatabaseToStorage();
             if (saved) {
-                closeStorage();
-            if (saved) {
                 closeFormModal();
                 triggerEtlExecution();
-               FormModal();
-                triggerEtlExecution();
                 renderQualityTable();
-                logEtl(`✓ renderQualityTable();
-                logEtl(`✓ Registro ${action === 'EDIT' ? 'actualizado' Registro ${action === 'EDIT' ? 'actualizado' : 'creado'}`);
-            }
- : 'creado'}`);
             }
         }
 
-        function openImportModal() {
-        }
+        // ========== IMPORT/EXPORT ==========
+        function openImportModal() { document.getElementById('import-modal').classList.remove('hidden'); }
+        function closeImportModal() { document.getElementById('import-modal').classList.add('hidden'); }
 
-        function openImportModal() {
-            document.getElementById('import-modal').classList.remove('hidden');            document.getElementById('import-modal').classList.remove('hidden');
-        }
-
-        function closeImportModal() {
-
-        }
-
-        function closeImportModal() {
-            document.getElementById('import-modal').classList.add            document.getElementById('import-modal').classList.add('hidden');
-        }
-
-        // ========== UTILIDADES('hidden');
-        }
-
-        // ========== UTILIDADES ==========
-        function logEtl(message) {
-            ==========
-        function logEtl(message) {
-            const term = document.getElementById('etl-terminal');
-            const term = document.getElementById('etl-terminal');
-            if (!term) return;
-            const time = new if (!term) return;
-            const time = new Date().toLocaleTimeString();
-            term.innerHTML += `<div Date().toLocaleTimeString();
-            term.innerHTML += `<div><span class="text-slate-500">><span class="text-slate-500">[${time}]</span> ${message}</div>`[${time}]</span> ${message}</div>`;
-            term.scrollTop = term.scrollHeight;
-       ;
-            term.scrollTop = term.scrollHeight;
-        }
-
-        function clearTerminal() {
-            document.getElementById }
-
-        function clearTerminal() {
-            document.getElementById('etl-terminal').innerHTML = '';
-        }
-
-('etl-terminal').innerHTML = '';
-        }
-
-        function exportToCSV() {
-            const combined =        function exportToCSV() {
-            const combined = [...dbProyectos, ...dbPostventa];
-            [...dbProyectos, ...dbPostventa];
-            if (combined.length === 0) { alert('No if (combined.length === 0) { alert('No hay datos'); return; }
-            let csv = hay datos'); return; }
-            let csv = "\uFEFFID;ORIGEN;CLIENTE "\uFEFFID;ORIGEN;CLIENTE_PROYECTO;FECHA;ESTADO\n_PROYECTO;FECHA;ESTADO\n";
-            combined.forEach(r => {
-               ";
-            combined.forEach(r => {
-                csv += `${r.ID};${r.ORIGEN} csv += `${r.ID};${r.ORIGEN};"${r.CLIENTE_PROYECTO}";${r;"${r.CLIENTE_PROYECTO}";${r.Fecha};${r.ADMINIST}\n`;
-            });.Fecha};${r.ADMINIST}\n`;
-            });
-            const blob = new Blob([csv], { type
-            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });: 'text/csv;charset=utf-8;' });
-            const link = document.createElement('a');
-           
-            const link = document.createElement('a');
-            link.href = URL.createObjectURL(blob);
-            link link.href = URL.createObjectURL(blob);
-            link.download = `export_${new Date().toISOString().split.download = `export_${new Date().toISOString().split('T')[0]}.csv`;
-            link('T')[0]}.csv`;
-            link.click();
-        }
-
-        function setupDragAndDrop.click();
-        }
-
-        function setupDragAndDrop() {
-            const dropZone = document.getElementById('drop() {
-            const dropZone = document.getElementById('drop-zone');
-            const fileInput = document.getElementById('csv-zone');
-            const fileInput = document.getElementById('csv-file-input');
-            dropZone.addEventListener('click', ()-file-input');
-            dropZone.addEventListener('click', () => fileInput.click());
-            dropZone.addEventListener('drag => fileInput.click());
-            dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropover', (e) => { e.preventDefault(); dropZone.classList.add('border-copec-orange'); });
-           Zone.classList.add('border-copec-orange'); });
-            dropZone.addEventListener('dragleave', () => { dropZone dropZone.addEventListener('dragleave', () => { dropZone.classList.remove('border-copec-orange'); });
-            drop.classList.remove('border-copec-orange'); });
-            dropZone.addEventListener('drop', (e) => { 
-Zone.addEventListener('drop', (e) => { 
-                e.preventDefault(); 
-                dropZone.classList.remove('border                e.preventDefault(); 
-                dropZone.classList.remove('border-copec-orange'); 
-                if (e.dataTransfer.files-copec-orange'); 
-                if (e.dataTransfer.files.length > 0) parseCSV(e.dataTransfer.files[.length > 0) parseCSV(e.dataTransfer.files[0]); 
-            });
-            fileInput.addEventListener('0]); 
-            });
-            fileInput.addEventListener('change', (e) => { if (e.targetchange', (e) => { if (e.target.files.length > 0) parseCSV(e.target.files.length > 0) parseCSV(e.target.files[0]); });
-        }
-
-        function parse.files[0]); });
-        }
-
-        function parseCSV(file) {
-            logEtl(`CSV(file) {
-            logEtl(`Procesando: ${file.name}`);
-           Procesando: ${file.name}`);
-            const reader = new FileReader();
-            reader.onload = function const reader = new FileReader();
-            reader.onload = function(e) {
-                const text = e.target.result(e) {
-                const text = e.target.result;
-                const lines = text.split('\n');
-;
-                const lines = text.split('\n');
-                if (lines.length < 2) { logE                if (lines.length < 2) { logEtl("ERROR: Archivo vacío"); return; }
-               tl("ERROR: Archivo vacío"); return; }
-                const newProyectos = [];
-                for(let i = const newProyectos = [];
-                for(let i = 1; i < lines.length; i++) {
- 1; i < lines.length; i++) {
-                    const row = lines[i].split(';');                    const row = lines[i].split(';');
-                    if (row.length >= 5) {
-
-                    if (row.length >= 5) {
-                        newProyectos.push({
-                            _uid: `                        newProyectos.push({
-                            _uid: `proj_${Date.now()}_${i}`,
-                            ORIGproj_${Date.now()}_${i}`,
-                            ORIGEN: row[1] || 'VOLTEX',EN: row[1] || 'VOLTEX',
-                            ID: row[0] || `EXT
-                            ID: row[0] || `EXT-${i}`,
-                            CLIENTE_PROYECTO: row-${i}`,
-                            CLIENTE_PROYECTO: row[2] ? row[2].replace(/"/g[2] ? row[2].replace(/"/g, '') : 'Cliente',
-                            Fecha: row, '') : 'Cliente',
-                            Fecha: row[3] || new Date().toISOString().split[3] || new Date().toISOString().split('T')[0],
-                            ADMINIST: row('T')[0],
-                            ADMINIST: row[4] || 'EJECUTANDO'[4] || 'EJECUTANDO'
-                        });
-                    }
-                }
-                db
-                        });
-                    }
-                }
-                dbProyectos = [...dbProyectos, ...newProyectosProyectos = [...dbProyectos, ...newProyectos];
-                saveDatabaseToStorage();
-               ];
-                saveDatabaseToStorage();
-                triggerEtlExecution();
-                logEtl(` triggerEtlExecution();
-                logEtl(`✓ ${newProyectos.length} registros cargados`);
-            };
-            reader.readAsText(file);
-✓ ${newProyectos.length} registros cargados`);
-            };
-            reader.readAsText(file);
-        }
-
-        // Excel import
-        document.getElementById        }
-
-        // Excel import
-        document.getElementById('excel-file-input').addEventListener('change', function(e)('excel-file-input').addEventListener('change', function(e) {
-            if (e.target.files[0]) { {
+        document.getElementById('excel-file-input').addEventListener('change', function(e) {
             if (e.target.files[0]) {
-                const reader = new FileReader();
-                reader.onload
                 const reader = new FileReader();
                 reader.onload = function(e) {
                     try {
-                        = function(e) {
-                    try {
                         const data = new Uint8Array(e.target.result);
- const data = new Uint8Array(e.target.result);
-                        const workbook = XLSX.read(data, { type                        const workbook = XLSX.read(data, { type: 'array' });
-                        const sheet = workbook: 'array' });
-                        const sheet = workbook.Sheets[workbook.SheetNames[0]];.Sheets[workbook.SheetNames[0]];
-                        const jsonData = XLSX.utils.sheet
+                        const workbook = XLSX.read(data, { type: 'array' });
+                        const sheet = workbook.Sheets[workbook.SheetNames[0]];
                         const jsonData = XLSX.utils.sheet_to_json(sheet);
-                        if (jsonData.length_to_json(sheet);
-                        if (jsonData.length === 0) { alert('Archivo vacío'); return === 0) { alert('Archivo vacío'); return; }
-                        
-                        let count = 0;
-; }
+                        if (jsonData.length === 0) { alert('Archivo vacío'); return; }
                         
                         let count = 0;
                         jsonData.forEach(row => {
-                            const                        jsonData.forEach(row => {
                             const record = {
-                                _uid: `imp_${Date record = {
                                 _uid: `imp_${Date.now()}_${count}`,
-                                ID: row.ID.now()}_${count}`,
                                 ID: row.ID || `IMP-${count}`,
-                                ORIGEN: row || `IMP-${count}`,
                                 ORIGEN: row.ORIGEN || 'VOLTEX',
-                               .ORIGEN || 'VOLTEX',
-                                CLIENTE_PROYECTO: row.CLIENTE_PROY CLIENTE_PROYECTO: row.CLIENTE_PROYECTO || row.CLIENTE || 'Sin nombre',
-ECTO || row.CLIENTE || 'Sin nombre',
-                                Fecha: row.Fecha || new Date().toISOString().                                Fecha: row.Fecha || new Date().toISOString().split('T')[0],
-                                ADMINIST: rowsplit('T')[0],
+                                CLIENTE_PROYECTO: row.CLIENTE_PROYECTO || row.CLIENTE || 'Sin nombre',
+                                Fecha: row.Fecha || new Date().toISOString().split('T')[0],
                                 ADMINIST: row.ADMINIST || 'EJECUTANDO',
-                               .ADMINIST || 'EJECUTANDO',
-                                ADMINIST2: row.ADMINIST2 || '' ADMINIST2: row.ADMINIST2 || ''
-                            };
-                            if (record.ORIG
+                                ADMINIST2: row.ADMINIST2 || ''
                             };
                             if (record.ORIGEN.includes('PV')) dbPostventa.push(record);
-EN.includes('PV')) dbPostventa.push(record);
                             else dbProyectos.push(record);
-                            count++;                            else dbProyectos.push(record);
                             count++;
                         });
                         
                         saveDatabaseToStorage();
-                        });
-                        
-                        saveDatabaseToStorage();
-                        closeImportModal();
-                        triggerEtlExecution
                         closeImportModal();
                         triggerEtlExecution();
-                        alert(`✓ ${count} registros();
                         alert(`✓ ${count} registros importados`);
-                    } catch (error) { importados`);
                     } catch (error) {
-                        alert('Error: ' + error.message);
-
                         alert('Error: ' + error.message);
                     }
                 };
-                reader.readAsArray                    }
-                };
                 reader.readAsArrayBuffer(e.target.files[0]);
             }
-       Buffer(e.target.files[0]);
-            }
         });
 
-        // ========== LOGIN ==========
-        document.getElementById });
+        function exportToCSV() {
+            const combined = [...dbProyectos, ...dbPostventa];
+            if (combined.length === 0) { alert('No hay datos'); return; }
+            let csv = "\uFEFFID;ORIGEN;CLIENTE_PROYECTO;FECHA;ESTADO\n";
+            combined.forEach(r => { csv += `${r.ID};${r.ORIGEN};"${r.CLIENTE_PROYECTO}";${r.Fecha};${r.ADMINIST}\n`; });
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = `export_${new Date().toISOString().split('T')[0]}.csv`;
+            link.click();
+        }
+
+        function setupDragAndDrop() {
+            const dropZone = document.getElementById('drop-zone');
+            const fileInput = document.getElementById('csv-file-input');
+            dropZone.addEventListener('click', () => fileInput.click());
+            dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('border-copec-orange'); });
+            dropZone.addEventListener('dragleave', () => { dropZone.classList.remove('border-copec-orange'); });
+            dropZone.addEventListener('drop', (e) => { e.preventDefault(); dropZone.classList.remove('border-copec-orange'); if (e.dataTransfer.files.length > 0) parseCSV(e.dataTransfer.files[0]); });
+            fileInput.addEventListener('change', (e) => { if (e.target.files.length > 0) parseCSV(e.target.files[0]); });
+        }
+
+        function parseCSV(file) {
+            logEtl(`Procesando: ${file.name}`);
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const text = e.target.result;
+                const lines = text.split('\n');
+                if (lines.length < 2) { logEtl("ERROR: Archivo vacío"); return; }
+                const newProyectos = [];
+                for(let i = 1; i < lines.length; i++) {
+                    const row = lines[i].split(';');
+                    if (row.length >= 5) {
+                        newProyectos.push({
+                            _uid: `proj_${Date.now()}_${i}`,
+                            ORIGEN: row[1] || 'VOLTEX',
+                            ID: row[0] || `EXT-${i}`,
+                            CLIENTE_PROYECTO: row[2] ? row[2].replace(/"/g, '') : 'Cliente',
+                            Fecha: row[3] || new Date().toISOString().split('T')[0],
+                            ADMINIST: row[4] || 'EJECUTANDO'
+                        });
+                    }
+                }
+                dbProyectos = [...dbProyectos, ...newProyectos];
+                saveDatabaseToStorage();
+                triggerEtlExecution();
+                logEtl(`✓ ${newProyectos.length} registros cargados`);
+            };
+            reader.readAsText(file);
+        }
+
+        // ========== UTILIDADES ==========
+        function logEtl(message) {
+            const term = document.getElementById('etl-terminal');
+            if (!term) return;
+            const time = new Date().toLocaleTimeString();
+            term.innerHTML += `<div><span class="text-slate-500">[${time}]</span> ${message}</div>`;
+            term.scrollTop = term.scrollHeight;
+        }
+
+        function clearTerminal() { document.getElementById('etl-terminal').innerHTML = ''; }
 
         // ========== LOGIN ==========
-        document.getElementById('login-form').addEventListener('submit', (e)('login-form').addEventListener('submit', (e) => {
-            e.preventDefault();
-            const email = => {
+        document.getElementById('login-form').addEventListener('submit', (e) => {
             e.preventDefault();
             const email = document.getElementById('login-email').value.trim();
-            const document.getElementById('login-email').value.trim();
-            const pass = document.getElementById('login-password').value; pass = document.getElementById('login-password').value;
-            const errDiv = document.getElementById('login-error
+            const pass = document.getElementById('login-password').value;
             const errDiv = document.getElementById('login-error');
-            errDiv.classList.add('hidden');');
             errDiv.classList.add('hidden');
-            window.fbSignIn(window.fbAuth, email, pass
-            window.fbSignIn(window.fbAuth, email, pass).then(() => {
-                logEtl('✅).then(() => {
-                logEtl('✅ Login exitoso');
-            }).catch(err => Login exitoso');
-            }).catch(err => {
-                errDiv.innerText = "Error: {
-                errDiv.innerText = "Error: Credenciales inválidas.";
-                errDiv Credenciales inválidas.";
-                errDiv.classList.remove('hidden');
-            });
+            window.fbSignIn(window.fbAuth, email, pass).then(() => { logEtl('✅ Login exitoso'); }).catch(err => { errDiv.innerText = "Error: Credenciales inválidas."; errDiv.classList.remove('hidden'); });
         });
 
-.classList.remove('hidden');
-            });
-        });
-
-        document.getElementById('logout-btn').addEventListener('click', ()        document.getElementById('logout-btn').addEventListener('click', () => {
-            window.fbSignOut(window.fbAuth); => {
-            window.fbSignOut(window.fbAuth);
-        });
-    </script>
-</body>
-        });
+        document.getElementById('logout-btn').addEventListener('click', () => { window.fbSignOut(window.fbAuth); });
     </script>
 </body>
 </html>
