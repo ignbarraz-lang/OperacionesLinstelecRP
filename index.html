@@ -36,7 +36,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-app.js";
-        import { getDatabase, ref, set, get, onValue, push, remove } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-database.js";
+        import { getDatabase, ref, set, get, onValue } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-database.js";
         import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-auth.js";
 
         const firebaseConfig = {
@@ -58,8 +58,6 @@
         window.fbRef = ref;
         window.fbSet = set;
         window.fbGet = get;
-        window.fbPush = push;
-        window.fbRemove = remove;
         window.fbAuth = auth;
         window.fbSignIn = signInWithEmailAndPassword;
         window.fbSignOut = signOut;
@@ -614,7 +612,7 @@
                     <div class="grid grid-cols-2 gap-2 text-xs text-slate-400">
                         <div>• ID</div>
                         <div>• ORIGEN (VOLTEX, FLUX, VOLTEX-PV, FLUX-PV)</div>
-                        <div>• CLIENTE/PROYECTO</div>
+                        <div>• CLIENTE_PROYECTO</div>
                         <div>• Fecha (YYYY-MM-DD)</div>
                         <div>• ADMINIST (EJECUTANDO, EDP, CERRADO, NO APLICA)</div>
                         <div>• ADMINIST2 (EJECUTANDO, EDP, CERRADO, NO APLICA)</div>
@@ -664,7 +662,6 @@
     </div>
 
     <script>
-        // Variables globales
         let dbProyectos = {};
         let dbPostventa = {};
         let filteredProyectos = [];
@@ -675,7 +672,6 @@
         let importedData = [];
         let dataLoaded = false;
 
-        // Verificar que XLSX esté cargado
         window.addEventListener('load', () => {
             if (typeof XLSX !== 'undefined') {
                 console.log('✅ Librería XLSX cargada correctamente');
@@ -730,76 +726,72 @@
             }
         }
 
-        // ========== FIREBASE - CARGA INICIAL CON get() ==========
+        // ========== FIREBASE ==========
         async function loadDatabaseState() {
             if (dataLoaded) {
-                console.log('️ Datos ya cargados, no se recargan');
+                console.log('️ Datos ya cargados');
                 return;
             }
             
-            logEtl("DATALAKE LAYER: Conectando de forma remota a la nube de Firebase...");
+            logEtl("DATALAKE LAYER: Conectando a Firebase...");
             
             try {
-                // Usar get() para cargar datos una sola vez (evita loops)
                 const dbRefProyectos = window.fbRef(window.fbDatabase, 'copec_db_proyectos');
                 const dbRefPostventa = window.fbRef(window.fbDatabase, 'copec_db_postventa');
                 const dbRefTimestamp = window.fbRef(window.fbDatabase, 'copec_db_last_modified');
 
-                console.log('📥 Cargando proyectos desde Firebase...');
+                console.log('📥 Cargando proyectos...');
                 const proyectosSnapshot = await window.fbGet(dbRefProyectos);
                 const proyectosData = proyectosSnapshot.val();
-                console.log('📥 Proyectos recibidos:', proyectosData);
                 
                 if (proyectosData) {
                     dbProyectos = proyectosData;
                     console.log('✅ Proyectos cargados:', Object.keys(dbProyectos).length, 'registros');
                 } else {
-                    console.log('⚠️ No hay proyectos en Firebase');
                     dbProyectos = {};
+                    console.log('⚠️ No hay proyectos');
                 }
 
-                console.log('📥 Cargando postventa desde Firebase...');
+                console.log('📥 Cargando postventa...');
                 const postventaSnapshot = await window.fbGet(dbRefPostventa);
                 const postventaData = postventaSnapshot.val();
-                console.log('📥 Postventa recibida:', postventaData);
                 
                 if (postventaData) {
                     dbPostventa = postventaData;
                     console.log('✅ Postventa cargada:', Object.keys(dbPostventa).length, 'registros');
                 } else {
-                    console.log('⚠️ No hay postventa en Firebase');
                     dbPostventa = {};
+                    console.log('⚠️ No hay postventa');
                 }
 
                 const timestampSnapshot = await window.fbGet(dbRefTimestamp);
                 renderLastModifiedHeader(timestampSnapshot.val());
 
                 dataLoaded = true;
-                logEtl("✅ Datos cargados correctamente desde Firebase");
+                logEtl("✅ Datos cargados correctamente");
                 triggerEtlExecution();
                 
             } catch (error) {
-                console.error('❌ Error cargando datos de Firebase:', error);
-                logEtl("❌ Error cargando datos: " + error.message);
+                console.error('❌ Error cargando datos:', error);
+                logEtl("❌ Error: " + error.message);
             }
         }
 
-        // ========== FIREBASE - GUARDAR DATOS ==========
         async function saveDatabaseToStorage() {
             try {
                 const dbRefProyectos = window.fbRef(window.fbDatabase, 'copec_db_proyectos');
                 const dbRefPostventa = window.fbRef(window.fbDatabase, 'copec_db_postventa');
                 const dbRefTimestamp = window.fbRef(window.fbDatabase, 'copec_db_last_modified');
 
-                console.log(' Guardando proyectos en Firebase...');
+                console.log('💾 Guardando proyectos...');
                 await window.fbSet(dbRefProyectos, dbProyectos);
-                console.log('✅ Proyectos guardados correctamente');
-                logEtl("✓ Proyectos guardados en Firebase");
+                console.log('✅ Proyectos guardados');
+                logEtl("✓ Proyectos guardados");
 
-                console.log('💾 Guardando postventa en Firebase...');
+                console.log('💾 Guardando postventa...');
                 await window.fbSet(dbRefPostventa, dbPostventa);
-                console.log('✅ Postventa guardada correctamente');
-                logEtl("✓ Postventa guardada en Firebase");
+                console.log('✅ Postventa guardada');
+                logEtl("✓ Postventa guardada");
                 
                 const now = new Date();
                 const formattedDate = `${String(now.getDate()).padStart(2, '0')}/${String(now.getMonth() + 1).padStart(2, '0')}/${now.getFullYear()} ${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}:${String(now.getSeconds()).padStart(2, '0')}`;
@@ -808,9 +800,9 @@
                 logEtl("✓ Timestamp actualizado");
                 
             } catch (error) {
-                console.error(' Error guardando en Firebase:', error);
-                logEtl("✗ Error guardando: " + error.message);
-                alert('Error al guardar en Firebase: ' + error.message);
+                console.error('❌ Error guardando:', error);
+                logEtl("✗ Error: " + error.message);
+                alert('Error al guardar: ' + error.message);
             }
         }
 
@@ -930,10 +922,9 @@
         }
 
         function renderRiskAlerts() {
-            document.getElementById('risk-alerts-container').innerHTML = `<div class="p-3 bg-slate-800/20 text-slate-400 text-xs rounded-lg text-center">Sin anomalías críticas reportadas.</div>`;
+            document.getElementById('risk-alerts-container').innerHTML = `<div class="p-3 bg-slate-800/20 text-slate-400 text-xs rounded-lg text-center">Sin anomalías críticas.</div>`;
         }
 
-        // ========== UTILIDADES ==========
         function getAdministBadge(val) {
             if (val === 'CERRADO') return `<span class="px-2 py-1 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">CERRADO</span>`;
             if (val === 'EDP') return `<span class="px-2 py-1 rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/20">EDP</span>`;
@@ -966,21 +957,21 @@
             const filtered = [...filteredProyectos, ...filteredPostventa].filter(r => {
                 if (!searchTerm) return true;
                 return (r.ID && r.ID.toLowerCase().includes(searchTerm)) || 
-                       (r['CLIENTE/PROYECTO'] && r['CLIENTE/PROYECTO'].toLowerCase().includes(searchTerm));
+                       (r.CLIENTE_PROYECTO && r.CLIENTE_PROYECTO.toLowerCase().includes(searchTerm));
             });
             
             filtered.forEach(r => {
                 const isPV = r.ORIGEN && r.ORIGEN.includes('PV');
                 tbody.innerHTML += `
                     <tr class="hover:bg-slate-900/40 text-center">
-                        <td class="p-3 text-left sticky left-0 bg-slate-950 font-bold">${r.ID} - ${r['CLIENTE/PROYECTO']}</td>
+                        <td class="p-3 text-left sticky left-0 bg-slate-950 font-bold">${r.ID} - ${r.CLIENTE_PROYECTO}</td>
                         <td class="p-3">100%</td>
-                        <td class="p-3">${getDocBadge(r['01 Plano'])}</td>
-                        <td class="p-3">${getDocBadge(r['02 Memoria'])}</td>
+                        <td class="p-3">${getDocBadge(r['01_Plano'])}</td>
+                        <td class="p-3">${getDocBadge(r['02_Memoria'])}</td>
                         <td class="p-3">${getDocBadge(r.INST)}</td>
-                        <td class="p-3">${getDocBadge(r['04 Gantt'])}</td>
-                        <td class="p-3">${getDocBadge(r['03 Fotom'])}</td>
-                        <td class="p-3">${getDocBadge(r['04 AST'])}</td>
+                        <td class="p-3">${getDocBadge(r['04_Gantt'])}</td>
+                        <td class="p-3">${getDocBadge(r['03_Fotom'])}</td>
+                        <td class="p-3">${getDocBadge(r['04_AST'])}</td>
                         <td class="p-3">${getAdministBadge(r.ADMINIST)}</td>
                         <td class="p-3">${getAdministBadge(r.ADMINIST2)}</td>
                         <td class="p-3">
@@ -989,7 +980,7 @@
                         </td>
                     </tr>`;
             });
-            document.getElementById('quality-table-info').innerText = `Total unificado: ${filtered.length}`;
+            document.getElementById('quality-table-info').innerText = `Total: ${filtered.length}`;
         }
 
         function renderPostVentaAnalysis() {
@@ -1001,11 +992,11 @@
                 tbody.innerHTML += `
                     <tr class="hover:bg-slate-900/40">
                         <td class="p-3 font-mono">${pv.ID}</td>
-                        <td class="p-3">${pv['CLIENTE/PROYECTO']}</td>
+                        <td class="p-3">${pv.CLIENTE_PROYECTO}</td>
                         <td class="p-3">${pv.Fecha || '-'}</td>
                         <td class="p-3">${getAdministBadge(pv.ADMINIST)}</td>
                         <td class="p-3">${getAdministBadge(pv.ADMINIST2)}</td>
-                        <td class="p-3">${getDocBadge(pv['01 Reporte OT'])}</td>
+                        <td class="p-3">${getDocBadge(pv['01_Reporte_OT'])}</td>
                         <td class="p-3 text-center">
                             <button onclick="openFormModal('${pv._uid}', true)" class="text-slate-400 hover:text-copec-orange mx-1"><i class="fa-solid fa-pen-to-square"></i></button>
                             <button onclick="openDeleteModal('${pv._uid}', true)" class="text-slate-400 hover:text-rose-500 mx-1"><i class="fa-solid fa-trash-can"></i></button>
@@ -1013,8 +1004,8 @@
                     </tr>`;
             });
 
-            const otCount = filteredPostventa.filter(pv => pv['01 Reporte OT'] === 'Realizado').length;
-            const astCount = filteredPostventa.filter(pv => pv['02 AST'] === 'Realizado').length;
+            const otCount = filteredPostventa.filter(pv => pv['01_Reporte_OT'] === 'Realizado').length;
+            const astCount = filteredPostventa.filter(pv => pv['02_AST'] === 'Realizado').length;
             const total = filteredPostventa.length || 1;
             
             document.getElementById('pv-ot-percent').innerText = `${((otCount/total)*100).toFixed(0)}%`;
@@ -1039,11 +1030,11 @@
                     <tr class="hover:bg-slate-900/30">
                         <td class="p-3 font-mono font-bold">${r.ID}</td>
                         <td class="p-3">${r.ORIGEN}</td>
-                        <td class="p-3 font-semibold">${r['CLIENTE/PROYECTO']}</td>
+                        <td class="p-3 font-semibold">${r.CLIENTE_PROYECTO}</td>
                         <td class="p-3">${r.Fecha || '-'}</td>
                         <td class="p-3">${getAdministBadge(r.ADMINIST)}</td>
                         <td class="p-3">${r.INST || '-'}</td>
-                        <td class="p-3 text-center">${getDocBadge(r['04 AST'])}</td>
+                        <td class="p-3 text-center">${getDocBadge(r['04_AST'])}</td>
                         <td class="p-3">${getAdministBadge(r.ADMINIST2)}</td>
                         <td class="p-3 font-mono">${r.Fecha2 || '-'}</td>
                         <td class="p-3 text-center">
@@ -1051,7 +1042,7 @@
                         </td>
                     </tr>`;
             });
-            document.getElementById('explorer-count').innerText = `Visualizando ${filtered.length} de ${filteredProyectos.length + filteredPostventa.length} registros totales`;
+            document.getElementById('explorer-count').innerText = `Visualizando ${filtered.length} de ${filteredProyectos.length + filteredPostventa.length}`;
         }
 
         document.getElementById('quality-search').addEventListener('input', renderQualityTable);
@@ -1090,21 +1081,21 @@
                 if (record) {
                     document.getElementById('form-id').value = record.ID || '';
                     document.getElementById('form-origen').value = record.ORIGEN || 'VOLTEX';
-                    document.getElementById('form-cliente').value = record['CLIENTE/PROYECTO'] || '';
+                    document.getElementById('form-cliente').value = record.CLIENTE_PROYECTO || '';
                     document.getElementById('form-fecha').value = record.Fecha || '';
                     document.getElementById('form-administ').value = record.ADMINIST || 'EJECUTANDO';
                     document.getElementById('form-administ2').value = record.ADMINIST2 || '';
                     document.getElementById('form-fecha2').value = record.Fecha2 || '';
                     document.getElementById('form-inst').value = record.INST || '';
                     
-                    document.getElementById('sel-plano').value = record['01 Plano'] || '';
-                    document.getElementById('sel-memoria').value = record['02 Memoria'] || '';
-                    document.getElementById('sel-gantt').value = record['04 Gantt'] || '';
-                    document.getElementById('sel-fotomontaje').value = record['03 Fotom'] || '';
-                    document.getElementById('sel-ast-proj').value = record['04 AST'] || '';
-                    document.getElementById('sel-fotos-ini').value = record['Fotos Terreno'] || '';
-                    document.getElementById('sel-ot').value = record['01 Reporte OT'] || '';
-                    document.getElementById('sel-ast').value = record['02 AST'] || '';
+                    document.getElementById('sel-plano').value = record['01_Plano'] || '';
+                    document.getElementById('sel-memoria').value = record['02_Memoria'] || '';
+                    document.getElementById('sel-gantt').value = record['04_Gantt'] || '';
+                    document.getElementById('sel-fotomontaje').value = record['03_Fotom'] || '';
+                    document.getElementById('sel-ast-proj').value = record['04_AST'] || '';
+                    document.getElementById('sel-fotos-ini').value = record['Fotos_Terreno'] || '';
+                    document.getElementById('sel-ot').value = record['01_Reporte_OT'] || '';
+                    document.getElementById('sel-ast').value = record['02_AST'] || '';
                     
                     const origen = record.ORIGEN || 'VOLTEX';
                     const isPVRecord = origen.includes('PV');
@@ -1123,7 +1114,6 @@
 
         function closeFormModal() { 
             document.getElementById('form-modal').classList.add('hidden');
-            console.log('✅ Modal de formulario cerrado');
         }
 
         document.getElementById('record-form').addEventListener('submit', async (e) => {
@@ -1137,20 +1127,20 @@
             const record = {
                 ID: document.getElementById('form-id').value,
                 ORIGEN: origen,
-                'CLIENTE/PROYECTO': document.getElementById('form-cliente').value,
+                CLIENTE_PROYECTO: document.getElementById('form-cliente').value,
                 Fecha: document.getElementById('form-fecha').value,
                 ADMINIST: document.getElementById('form-administ').value,
                 ADMINIST2: document.getElementById('form-administ2').value,
                 Fecha2: document.getElementById('form-fecha2').value,
                 INST: document.getElementById('form-inst').value,
-                '01 Plano': document.getElementById('sel-plano').value,
-                '02 Memoria': document.getElementById('sel-memoria').value,
-                '04 Gantt': document.getElementById('sel-gantt').value,
-                '03 Fotom': document.getElementById('sel-fotomontaje').value,
-                '04 AST': document.getElementById('sel-ast-proj').value,
-                'Fotos Terreno': document.getElementById('sel-fotos-ini').value,
-                '01 Reporte OT': document.getElementById('sel-ot').value,
-                '02 AST': document.getElementById('sel-ast').value
+                '01_Plano': document.getElementById('sel-plano').value,
+                '02_Memoria': document.getElementById('sel-memoria').value,
+                '04_Gantt': document.getElementById('sel-gantt').value,
+                '03_Fotom': document.getElementById('sel-fotomontaje').value,
+                '04_AST': document.getElementById('sel-ast-proj').value,
+                'Fotos_Terreno': document.getElementById('sel-fotos-ini').value,
+                '01_Reporte_OT': document.getElementById('sel-ot').value,
+                '02_AST': document.getElementById('sel-ast').value
             };
             
             if (actionType === 'EDIT') {
@@ -1172,9 +1162,8 @@
                 logEtl(`✓ Nuevo registro ${record.ID} creado`);
             }
             
-            console.log('💾 Guardando registro en Firebase...');
+            console.log('💾 Guardando...');
             await saveDatabaseToStorage();
-            
             closeFormModal();
             triggerEtlExecution();
         });
@@ -1193,7 +1182,6 @@
 
         function closeDeleteModal() { 
             document.getElementById('delete-modal').classList.add('hidden');
-            console.log('✅ Modal de eliminación cerrado');
         }
 
         async function executeDeleteRecord() {
@@ -1203,11 +1191,11 @@
             if (type === "PV") {
                 const record = dbPostventa[uid];
                 delete dbPostventa[uid];
-                logEtl(`✓ Registro ${record?.ID || uid} eliminado de PostVenta`);
+                logEtl(`✓ Registro ${record?.ID || uid} eliminado`);
             } else {
                 const record = dbProyectos[uid];
                 delete dbProyectos[uid];
-                logEtl(`✓ Registro ${record?.ID || uid} eliminado de Proyectos`);
+                logEtl(`✓ Registro ${record?.ID || uid} eliminado`);
             }
             
             await saveDatabaseToStorage();
@@ -1225,13 +1213,9 @@
         document.getElementById('btn-confirm-import').addEventListener('click', confirmImport);
 
         document.getElementById('excel-file-input').addEventListener('change', function(e) {
-            console.log('📁 Evento change disparado');
             const file = e.target.files[0];
             if (file) {
-                console.log('📁 Archivo seleccionado:', file.name);
                 handleExcelFile(file);
-            } else {
-                console.log('❌ No se seleccionó archivo');
             }
         });
 
@@ -1241,82 +1225,55 @@
             document.getElementById('import-status').classList.add('hidden');
             importedData = [];
             document.getElementById('excel-file-input').value = '';
-            console.log('✅ Modal de importación abierto');
         }
 
         function closeImportModal() {
             document.getElementById('import-modal').classList.add('hidden');
-            console.log('✅ Modal de importación cerrado');
         }
 
         function handleExcelFile(file) {
-            console.log(' Procesando archivo:', file.name);
-            logEtl(`Leyendo archivo Excel: ${file.name}`);
+            console.log('📂 Procesando:', file.name);
+            logEtl(`Leyendo: ${file.name}`);
             
             const reader = new FileReader();
             
             reader.onload = function(e) {
-                console.log('✅ Archivo leído correctamente');
                 try {
                     const data = new Uint8Array(e.target.result);
-                    console.log('📊 Datos binarios cargados, longitud:', data.length);
                     
                     if (typeof XLSX === 'undefined') {
-                        console.error('❌ Librería XLSX no cargada');
-                        alert('Error: La librería de Excel no se cargó correctamente. Recarga la página.');
+                        alert('Error: Librería Excel no cargada');
                         return;
                     }
                     
-                    console.log('🔄 Parseando Excel...');
                     const workbook = XLSX.read(data, { type: 'array' });
-                    console.log('✅ Workbook creado, hojas:', workbook.SheetNames);
-                    
                     const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
                     const jsonData = XLSX.utils.sheet_to_json(firstSheet);
                     
-                    console.log('✅ Datos extraídos:', jsonData.length, 'filas');
-                    console.log('📋 Primera fila:', jsonData[0]);
-                    
                     if (jsonData.length === 0) {
-                        alert('El archivo Excel está vacío o no tiene datos válidos');
+                        alert('El archivo está vacío');
                         return;
                     }
                     
                     importedData = jsonData;
-                    console.log('💾 Datos guardados en importedData');
+                    console.log('✅ Datos:', jsonData.length, 'filas');
                     showImportPreview(jsonData);
-                    logEtl(`✓ ${jsonData.length} filas leídas del Excel`);
+                    logEtl(`✓ ${jsonData.length} filas leídas`);
                 } catch (error) {
-                    console.error('❌ Error procesando Excel:', error);
-                    alert('Error al procesar el archivo Excel: ' + error.message);
-                    logEtl(`✗ Error: ${error.message}`);
+                    console.error('❌ Error:', error);
+                    alert('Error: ' + error.message);
                 }
-            };
-            
-            reader.onerror = function(e) {
-                console.error('❌ Error leyendo archivo:', e);
-                alert('Error al leer el archivo');
             };
             
             reader.readAsArrayBuffer(file);
         }
 
         function showImportPreview(data) {
-            console.log('👁️ Mostrando vista previa de', data.length, 'registros');
             const preview = document.getElementById('import-preview');
             const head = document.getElementById('import-preview-head');
             const body = document.getElementById('import-preview-body');
             
-            if (data.length === 0) {
-                head.innerHTML = '';
-                body.innerHTML = '<tr><td class="p-3 text-center text-slate-400">No hay datos para mostrar</td></tr>';
-                preview.classList.remove('hidden');
-                return;
-            }
-            
             const headers = Object.keys(data[0]);
-            console.log('📋 Columnas detectadas:', headers);
-            
             head.innerHTML = '<tr>' + headers.map(h => `<th class="p-2 bg-slate-900 text-xs font-bold text-slate-300">${h}</th>`).join('') + '</tr>';
             
             body.innerHTML = data.slice(0, 10).map(row => 
@@ -1324,42 +1281,47 @@
             ).join('');
             
             if (data.length > 10) {
-                body.innerHTML += `<tr><td colspan="${headers.length}" class="p-2 text-center text-xs text-slate-400">... y ${data.length - 10} registros más</td></tr>`;
+                body.innerHTML += `<tr><td colspan="${headers.length}" class="p-2 text-center text-xs text-slate-400">... y ${data.length - 10} más</td></tr>`;
             }
             
             preview.classList.remove('hidden');
-            console.log('✅ Vista previa mostrada correctamente');
         }
 
         async function confirmImport() {
-            console.log('🚀 Confirmando importación de', importedData.length, 'registros');
-            
             if (importedData.length === 0) {
-                alert('No hay datos para importar');
+                alert('No hay datos');
                 return;
             }
             
             let importCount = 0;
             importedData.forEach(row => {
                 const uid = `import_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+                
+                // Normalizar nombres de columnas (reemplazar / por _)
+                const normalizedRow = {};
+                for (let key in row) {
+                    const newKey = key.replace(/\//g, '_').replace(/\./g, '_').replace(/ /g, '_');
+                    normalizedRow[newKey] = row[key];
+                }
+                
                 const record = {
                     _uid: uid,
-                    ID: row.ID || `IMP-${importCount + 1}`,
-                    ORIGEN: row.ORIGEN || 'VOLTEX',
-                    'CLIENTE/PROYECTO': row['CLIENTE/PROYECTO'] || row.CLIENTE || 'Sin nombre',
-                    Fecha: row.Fecha || new Date().toISOString().split('T')[0],
-                    ADMINIST: row.ADMINIST || 'EJECUTANDO',
-                    ADMINIST2: row.ADMINIST2 || '',
-                    Fecha2: row.Fecha2 || '',
-                    INST: row.INST || '',
-                    '01 Plano': row['01 Plano'] || '',
-                    '02 Memoria': row['02 Memoria'] || '',
-                    '04 Gantt': row['04 Gantt'] || '',
-                    '03 Fotom': row['03 Fotom'] || '',
-                    '04 AST': row['04 AST'] || '',
-                    'Fotos Terreno': row['Fotos Terreno'] || '',
-                    '01 Reporte OT': row['01 Reporte OT'] || '',
-                    '02 AST': row['02 AST'] || ''
+                    ID: normalizedRow.ID || `IMP-${importCount + 1}`,
+                    ORIGEN: normalizedRow.ORIGEN || 'VOLTEX',
+                    CLIENTE_PROYECTO: normalizedRow.CLIENTE_PROYECTO || normalizedRow.CLIENTE || 'Sin nombre',
+                    Fecha: normalizedRow.Fecha || new Date().toISOString().split('T')[0],
+                    ADMINIST: normalizedRow.ADMINIST || 'EJECUTANDO',
+                    ADMINIST2: normalizedRow.ADMINIST2 || '',
+                    Fecha2: normalizedRow.Fecha2 || '',
+                    INST: normalizedRow.INST || '',
+                    '01_Plano': normalizedRow['01_Plano'] || normalizedRow['01_Plano'] || '',
+                    '02_Memoria': normalizedRow['02_Memoria'] || '',
+                    '04_Gantt': normalizedRow['04_Gantt'] || '',
+                    '03_Fotom': normalizedRow['03_Fotom'] || '',
+                    '04_AST': normalizedRow['04_AST'] || '',
+                    'Fotos_Terreno': normalizedRow['Fotos_Terreno'] || '',
+                    '01_Reporte_OT': normalizedRow['01_Reporte_OT'] || '',
+                    '02_AST': normalizedRow['02_AST'] || ''
                 };
                 
                 const isPV = record.ORIGEN.includes('PV');
@@ -1371,15 +1333,15 @@
                 importCount++;
             });
             
-            console.log('💾 Guardando en Firebase...');
+            console.log('💾 Guardando...');
             await saveDatabaseToStorage();
-            logEtl(`✓ ${importCount} registros importados desde Excel`);
+            logEtl(`✓ ${importCount} registros importados`);
             
             const status = document.getElementById('import-status');
             status.innerHTML = `<div class="bg-emerald-500/10 border border-emerald-500/20 rounded-lg p-4 text-center">
                 <i class="fa-solid fa-circle-check text-emerald-400 text-2xl mb-2"></i>
                 <p class="text-sm font-bold text-emerald-300">¡Importación exitosa!</p>
-                <p class="text-xs text-slate-400 mt-1">${importCount} registros agregados a la base de datos</p>
+                <p class="text-xs text-slate-400 mt-1">${importCount} registros agregados</p>
             </div>`;
             status.classList.remove('hidden');
             
@@ -1413,7 +1375,7 @@
         function exportToCSV() {
             const data = [...filteredProyectos, ...filteredPostventa];
             if (data.length === 0) {
-                alert('No hay datos para exportar');
+                alert('No hay datos');
                 return;
             }
             
@@ -1426,21 +1388,20 @@
             const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
             const link = document.createElement('a');
             link.href = URL.createObjectURL(blob);
-            link.download = `export_copec_${new Date().toISOString().split('T')[0]}.csv`;
+            link.download = `export_${new Date().toISOString().split('T')[0]}.csv`;
             link.click();
         }
 
         // ========== RECARGAR ==========
         document.getElementById('btn-reload').addEventListener('click', async () => {
-            console.log('🔄 Recargando datos desde Firebase...');
-            logEtl('🔄 Recargando datos desde Firebase...');
+            console.log(' Recargando...');
+            logEtl('🔄 Recargando datos...');
             dataLoaded = false;
             await loadDatabaseState();
         });
 
-        // Inicialización
-        console.log('✅ Aplicación inicializada correctamente');
-        logEtl('✅ Aplicación inicializada correctamente');
+        console.log('✅ Aplicación lista');
+        logEtl('✅ Sistema inicializado');
     </script>
 </body>
 </html>
