@@ -75,7 +75,6 @@
                 </div>
             </div>
             <div class="flex items-center space-x-6">
-                <!-- NOTIFICATION BELL -->
                 <button onclick="openNotificationsPanel()" class="relative p-2 text-slate-400 hover:text-copec-orange transition-colors">
                     <i class="fa-solid fa-bell text-xl"></i>
                     <span id="notification-count" class="notification-badge absolute -top-1 -right-1 bg-rose-500 text-white text-[10px] font-bold rounded-full h-5 w-5 flex items-center justify-center hidden">0</span>
@@ -211,7 +210,6 @@
                             <div class="h-64 relative"><canvas id="chart-origen"></canvas></div>
                         </div>
                     </div>
-                    <!-- RESUMEN DE PAGOS DEL MES -->
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <div class="bg-emerald-500/10 border border-emerald-500/20 rounded-xl p-5">
                             <div class="flex items-center justify-between mb-2">
@@ -389,6 +387,14 @@
                                 </div>
                                 <div id="gs-status" class="hidden mt-2 p-2 bg-emerald-500/10 border border-emerald-500/20 rounded-lg text-xs text-emerald-400">
                                     <i class="fa-solid fa-check-circle mr-1"></i><span id="gs-status-text">Conectado</span>
+                                </div>
+                            </div>
+                            <div class="bg-slate-800/30 border border-slate-700/30 p-4 rounded-xl space-y-4">
+                                <h4 class="text-xs font-bold text-slate-300 uppercase">Carga Externa (CSV)</h4>
+                                <div class="border-2 border-dashed border-slate-700 hover:border-copec-orange/50 rounded-lg p-6 text-center cursor-pointer" id="drop-zone">
+                                    <i class="fa-solid fa-cloud-arrow-up text-3xl text-slate-500 mb-2"></i>
+                                    <p class="text-xs font-semibold text-slate-300">Arrastra tu archivo CSV aquí</p>
+                                    <input type="file" id="csv-file-input" class="hidden" accept=".csv">
                                 </div>
                             </div>
                         </div>
@@ -574,6 +580,7 @@
         let chartOrigenInstance = null;
         let uidCounter = 1;
         let gsScriptUrl = localStorage.getItem('gs_script_url') || '';
+        let dataLoaded = false;
 
         // ========== INICIALIZACIÓN ==========
         window.onload = function() {
@@ -582,10 +589,12 @@
                 document.getElementById('gs-script-url').value = gsScriptUrl;
                 document.getElementById('gs-status').classList.remove('hidden');
             }
+            setupDragAndDrop();
         };
 
         // ========== FIREBASE ==========
         async function loadDatabaseState() {
+            if (dataLoaded) return;
             logEtl("CONECTANDO A FIREBASE...");
             try {
                 const proyectosRef = window.fbRef(window.fbDatabase, 'copec_db_proyectos');
@@ -605,12 +614,45 @@
                 dbClientes = clientesSnap.val() ? Object.values(clientesSnap.val()) : [];
                 dbPagos = pagosSnap.val() ? Object.values(pagosSnap.val()) : [];
 
+                // Asegurar que todos tengan _uid
+                dbProyectos.forEach(p => { if (!p._uid) p._uid = `proj_${uidCounter++}`; });
+                dbPostventa.forEach(pv => { if (!pv._uid) pv._uid = `pv_${uidCounter++}`; });
+                dbClientes.forEach(c => { if (!c._uid) c._uid = `client_${uidCounter++}`; });
+                dbPagos.forEach(p => { if (!p._uid) p._uid = `pago_${uidCounter++}`; });
+
+                // Auto-generar clientes desde proyectos si no existen
+                autoGenerateClientes();
+
                 logEtl(`✅ Cargados: ${dbProyectos.length} proyectos, ${dbPostventa.length} postventa, ${dbClientes.length} clientes, ${dbPagos.length} pagos`);
+                dataLoaded = true;
                 triggerEtlExecution();
                 updateNotificationBadge();
             } catch (error) {
-                logEtl("❌ Error: " + error.message);
+                logEtl(" Error: " + error.message);
+                dataLoaded = true;
             }
+        }
+
+        function autoGenerateClientes() {
+            const clientesMap = {};
+            dbClientes.forEach(c => { clientesMap[c.nombre.toLowerCase()] = c; });
+            
+            [...dbProyectos, ...dbPostventa].forEach(p => {
+                const nombre = p['CLIENTE/PROYECTO'] || p.CLIENTE_PROYECTO || '';
+                if (nombre && !clientesMap[nombre.toLowerCase()]) {
+                    const newClient = {
+                        _uid: `client_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+                        nombre: nombre,
+                        rut: '',
+                        email: '',
+                        telefono: '',
+                        direccion: '',
+                        contacto: ''
+                    };
+                    dbClientes.push(newClient);
+                    clientesMap[nombre.toLowerCase()] = newClient;
+                }
+            });
         }
 
         async function saveDatabaseToStorage() {
@@ -632,8 +674,11 @@
                 ]);
 
                 logEtl("✓ Datos guardados en Firebase");
+                return true;
             } catch (error) {
                 logEtl("❌ Error guardando: " + error.message);
+                alert('Error al guardar en Firebase: ' + error.message);
+                return false;
             }
         }
 
@@ -664,7 +709,7 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(allData)
                 });
-                logElet(`✅ Sincronizado: ${allData.length} registros`);
+                logEtl(`✅ Sincronizado: ${allData.length} registros`);
                 alert(`✅ Sincronización exitosa: ${allData.length} registros`);
             } catch (error) {
                 logEtl("❌ Error: " + error.message);
@@ -744,8 +789,8 @@
             const realizados = pagosMes.filter(p => p.estado === 'REALIZADO');
             const pendientes = pagosMes.filter(p => p.estado === 'PENDIENTE');
             
-            const totalRealizado = realizados.reduce((sum, p) => sum + (p.monto || 0), 0);
-            const totalPendiente = pendientes.reduce((sum, p) => sum + (p.monto || 0), 0);
+            const totalRealizado = realizados.reduce((sum, p) => sum + (parseInt(p.monto) || 0), 0);
+            const totalPendiente = pendientes.reduce((sum, p) => sum + (parseInt(p.monto) || 0), 0);
             const totalFacturado = totalRealizado + totalPendiente;
 
             document.getElementById('kpi-pagos-realizados').innerText = `$${totalRealizado.toLocaleString('es-CL')}`;
@@ -795,36 +840,22 @@
             const grid = document.getElementById('clientes-grid');
             const searchTerm = (document.getElementById('cliente-search').value || '').toLowerCase();
             
-            // Generar clientes desde proyectos si no existen
-            const clientesMap = {};
-            dbClientes.forEach(c => { clientesMap[c.nombre.toLowerCase()] = c; });
-            
-            [...dbProyectos, ...dbPostventa].forEach(p => {
-                const nombre = p['CLIENTE/PROYECTO'] || p.CLIENTE_PROYECTO || '';
-                if (nombre && !clientesMap[nombre.toLowerCase()]) {
-                    clientesMap[nombre.toLowerCase()] = {
-                        _uid: `client_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-                        nombre: nombre,
-                        rut: '',
-                        email: '',
-                        telefono: '',
-                        direccion: '',
-                        contacto: ''
-                    };
-                }
-            });
-
-            const clientesArray = Object.values(clientesMap).filter(c => 
+            const clientesFiltrados = dbClientes.filter(c => 
                 c.nombre.toLowerCase().includes(searchTerm)
             );
 
-            grid.innerHTML = clientesArray.map(c => {
+            if (clientesFiltrados.length === 0) {
+                grid.innerHTML = '<p class="text-slate-400 text-center col-span-3 py-8">No hay clientes registrados. Agrega uno nuevo o importa datos.</p>';
+                return;
+            }
+
+            grid.innerHTML = clientesFiltrados.map(c => {
                 const proyectosCliente = [...dbProyectos, ...dbPostventa].filter(p => 
                     (p['CLIENTE/PROYECTO'] || p.CLIENTE_PROYECTO || '').toLowerCase() === c.nombre.toLowerCase()
                 );
                 const pagosCliente = dbPagos.filter(p => p.clienteId === c._uid);
-                const totalPagado = pagosCliente.filter(p => p.estado === 'REALIZADO').reduce((sum, p) => sum + (p.monto || 0), 0);
-                const totalPendiente = pagosCliente.filter(p => p.estado === 'PENDIENTE').reduce((sum, p) => sum + (p.monto || 0), 0);
+                const totalPagado = pagosCliente.filter(p => p.estado === 'REALIZADO').reduce((sum, p) => sum + (parseInt(p.monto) || 0), 0);
+                const totalPendiente = pagosCliente.filter(p => p.estado === 'PENDIENTE').reduce((sum, p) => sum + (parseInt(p.monto) || 0), 0);
 
                 return `
                     <div class="bg-slate-900/40 border border-slate-800 rounded-xl p-5 hover:border-copec-orange transition-all cursor-pointer" onclick="openClientDetail('${c._uid}')">
@@ -855,14 +886,17 @@
 
         function openClientDetail(clientId) {
             const cliente = dbClientes.find(c => c._uid === clientId);
-            if (!cliente) { alert('Cliente no encontrado'); return; }
+            if (!cliente) { 
+                alert('Cliente no encontrado. Intenta recargar la página.');
+                return; 
+            }
             
             const proyectosCliente = [...dbProyectos, ...dbPostventa].filter(p => 
                 (p['CLIENTE/PROYECTO'] || p.CLIENTE_PROYECTO || '').toLowerCase() === cliente.nombre.toLowerCase()
             );
             const pagosCliente = dbPagos.filter(p => p.clienteId === clientId);
-            const totalPagado = pagosCliente.filter(p => p.estado === 'REALIZADO').reduce((sum, p) => sum + (p.monto || 0), 0);
-            const totalPendiente = pagosCliente.filter(p => p.estado === 'PENDIENTE').reduce((sum, p) => sum + (p.monto || 0), 0);
+            const totalPagado = pagosCliente.filter(p => p.estado === 'REALIZADO').reduce((sum, p) => sum + (parseInt(p.monto) || 0), 0);
+            const totalPendiente = pagosCliente.filter(p => p.estado === 'PENDIENTE').reduce((sum, p) => sum + (parseInt(p.monto) || 0), 0);
 
             document.getElementById('client-modal-title').innerText = `Ficha: ${cliente.nombre}`;
             document.getElementById('client-modal-content').innerHTML = `
@@ -901,7 +935,7 @@
                 <div>
                     <h4 class="text-xs font-bold text-slate-300 uppercase mb-3">Proyectos (${proyectosCliente.length})</h4>
                     <div class="space-y-2">
-                        ${proyectosCliente.map(p => `
+                        ${proyectosCliente.length === 0 ? '<p class="text-xs text-slate-500">Sin proyectos registrados</p>' : proyectosCliente.map(p => `
                             <div class="bg-slate-800/30 p-3 rounded-lg flex items-center justify-between">
                                 <div>
                                     <p class="text-sm font-bold text-slate-200">${p.ID}</p>
@@ -918,7 +952,7 @@
                         ${pagosCliente.length === 0 ? '<p class="text-xs text-slate-500">Sin pagos registrados</p>' : pagosCliente.map(p => `
                             <div class="bg-slate-800/30 p-3 rounded-lg flex items-center justify-between">
                                 <div>
-                                    <p class="text-sm font-bold text-slate-200">${p.tipo} - $${(p.monto || 0).toLocaleString('es-CL')}</p>
+                                    <p class="text-sm font-bold text-slate-200">${p.tipo} - $${(parseInt(p.monto) || 0).toLocaleString('es-CL')}</p>
                                     <p class="text-xs text-slate-400">${p.fechaEmision} ${p.fechaPago ? '→ Pago: ' + p.fechaPago : ''}</p>
                                 </div>
                                 <span class="px-2 py-1 rounded-full text-[10px] font-bold ${p.estado === 'REALIZADO' ? 'bg-emerald-500/10 text-emerald-400' : 'bg-amber-500/10 text-amber-400'}">${p.estado}</span>
@@ -930,7 +964,10 @@
                     <h4 class="text-xs font-bold text-slate-300 uppercase mb-3">Documentos</h4>
                     <div class="grid grid-cols-2 md:grid-cols-4 gap-2">
                         ${['Plano', 'Memoria', 'TE6', 'Gantt', 'AST', 'Fotos'].map(doc => {
-                            const tieneDoc = proyectosCliente.some(p => p[doc] === 'Realizado');
+                            const tieneDoc = proyectosCliente.some(p => {
+                                const docKey = doc === 'Plano' ? '01 Plano' : doc === 'Memoria' ? '02 Memoria' : doc === 'TE6' ? 'INST' : doc === 'Gantt' ? '04 Gantt' : doc === 'AST' ? '04 AST' : '01 Foto Ini';
+                                return p[docKey] === 'Realizado' || p[docKey] === 'TE6 APROB';
+                            });
                             return `
                                 <div class="p-3 rounded-lg text-center ${tieneDoc ? 'bg-emerald-500/10 border border-emerald-500/20' : 'bg-slate-800/30 border border-slate-700'}">
                                     <i class="fa-solid ${tieneDoc ? 'fa-circle-check text-emerald-400' : 'fa-circle-minus text-slate-600'} text-2xl mb-1"></i>
@@ -951,7 +988,10 @@
 
         function editClient(clientId) {
             const cliente = dbClientes.find(c => c._uid === clientId);
-            if (!cliente) { alert('Cliente no encontrado'); return; }
+            if (!cliente) { 
+                alert('Cliente no encontrado');
+                return; 
+            }
             
             document.getElementById('client-modal-title').innerText = `Editar: ${cliente.nombre}`;
             document.getElementById('client-modal-content').innerHTML = `
@@ -975,7 +1015,10 @@
         async function updateClient(e, clientId) {
             e.preventDefault();
             const idx = dbClientes.findIndex(c => c._uid === clientId);
-            if (idx === -1) return;
+            if (idx === -1) {
+                alert('Cliente no encontrado en la base de datos');
+                return;
+            }
             
             dbClientes[idx] = {
                 ...dbClientes[idx],
@@ -987,10 +1030,12 @@
                 contacto: document.getElementById('edit-contacto').value
             };
             
-            await saveDatabaseToStorage();
-            openClientDetail(clientId);
-            renderClientes();
-            logEtl("✓ Cliente actualizado");
+            const saved = await saveDatabaseToStorage();
+            if (saved) {
+                openClientDetail(clientId);
+                renderClientes();
+                logEtl("✓ Cliente actualizado");
+            }
         }
 
         function openNewClientModal() {
@@ -1014,10 +1059,12 @@
                 contacto: document.getElementById('nc-contacto').value
             };
             dbClientes.push(newClient);
-            await saveDatabaseToStorage();
-            closeNewClientModal();
-            renderClientes();
-            logEtl(`✓ Nuevo cliente: ${newClient.nombre}`);
+            const saved = await saveDatabaseToStorage();
+            if (saved) {
+                closeNewClientModal();
+                renderClientes();
+                logEtl(`✓ Nuevo cliente: ${newClient.nombre}`);
+            }
         }
 
         // ========== FACTURACIÓN ==========
@@ -1030,6 +1077,11 @@
                 pagosFiltrados = dbPagos.filter(p => p.estado === filterEstado);
             }
 
+            if (pagosFiltrados.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="8" class="p-4 text-center text-slate-500">No hay pagos registrados</td></tr>';
+                return;
+            }
+
             tbody.innerHTML = pagosFiltrados.map(p => {
                 const cliente = dbClientes.find(c => c._uid === p.clienteId);
                 return `
@@ -1037,7 +1089,7 @@
                         <td class="p-3 font-bold text-slate-200">${cliente ? cliente.nombre : 'Sin cliente'}</td>
                         <td class="p-3"><span class="px-2 py-1 rounded-full text-[10px] font-bold bg-blue-500/10 text-blue-400">${p.tipo}</span></td>
                         <td class="p-3 text-slate-400">${p.proyecto || '-'}</td>
-                        <td class="p-3 font-bold text-slate-200">$${(p.monto || 0).toLocaleString('es-CL')}</td>
+                        <td class="p-3 font-bold text-slate-200">$${(parseInt(p.monto) || 0).toLocaleString('es-CL')}</td>
                         <td class="p-3 text-slate-400">${p.fechaEmision || '-'}</td>
                         <td class="p-3 text-slate-400">${p.fechaPago || '-'}</td>
                         <td class="p-3 text-center">
@@ -1068,24 +1120,32 @@
                 dbPagos[idx].fechaPago = '';
             }
             
-            await saveDatabaseToStorage();
-            renderFacturacion();
-            updatePaymentKPIs();
-            updateNotificationBadge();
-            logEtl(`✓ Pago ${dbPagos[idx].estado}`);
+            const saved = await saveDatabaseToStorage();
+            if (saved) {
+                renderFacturacion();
+                updatePaymentKPIs();
+                updateNotificationBadge();
+                logEtl(`✓ Pago ${dbPagos[idx].estado}`);
+            }
         }
 
         async function deletePayment(paymentId) {
             if (!confirm('¿Eliminar este pago?')) return;
             dbPagos = dbPagos.filter(p => p._uid !== paymentId);
-            await saveDatabaseToStorage();
-            renderFacturacion();
-            updatePaymentKPIs();
-            logEtl("✓ Pago eliminado");
+            const saved = await saveDatabaseToStorage();
+            if (saved) {
+                renderFacturacion();
+                updatePaymentKPIs();
+                logEtl("✓ Pago eliminado");
+            }
         }
 
         function openNewPaymentModal() {
             const select = document.getElementById('np-cliente');
+            if (dbClientes.length === 0) {
+                alert('Primero debes agregar clientes');
+                return;
+            }
             select.innerHTML = dbClientes.map(c => `<option value="${c._uid}">${c.nombre}</option>`).join('');
             document.getElementById('np-fecha-emision').value = new Date().toISOString().split('T')[0];
             document.getElementById('new-payment-modal').classList.remove('hidden');
@@ -1110,12 +1170,14 @@
                 fechaPago: estado === 'REALIZADO' ? (document.getElementById('np-fecha-pago').value || new Date().toISOString().split('T')[0]) : ''
             };
             dbPagos.push(newPayment);
-            await saveDatabaseToStorage();
-            closeNewPaymentModal();
-            renderFacturacion();
-            updatePaymentKPIs();
-            updateNotificationBadge();
-            logElet(`✓ Nuevo pago: $${newPayment.monto.toLocaleString('es-CL')}`);
+            const saved = await saveDatabaseToStorage();
+            if (saved) {
+                closeNewPaymentModal();
+                renderFacturacion();
+                updatePaymentKPIs();
+                updateNotificationBadge();
+                logEtl(`✓ Nuevo pago: $${newPayment.monto.toLocaleString('es-CL')}`);
+            }
         }
 
         // ========== TIMELINE ==========
@@ -1133,6 +1195,10 @@
             proyectos.sort((a, b) => (a.Fecha || '').localeCompare(b.Fecha || ''));
 
             const container = document.getElementById('timeline-container');
+            if (proyectos.length === 0) {
+                container.innerHTML = '<p class="text-slate-400 text-center py-8">No hay proyectos para mostrar</p>';
+                return;
+            }
             container.innerHTML = proyectos.map(p => {
                 const estadoClass = p.ADMINIST === 'CERRADO' ? 'done' : p.ADMINIST === 'EJECUTANDO' ? 'pending' : '';
                 return `
@@ -1184,7 +1250,7 @@
                                 <span class="text-xs font-bold text-slate-200">${cliente ? cliente.nombre : 'Sin cliente'}</span>
                                 <span class="px-2 py-0.5 rounded-full text-[10px] font-bold ${p.estado === 'REALIZADO' ? 'bg-emerald-500/20 text-emerald-400' : 'bg-amber-500/20 text-amber-400'}">${p.estado}</span>
                             </div>
-                            <p class="text-xs text-slate-400">${p.tipo} - $${(p.monto || 0).toLocaleString('es-CL')}</p>
+                            <p class="text-xs text-slate-400">${p.tipo} - $${(parseInt(p.monto) || 0).toLocaleString('es-CL')}</p>
                             <p class="text-[10px] text-slate-500 mt-1">${p.fechaEmision}</p>
                         </div>
                     `;
@@ -1207,6 +1273,10 @@
             );
             
             document.getElementById('quality-table-info').innerText = `${combined.length} registros`;
+            if (combined.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="8" class="p-4 text-center text-slate-500">No hay registros</td></tr>';
+                return;
+            }
             tbody.innerHTML = combined.map(r => `
                 <tr class="hover:bg-slate-900/50">
                     <td class="p-3"><div class="font-bold text-slate-200">${r.ID}</div><div class="text-[10px] text-slate-400">${r['CLIENTE/PROYECTO'] || r.CLIENTE_PROYECTO}</div></td>
@@ -1223,6 +1293,10 @@
 
         function renderPostVenta() {
             const tbody = document.getElementById('pv-table-body');
+            if (filteredPostventa.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" class="p-4 text-center text-slate-500">No hay registros de PostVenta</td></tr>';
+                return;
+            }
             tbody.innerHTML = filteredPostventa.map(pv => `
                 <tr class="hover:bg-slate-900/50">
                     <td class="p-3 font-bold">${pv.ID}</td>
@@ -1241,6 +1315,10 @@
                 (r.ID || '').toLowerCase().includes(searchTerm) || 
                 (r['CLIENTE/PROYECTO'] || r.CLIENTE_PROYECTO || '').toLowerCase().includes(searchTerm)
             );
+            if (combined.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" class="p-4 text-center text-slate-500">No hay registros</td></tr>';
+                return;
+            }
             tbody.innerHTML = combined.map(r => `
                 <tr class="hover:bg-slate-900/50">
                     <td class="p-3 font-bold">${r.ID}</td>
@@ -1299,10 +1377,12 @@
                 dbProyectos.push(payload);
             }
 
-            await saveDatabaseToStorage();
-            closeFormModal();
-            triggerEtlExecution();
-            logEtl(`✓ Registro ${action === 'EDIT' ? 'actualizado' : 'creado'}`);
+            const saved = await saveDatabaseToStorage();
+            if (saved) {
+                closeFormModal();
+                triggerEtlExecution();
+                logEtl(`✓ Registro ${action === 'EDIT' ? 'actualizado' : 'creado'}`);
+            }
         }
 
         function openImportModal() {
@@ -1340,24 +1420,48 @@
             link.click();
         }
 
-        // ========== LOGIN ==========
-        document.getElementById('login-form').addEventListener('submit', (e) => {
-            e.preventDefault();
-            const email = document.getElementById('login-email').value.trim();
-            const pass = document.getElementById('login-password').value;
-            const errDiv = document.getElementById('login-error');
-            errDiv.classList.add('hidden');
-            window.fbSignIn(window.fbAuth, email, pass).then(() => {
-                logEtl('✅ Login exitoso');
-            }).catch(err => {
-                errDiv.innerText = "Error: Credenciales inválidas.";
-                errDiv.classList.remove('hidden');
+        function setupDragAndDrop() {
+            const dropZone = document.getElementById('drop-zone');
+            const fileInput = document.getElementById('csv-file-input');
+            dropZone.addEventListener('click', () => fileInput.click());
+            dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('border-copec-orange'); });
+            dropZone.addEventListener('dragleave', () => { dropZone.classList.remove('border-copec-orange'); });
+            dropZone.addEventListener('drop', (e) => { 
+                e.preventDefault(); 
+                dropZone.classList.remove('border-copec-orange'); 
+                if (e.dataTransfer.files.length > 0) parseCSV(e.dataTransfer.files[0]); 
             });
-        });
+            fileInput.addEventListener('change', (e) => { if (e.target.files.length > 0) parseCSV(e.target.files[0]); });
+        }
 
-        document.getElementById('logout-btn').addEventListener('click', () => {
-            window.fbSignOut(window.fbAuth);
-        });
+        function parseCSV(file) {
+            logEtl(`Procesando: ${file.name}`);
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const text = e.target.result;
+                const lines = text.split('\n');
+                if (lines.length < 2) { logEtl("ERROR: Archivo vacío"); return; }
+                const newProyectos = [];
+                for(let i = 1; i < lines.length; i++) {
+                    const row = lines[i].split(';');
+                    if (row.length >= 5) {
+                        newProyectos.push({
+                            _uid: `proj_${Date.now()}_${i}`,
+                            ORIGEN: row[1] || 'VOLTEX',
+                            ID: row[0] || `EXT-${i}`,
+                            'CLIENTE/PROYECTO': row[2] ? row[2].replace(/"/g, '') : 'Cliente',
+                            Fecha: row[3] || new Date().toISOString().split('T')[0],
+                            ADMINIST: row[4] || 'EJECUTANDO'
+                        });
+                    }
+                }
+                dbProyectos = [...dbProyectos, ...newProyectos];
+                saveDatabaseToStorage();
+                triggerEtlExecution();
+                logEtl(`✓ ${newProyectos.length} registros cargados`);
+            };
+            reader.readAsText(file);
+        }
 
         // Excel import
         document.getElementById('excel-file-input').addEventListener('change', function(e) {
@@ -1397,6 +1501,25 @@
                 };
                 reader.readAsArrayBuffer(e.target.files[0]);
             }
+        });
+
+        // ========== LOGIN ==========
+        document.getElementById('login-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const email = document.getElementById('login-email').value.trim();
+            const pass = document.getElementById('login-password').value;
+            const errDiv = document.getElementById('login-error');
+            errDiv.classList.add('hidden');
+            window.fbSignIn(window.fbAuth, email, pass).then(() => {
+                logEtl('✅ Login exitoso');
+            }).catch(err => {
+                errDiv.innerText = "Error: Credenciales inválidas.";
+                errDiv.classList.remove('hidden');
+            });
+        });
+
+        document.getElementById('logout-btn').addEventListener('click', () => {
+            window.fbSignOut(window.fbAuth);
         });
     </script>
 </body>
