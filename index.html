@@ -26,6 +26,12 @@
         ::-webkit-scrollbar-track { background: #0f172a; }
         ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
         ::-webkit-scrollbar-thumb:hover { background: #475569; }
+        .gantt-bar { transition: all 0.3s; }
+        .gantt-bar:hover { transform: scaleY(1.2); filter: brightness(1.2); }
+        @media (max-width: 768px) {
+            .mobile-hide { display: none !important; }
+            .mobile-full { width: 100% !important; }
+        }
     </style>
 </head>
 <body class="h-full flex flex-col overflow-hidden">
@@ -562,7 +568,6 @@
             const tbody = document.getElementById('pv-table-body');
             if (!tbody) return;
             tbody.innerHTML = '';
-            document.getElementById('pv-count-badge')?.innerText = `${filteredPostventa.length} Registros`;
             
             filteredPostventa.forEach(pv => {
                 tbody.innerHTML += `<tr class="hover:bg-slate-900/40"><td class="p-3">${pv.ID}</td><td class="p-3">${pv.CLIENTE_PROYECTO || pv['CLIENTE/PROYECTO'] || ''}</td><td class="p-3">${pv.Fecha || '-'}</td><td class="p-3"><span class="px-2 py-1 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-400">${pv.ADMINIST}</span></td></tr>`;
