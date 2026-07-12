@@ -25,7 +25,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdn.sheetjs.com/xlsx-0.20.0/package/dist/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <style>
         body { font-family: 'Inter', sans-serif; }
         ::-webkit-scrollbar { width: 6px; height: 6px; }
@@ -1108,39 +1108,76 @@
             document.getElementById('import-preview').classList.add('hidden');
             document.getElementById('import-status').classList.add('hidden');
             importedData = [];
+            document.getElementById('excel-file-input').value = '';
         }
 
         function closeImportModal() {
             document.getElementById('import-modal').classList.add('hidden');
         }
 
-        document.getElementById('excel-file-input').addEventListener('change', function(e) {
-            const file = e.target.files[0];
-            if (!file) return;
+        function handleExcelFile(file) {
+            console.log('Procesando archivo:', file.name);
+            logEtl(`Leyendo archivo Excel: ${file.name}`);
             
             const reader = new FileReader();
+            
             reader.onload = function(e) {
+                console.log('Archivo leído correctamente');
                 try {
                     const data = new Uint8Array(e.target.result);
+                    console.log('Datos binarios cargados, longitud:', data.length);
+                    
+                    if (typeof XLSX === 'undefined') {
+                        console.error('Librería XLSX no cargada');
+                        alert('Error: La librería de Excel no se cargó correctamente. Recarga la página.');
+                        return;
+                    }
+                    
+                    console.log('Parseando Excel...');
                     const workbook = XLSX.read(data, { type: 'array' });
+                    console.log('Workbook creado, hojas:', workbook.SheetNames);
+                    
                     const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
                     const jsonData = XLSX.utils.sheet_to_json(firstSheet);
                     
+                    console.log('Datos extraídos:', jsonData.length, 'filas');
+                    
                     if (jsonData.length === 0) {
-                        alert('El archivo Excel está vacío');
+                        alert('El archivo Excel está vacío o no tiene datos válidos');
                         return;
                     }
                     
                     importedData = jsonData;
+                    console.log('Datos guardados en importedData');
                     showImportPreview(jsonData);
+                    logEtl(`✓ ${jsonData.length} filas leídas del Excel`);
                 } catch (error) {
-                    alert('Error al leer el archivo Excel: ' + error.message);
+                    console.error('Error procesando Excel:', error);
+                    alert('Error al procesar el archivo Excel: ' + error.message);
+                    logEtl(`✗ Error: ${error.message}`);
                 }
             };
+            
+            reader.onerror = function(e) {
+                console.error('Error leyendo archivo:', e);
+                alert('Error al leer el archivo');
+            };
+            
             reader.readAsArrayBuffer(file);
+        }
+
+        document.getElementById('excel-file-input').addEventListener('change', function(e) {
+            console.log('Evento change disparado');
+            const file = e.target.files[0];
+            if (file) {
+                handleExcelFile(file);
+            } else {
+                console.log('No se seleccionó archivo');
+            }
         });
 
         function showImportPreview(data) {
+            console.log('Mostrando vista previa de', data.length, 'registros');
             const preview = document.getElementById('import-preview');
             const head = document.getElementById('import-preview-head');
             const body = document.getElementById('import-preview-body');
@@ -1153,6 +1190,8 @@
             }
             
             const headers = Object.keys(data[0]);
+            console.log('Columnas detectadas:', headers);
+            
             head.innerHTML = '<tr>' + headers.map(h => `<th class="p-2 bg-slate-900 text-xs font-bold text-slate-300">${h}</th>`).join('') + '</tr>';
             
             body.innerHTML = data.slice(0, 10).map(row => 
@@ -1164,9 +1203,12 @@
             }
             
             preview.classList.remove('hidden');
+            console.log('Vista previa mostrada correctamente');
         }
 
         function confirmImport() {
+            console.log('Confirmando importación de', importedData.length, 'registros');
+            
             if (importedData.length === 0) {
                 alert('No hay datos para importar');
                 return;
@@ -1204,6 +1246,7 @@
                 importCount++;
             });
             
+            console.log('Guardando en Firebase...');
             saveDatabaseToStorage();
             logEtl(`✓ ${importCount} registros importados desde Excel`);
             
@@ -1255,8 +1298,7 @@
             importDropZone.classList.remove('border-blue-500');
             const file = e.dataTransfer.files[0];
             if (file) {
-                document.getElementById('excel-file-input').files = e.dataTransfer.files;
-                document.getElementById('excel-file-input').dispatchEvent(new Event('change'));
+                handleExcelFile(file);
             }
         });
     </script>
