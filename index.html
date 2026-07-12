@@ -26,13 +26,6 @@
         ::-webkit-scrollbar-track { background: #0f172a; }
         ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
         ::-webkit-scrollbar-thumb:hover { background: #475569; }
-        .timeline-item { position: relative; padding-left: 30px; }
-        .timeline-item::before { content: ''; position: absolute; left: 10px; top: 0; bottom: 0; width: 2px; background: #334155; }
-        .timeline-item::after { content: ''; position: absolute; left: 5px; top: 5px; width: 12px; height: 12px; border-radius: 50%; background: #FF4500; border: 2px solid #0f172a; }
-        .timeline-item.done::after { background: #10B981; }
-        .timeline-item.pending::after { background: #F59E0B; }
-        .notification-badge { animation: pulse 2s infinite; }
-        @keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.1); } }
     </style>
 </head>
 <body class="h-full flex flex-col overflow-hidden">
@@ -77,7 +70,7 @@
             <div class="flex items-center space-x-6">
                 <button onclick="openNotificationsPanel()" class="relative p-2 text-slate-400 hover:text-copec-orange transition-colors">
                     <i class="fa-solid fa-bell text-xl"></i>
-                    <span id="notification-count" class="notification-badge absolute -top-1 -right-1 bg-rose-500 text-white text-[10px] font-bold rounded-full h-5 w-5 flex items-center justify-center hidden">0</span>
+                    <span id="notification-count" class="absolute -top-1 -right-1 bg-rose-500 text-white text-[10px] font-bold rounded-full h-5 w-5 flex items-center justify-center hidden">0</span>
                 </button>
                 <div class="text-right flex flex-col items-end">
                     <span id="pipeline-status-badge" class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 mb-1">
@@ -446,26 +439,28 @@
         </div>
     </div>
 
-    <!-- MODAL: NUEVO PAGO -->
-    <div id="new-payment-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+    <!-- MODAL: NUEVO PAGO / EDITAR PAGO -->
+    <div id="payment-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
         <div class="bg-slate-900 border border-slate-800 rounded-xl max-w-lg w-full max-h-[90vh] flex flex-col overflow-hidden shadow-2xl">
             <div class="p-5 border-b border-slate-800 flex items-center justify-between">
-                <h3 class="font-bold text-base text-white">Registrar Pago</h3>
-                <button onclick="closeNewPaymentModal()" class="text-slate-400 hover:text-slate-200"><i class="fa-solid fa-xmark text-lg"></i></button>
+                <h3 class="font-bold text-base text-white" id="payment-modal-title">Registrar Pago</h3>
+                <button onclick="closePaymentModal()" class="text-slate-400 hover:text-slate-200"><i class="fa-solid fa-xmark text-lg"></i></button>
             </div>
-            <form id="new-payment-form" onsubmit="saveNewPayment(event)" class="p-6 overflow-y-auto space-y-4 text-xs">
-                <div><label class="block text-xs font-semibold text-slate-400 mb-1">Cliente</label><select id="np-cliente" required class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-slate-200"></select></div>
+            <form id="payment-form" onsubmit="savePayment(event)" class="p-6 overflow-y-auto space-y-4 text-xs">
+                <input type="hidden" id="payment-action-type" value="NEW">
+                <input type="hidden" id="payment-original-id" value="">
+                <div><label class="block text-xs font-semibold text-slate-400 mb-1">Cliente</label><select id="pm-cliente" required class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-slate-200"></select></div>
                 <div class="grid grid-cols-2 gap-4">
-                    <div><label class="block text-xs font-semibold text-slate-400 mb-1">Tipo Servicio</label><select id="np-tipo" required class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-slate-200"><option value="INSTALACION">Instalación</option><option value="POSTVENTA">PostVenta</option><option value="VISITA_TECNICA">Visita Técnica</option></select></div>
-                    <div><label class="block text-xs font-semibold text-slate-400 mb-1">Monto (CLP)</label><input type="number" id="np-monto" required class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-slate-200"></div>
-                    <div><label class="block text-xs font-semibold text-slate-400 mb-1">Fecha Emisión</label><input type="date" id="np-fecha-emision" required class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-slate-200"></div>
-                    <div><label class="block text-xs font-semibold text-slate-400 mb-1">Estado</label><select id="np-estado" required class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-slate-200"><option value="PENDIENTE">Pendiente</option><option value="REALIZADO">Realizado</option></select></div>
+                    <div><label class="block text-xs font-semibold text-slate-400 mb-1">Tipo Servicio</label><select id="pm-tipo" required class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-slate-200"><option value="INSTALACION">Instalación</option><option value="POSTVENTA">PostVenta</option><option value="VISITA_TECNICA">Visita Técnica</option></select></div>
+                    <div><label class="block text-xs font-semibold text-slate-400 mb-1">Monto (CLP)</label><input type="number" id="pm-monto" required class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-slate-200"></div>
+                    <div><label class="block text-xs font-semibold text-slate-400 mb-1">Fecha Emisión</label><input type="date" id="pm-fecha-emision" required class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-slate-200"></div>
+                    <div><label class="block text-xs font-semibold text-slate-400 mb-1">Estado</label><select id="pm-estado" required class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-slate-200"><option value="PENDIENTE">Pendiente</option><option value="REALIZADO">Realizado</option></select></div>
                 </div>
-                <div><label class="block text-xs font-semibold text-slate-400 mb-1">Proyecto Asociado</label><input type="text" id="np-proyecto" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-slate-200"></div>
-                <div><label class="block text-xs font-semibold text-slate-400 mb-1">Fecha de Pago (si está realizado)</label><input type="date" id="np-fecha-pago" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-slate-200"></div>
+                <div><label class="block text-xs font-semibold text-slate-400 mb-1">Proyecto Asociado</label><input type="text" id="pm-proyecto" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-slate-200"></div>
+                <div><label class="block text-xs font-semibold text-slate-400 mb-1">Fecha de Pago (si está realizado)</label><input type="date" id="pm-fecha-pago" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-slate-200"></div>
                 <div class="flex justify-end space-x-2 pt-4">
-                    <button type="button" onclick="closeNewPaymentModal()" class="px-4 py-2 bg-slate-800 text-slate-300 rounded-lg">Cancelar</button>
-                    <button type="submit" class="px-4 py-2 bg-gradient-to-r from-copec-orange to-amber-500 text-white font-bold rounded-lg">Registrar Pago</button>
+                    <button type="button" onclick="closePaymentModal()" class="px-4 py-2 bg-slate-800 text-slate-300 rounded-lg">Cancelar</button>
+                    <button type="submit" class="px-4 py-2 bg-gradient-to-r from-copec-orange to-amber-500 text-white font-bold rounded-lg">Guardar</button>
                 </div>
             </form>
         </div>
@@ -504,6 +499,23 @@
                     <button type="submit" class="px-4 py-2 bg-gradient-to-r from-copec-orange to-amber-500 text-white font-bold rounded-lg">Guardar</button>
                 </div>
             </form>
+        </div>
+    </div>
+
+    <!-- MODAL: CONFIRMAR ELIMINACIÓN -->
+    <div id="delete-confirm-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-slate-900 border border-slate-800 rounded-xl max-w-sm w-full p-6 shadow-2xl space-y-4">
+            <div class="flex items-center space-x-3 text-rose-500">
+                <i class="fa-solid fa-triangle-exclamation text-2xl"></i>
+                <h3 class="font-bold text-base text-white">¿Eliminar Registro?</h3>
+            </div>
+            <p class="text-xs text-slate-300">Esta acción eliminará permanentemente el registro <span id="delete-target-name" class="font-bold text-white"></span>. ¿Estás seguro?</p>
+            <input type="hidden" id="delete-target-id" value="">
+            <input type="hidden" id="delete-target-type" value="">
+            <div class="flex items-center justify-end space-x-2 pt-2">
+                <button onclick="closeDeleteModal()" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg text-xs font-semibold">Cancelar</button>
+                <button onclick="confirmDelete()" class="px-4 py-2 bg-rose-600 hover:bg-rose-500 text-white rounded-lg text-xs font-bold">Eliminar</button>
+            </div>
         </div>
     </div>
 
@@ -569,7 +581,7 @@
     </script>
 
     <script>
-        // ========== ESTADO GLOBAL ==========
+        // ========== ESTADO GLOBAL - BASE DE DATOS VACÍA ==========
         let dbProyectos = [];
         let dbPostventa = [];
         let dbClientes = [];
@@ -836,7 +848,10 @@
                     <div class="bg-slate-900/40 border border-slate-800 rounded-xl p-5 hover:border-copec-orange transition-all cursor-pointer" onclick="openClientDetail('${c._uid}')">
                         <div class="flex items-center justify-between mb-3">
                             <h4 class="font-bold text-slate-200 truncate">${c.nombre}</h4>
-                            <button onclick="event.stopPropagation(); editClient('${c._uid}')" class="text-slate-400 hover:text-copec-orange"><i class="fa-solid fa-pen-to-square"></i></button>
+                            <div class="flex space-x-2">
+                                <button onclick="event.stopPropagation(); editClient('${c._uid}')" class="text-slate-400 hover:text-copec-orange"><i class="fa-solid fa-pen-to-square"></i></button>
+                                <button onclick="event.stopPropagation(); openDeleteConfirm('client', '${c._uid}', '${c.nombre}')" class="text-slate-400 hover:text-rose-500"><i class="fa-solid fa-trash"></i></button>
+                            </div>
                         </div>
                         <div class="space-y-2 text-xs">
                             <div class="flex items-center text-slate-400"><i class="fa-solid fa-id-card w-5"></i>${c.rut || 'Sin RUT'}</div>
@@ -927,7 +942,11 @@
                                     <p class="text-sm font-bold text-slate-200">${p.tipo} - $${(parseInt(p.monto) || 0).toLocaleString('es-CL')}</p>
                                     <p class="text-xs text-slate-400">${p.fechaEmision} ${p.fechaPago ? '→ Pago: ' + p.fechaPago : ''}</p>
                                 </div>
-                                <span class="px-2 py-1 rounded-full text-[10px] font-bold ${p.estado === 'REALIZADO' ? 'bg-emerald-500/10 text-emerald-400' : 'bg-amber-500/10 text-amber-400'}">${p.estado}</span>
+                                <div class="flex items-center space-x-2">
+                                    <span class="px-2 py-1 rounded-full text-[10px] font-bold ${p.estado === 'REALIZADO' ? 'bg-emerald-500/10 text-emerald-400' : 'bg-amber-500/10 text-amber-400'}">${p.estado}</span>
+                                    <button onclick="editPayment('${p._uid}')" class="text-slate-400 hover:text-copec-orange"><i class="fa-solid fa-pen-to-square"></i></button>
+                                    <button onclick="openDeleteConfirm('payment', '${p._uid}', 'pago')" class="text-slate-400 hover:text-rose-500"><i class="fa-solid fa-trash"></i></button>
+                                </div>
                             </div>
                         `).join('')}
                     </div>
@@ -1015,7 +1034,7 @@
             }
         }
 
-        // ========== FACTURACIÓN ==========
+        // ========== FACTURACIÓN - CON EDICIÓN DE MONTOS ==========
         function renderFacturacion() {
             const filterEstado = document.getElementById('filter-pago-estado').value;
             const tbody = document.getElementById('facturacion-table-body');
@@ -1044,12 +1063,17 @@
                             <span class="px-2 py-1 rounded-full text-[10px] font-bold ${p.estado === 'REALIZADO' ? 'bg-emerald-500/10 text-emerald-400' : 'bg-amber-500/10 text-amber-400'}">${p.estado}</span>
                         </td>
                         <td class="p-3 text-center">
-                            <button onclick="togglePaymentStatus('${p._uid}')" class="text-slate-400 hover:text-copec-orange" title="Cambiar estado">
-                                <i class="fa-solid fa-toggle-on"></i>
-                            </button>
-                            <button onclick="deletePayment('${p._uid}')" class="text-slate-400 hover:text-rose-500 ml-2" title="Eliminar">
-                                <i class="fa-solid fa-trash"></i>
-                            </button>
+                            <div class="flex items-center justify-center space-x-2">
+                                <button onclick="editPayment('${p._uid}')" class="text-slate-400 hover:text-copec-orange" title="Editar monto">
+                                    <i class="fa-solid fa-pen-to-square"></i>
+                                </button>
+                                <button onclick="togglePaymentStatus('${p._uid}')" class="text-slate-400 hover:text-emerald-500" title="Cambiar estado">
+                                    <i class="fa-solid fa-check"></i>
+                                </button>
+                                <button onclick="openDeleteConfirm('payment', '${p._uid}', 'pago')" class="text-slate-400 hover:text-rose-500" title="Eliminar">
+                                    <i class="fa-solid fa-trash"></i>
+                                </button>
+                            </div>
                         </td>
                     </tr>
                 `;
@@ -1077,54 +1101,119 @@
             }
         }
 
-        async function deletePayment(paymentId) {
-            if (!confirm('¿Eliminar este pago?')) return;
-            dbPagos = dbPagos.filter(p => p._uid !== paymentId);
-            const saved = await saveDatabaseToStorage();
-            if (saved) {
-                renderFacturacion();
-                updatePaymentKPIs();
-                logEtl("✓ Pago eliminado");
-            }
+        function editPayment(paymentId) {
+            const pago = dbPagos.find(p => p._uid === paymentId);
+            if (!pago) { alert('Pago no encontrado'); return; }
+            
+            const select = document.getElementById('pm-cliente');
+            select.innerHTML = dbClientes.map(c => `<option value="${c._uid}" ${c._uid === pago.clienteId ? 'selected' : ''}>${c.nombre}</option>`).join('');
+            
+            document.getElementById('payment-modal-title').innerText = 'Editar Pago';
+            document.getElementById('payment-action-type').value = 'EDIT';
+            document.getElementById('payment-original-id').value = paymentId;
+            document.getElementById('pm-tipo').value = pago.tipo;
+            document.getElementById('pm-monto').value = pago.monto;
+            document.getElementById('pm-fecha-emision').value = pago.fechaEmision;
+            document.getElementById('pm-estado').value = pago.estado;
+            document.getElementById('pm-proyecto').value = pago.proyecto || '';
+            document.getElementById('pm-fecha-pago').value = pago.fechaPago || '';
+            
+            document.getElementById('payment-modal').classList.remove('hidden');
         }
 
         function openNewPaymentModal() {
-            const select = document.getElementById('np-cliente');
+            const select = document.getElementById('pm-cliente');
             if (dbClientes.length === 0) {
                 alert('Primero debes agregar clientes');
                 return;
             }
             select.innerHTML = dbClientes.map(c => `<option value="${c._uid}">${c.nombre}</option>`).join('');
-            document.getElementById('np-fecha-emision').value = new Date().toISOString().split('T')[0];
-            document.getElementById('new-payment-modal').classList.remove('hidden');
+            
+            document.getElementById('payment-modal-title').innerText = 'Registrar Pago';
+            document.getElementById('payment-action-type').value = 'NEW';
+            document.getElementById('payment-original-id').value = '';
+            document.getElementById('payment-form').reset();
+            document.getElementById('pm-fecha-emision').value = new Date().toISOString().split('T')[0];
+            document.getElementById('payment-modal').classList.remove('hidden');
         }
 
-        function closeNewPaymentModal() {
-            document.getElementById('new-payment-modal').classList.add('hidden');
-            document.getElementById('new-payment-form').reset();
+        function closePaymentModal() {
+            document.getElementById('payment-modal').classList.add('hidden');
         }
 
-        async function saveNewPayment(e) {
+        async function savePayment(e) {
             e.preventDefault();
-            const estado = document.getElementById('np-estado').value;
-            const newPayment = {
-                _uid: `pago_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-                clienteId: document.getElementById('np-cliente').value,
-                tipo: document.getElementById('np-tipo').value,
-                monto: parseInt(document.getElementById('np-monto').value),
-                fechaEmision: document.getElementById('np-fecha-emision').value,
+            const action = document.getElementById('payment-action-type').value;
+            const origId = document.getElementById('payment-original-id').value;
+            const estado = document.getElementById('pm-estado').value;
+            
+            const paymentData = {
+                clienteId: document.getElementById('pm-cliente').value,
+                tipo: document.getElementById('pm-tipo').value,
+                monto: parseInt(document.getElementById('pm-monto').value),
+                fechaEmision: document.getElementById('pm-fecha-emision').value,
                 estado: estado,
-                proyecto: document.getElementById('np-proyecto').value,
-                fechaPago: estado === 'REALIZADO' ? (document.getElementById('np-fecha-pago').value || new Date().toISOString().split('T')[0]) : ''
+                proyecto: document.getElementById('pm-proyecto').value,
+                fechaPago: estado === 'REALIZADO' ? (document.getElementById('pm-fecha-pago').value || new Date().toISOString().split('T')[0]) : ''
             };
-            dbPagos.push(newPayment);
+
+            if (action === 'EDIT') {
+                const idx = dbPagos.findIndex(p => p._uid === origId);
+                if (idx !== -1) {
+                    dbPagos[idx] = { ...dbPagos[idx], ...paymentData };
+                    logEtl(`✓ Pago editado - Nuevo monto: $${paymentData.monto.toLocaleString('es-CL')}`);
+                }
+            } else {
+                paymentData._uid = `pago_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+                dbPagos.push(paymentData);
+                logEtl(`✓ Nuevo pago: $${paymentData.monto.toLocaleString('es-CL')}`);
+            }
+            
             const saved = await saveDatabaseToStorage();
             if (saved) {
-                closeNewPaymentModal();
+                closePaymentModal();
                 renderFacturacion();
                 updatePaymentKPIs();
                 updateNotificationBadge();
-                logEtl(`✓ Nuevo pago: $${newPayment.monto.toLocaleString('es-CL')}`);
+            }
+        }
+
+        // ========== ELIMINAR REGISTROS ==========
+        function openDeleteConfirm(type, id, name) {
+            document.getElementById('delete-target-id').value = id;
+            document.getElementById('delete-target-type').value = type;
+            document.getElementById('delete-target-name').innerText = name;
+            document.getElementById('delete-confirm-modal').classList.remove('hidden');
+        }
+
+        function closeDeleteModal() {
+            document.getElementById('delete-confirm-modal').classList.add('hidden');
+        }
+
+        async function confirmDelete() {
+            const type = document.getElementById('delete-target-type').value;
+            const id = document.getElementById('delete-target-id').value;
+            
+            if (type === 'client') {
+                dbClientes = dbClientes.filter(c => c._uid !== id);
+                logEtl("✓ Cliente eliminado");
+            } else if (type === 'payment') {
+                dbPagos = dbPagos.filter(p => p._uid !== id);
+                logEtl("✓ Pago eliminado");
+            } else if (type === 'project') {
+                dbProyectos = dbProyectos.filter(p => p._uid !== id);
+                logEtl("✓ Proyecto eliminado");
+            } else if (type === 'postventa') {
+                dbPostventa = dbPostventa.filter(p => p._uid !== id);
+                logEtl("✓ PostVenta eliminado");
+            }
+            
+            const saved = await saveDatabaseToStorage();
+            if (saved) {
+                closeDeleteModal();
+                renderClientes();
+                renderFacturacion();
+                triggerEtlExecution();
             }
         }
 
@@ -1154,7 +1243,10 @@
                         <div class="bg-slate-900/40 border border-slate-800 rounded-xl p-4">
                             <div class="flex items-center justify-between mb-2">
                                 <h4 class="font-bold text-slate-200">${p.ID}</h4>
-                                <span class="px-2 py-1 rounded-full text-[10px] font-bold ${p.ADMINIST === 'CERRADO' ? 'bg-emerald-500/10 text-emerald-400' : p.ADMINIST === 'EDP' ? 'bg-amber-500/10 text-amber-400' : 'bg-blue-500/10 text-blue-400'}">${p.ADMINIST}</span>
+                                <div class="flex space-x-2">
+                                    <button onclick="openFormModal('${p._uid}')" class="text-slate-400 hover:text-copec-orange"><i class="fa-solid fa-pen-to-square"></i></button>
+                                    <button onclick="openDeleteConfirm('${p.ORIGEN.includes('PV') ? 'postventa' : 'project'}', '${p._uid}', '${p.ID}')" class="text-slate-400 hover:text-rose-500"><i class="fa-solid fa-trash"></i></button>
+                                </div>
                             </div>
                             <p class="text-sm text-slate-300">${p.CLIENTE_PROYECTO}</p>
                             <div class="flex items-center space-x-4 mt-2 text-xs text-slate-400">
@@ -1251,7 +1343,10 @@
                     <td class="p-3">${pv.CLIENTE_PROYECTO}</td>
                     <td class="p-3 text-slate-400">${pv.Fecha || '-'}</td>
                     <td class="p-3"><span class="px-2 py-1 rounded-full text-[10px] font-bold ${pv.ADMINIST === 'CERRADO' ? 'bg-emerald-500/10 text-emerald-400' : 'bg-blue-500/10 text-blue-400'}">${pv.ADMINIST}</span></td>
-                    <td class="p-3 text-center"><button onclick="openFormModal('${pv._uid}')" class="text-slate-400 hover:text-copec-orange"><i class="fa-solid fa-pen-to-square"></i></button></td>
+                    <td class="p-3 text-center">
+                        <button onclick="openFormModal('${pv._uid}')" class="text-slate-400 hover:text-copec-orange"><i class="fa-solid fa-pen-to-square"></i></button>
+                        <button onclick="openDeleteConfirm('postventa', '${pv._uid}', '${pv.ID}')" class="text-slate-400 hover:text-rose-500 ml-2"><i class="fa-solid fa-trash"></i></button>
+                    </td>
                 </tr>
             `).join('');
         }
@@ -1273,7 +1368,10 @@
                     <td class="p-3">${r.CLIENTE_PROYECTO}</td>
                     <td class="p-3 text-slate-400">${r.Fecha || '-'}</td>
                     <td class="p-3"><span class="px-2 py-1 rounded-full text-[10px] font-bold ${r.ADMINIST === 'CERRADO' ? 'bg-emerald-500/10 text-emerald-400' : 'bg-blue-500/10 text-blue-400'}">${r.ADMINIST}</span></td>
-                    <td class="p-3 text-center"><button onclick="openFormModal('${r._uid}')" class="text-slate-400 hover:text-copec-orange"><i class="fa-solid fa-pen-to-square"></i></button></td>
+                    <td class="p-3 text-center">
+                        <button onclick="openFormModal('${r._uid}')" class="text-slate-400 hover:text-copec-orange"><i class="fa-solid fa-pen-to-square"></i></button>
+                        <button onclick="openDeleteConfirm('${r.ORIGEN.includes('PV') ? 'postventa' : 'project'}', '${r._uid}', '${r.ID}')" class="text-slate-400 hover:text-rose-500 ml-2"><i class="fa-solid fa-trash"></i></button>
+                    </td>
                 </tr>
             `).join('');
         }
@@ -1472,4 +1570,3 @@
     </script>
 </body>
 </html>
-
