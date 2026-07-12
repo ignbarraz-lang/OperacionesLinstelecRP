@@ -36,7 +36,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-app.js";
-        import { getDatabase, ref, set, onValue, push } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-database.js";
+        import { getDatabase, ref, set, onValue, remove } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-database.js";
         import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-auth.js";
 
         const firebaseConfig = {
@@ -57,22 +57,26 @@
         window.fbDatabase = db;
         window.fbRef = ref;
         window.fbSet = set;
-        window.fbPush = push;
         window.fbOnValue = onValue;
+        window.fbRemove = remove;
         window.fbAuth = auth;
         window.fbSignIn = signInWithEmailAndPassword;
         window.fbSignOut = signOut;
+
+        console.log('✅ Firebase inicializado correctamente');
 
         onAuthStateChanged(auth, (user) => {
             const loginSection = document.getElementById('login-screen');
             const mainAppSection = document.getElementById('main-app-layout');
             
             if (user) {
+                console.log('✅ Usuario autenticado:', user.email);
                 loginSection.classList.add('hidden');
                 mainAppSection.classList.remove('hidden');
                 document.getElementById('user-display-name').innerText = user.email;
                 loadDatabaseState();
             } else {
+                console.log('🔒 Usuario no autenticado');
                 loginSection.classList.remove('hidden');
                 mainAppSection.classList.add('hidden');
                 clearTerminal();
@@ -91,7 +95,7 @@
                 <h2 class="text-xl font-black text-white tracking-tight">Acceso Administrativo Unificado</h2>
                 <p class="text-xs text-slate-400 mt-1">Plataforma Exclusiva Copec Voltex & Flux</p>
             </div>
-            <form onsubmit="executeLogin(event)" class="space-y-4 text-left text-xs">
+            <form id="login-form" class="space-y-4 text-left text-xs">
                 <div id="login-error" class="hidden text-rose-400 font-semibold bg-rose-500/10 border border-rose-500/20 p-3 rounded-lg"></div>
                 <div>
                     <label class="block font-semibold text-slate-400 mb-1">Correo Electrónico</label>
@@ -132,7 +136,7 @@
                 </div>
                 <div class="text-right hidden sm:block border-l border-slate-800 pl-4">
                     <p class="text-xs font-semibold text-slate-200" id="user-display-name">admin@linstelec.bar</p>
-                    <button onclick="executeLogout()" class="text-[11px] text-rose-400 hover:text-rose-300 font-bold transition-colors">
+                    <button id="logout-btn" class="text-[11px] text-rose-400 hover:text-rose-300 font-bold transition-colors">
                         <i class="fa-solid fa-power-off mr-1"></i> Cerrar Sesión
                     </button>
                 </div>
@@ -145,19 +149,19 @@
                 <div class="p-4">
                     <p class="text-xs font-bold text-slate-500 uppercase tracking-wider px-2">Vistas de Negocio</p>
                     <nav class="mt-3 space-y-1">
-                        <button onclick="switchTab('dashboard')" id="nav-dashboard" class="w-full flex items-center space-x-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all bg-gradient-to-r from-copec-orange/20 to-transparent text-copec-orange border-l-2 border-copec-orange">
+                        <button data-tab="dashboard" class="nav-btn w-full flex items-center space-x-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all bg-gradient-to-r from-copec-orange/20 to-transparent text-copec-orange border-l-2 border-copec-orange">
                             <i class="fa-solid fa-chart-pie w-5"></i>
                             <span>Control General (Mes/Mes)</span>
                         </button>
-                        <button onclick="switchTab('calidad')" id="nav-calidad" class="w-full flex items-center space-x-3 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-400 hover:bg-slate-800/50 hover:text-slate-200 transition-all border-l-2 border-transparent">
+                        <button data-tab="calidad" class="nav-btn w-full flex items-center space-x-3 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-400 hover:bg-slate-800/50 hover:text-slate-200 transition-all border-l-2 border-transparent">
                             <i class="fa-solid fa-square-check w-5"></i>
                             <span>Auditoría de Calidad (TOP)</span>
                         </button>
-                        <button onclick="switchTab('postventa')" id="nav-postventa" class="w-full flex items-center space-x-3 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-400 hover:bg-slate-800/50 hover:text-slate-200 transition-all border-l-2 border-transparent">
+                        <button data-tab="postventa" class="nav-btn w-full flex items-center space-x-3 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-400 hover:bg-slate-800/50 hover:text-slate-200 transition-all border-l-2 border-transparent">
                             <i class="fa-solid fa-clock-rotate-left w-5"></i>
                             <span>Continuidad / PostVenta</span>
                         </button>
-                        <button onclick="switchTab('explorer')" id="nav-explorer" class="w-full flex items-center space-x-3 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-400 hover:bg-slate-800/50 hover:text-slate-200 transition-all border-l-2 border-transparent">
+                        <button data-tab="explorer" class="nav-btn w-full flex items-center space-x-3 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-400 hover:bg-slate-800/50 hover:text-slate-200 transition-all border-l-2 border-transparent">
                             <i class="fa-solid fa-database w-5"></i>
                             <span>Explorador de Datos</span>
                         </button>
@@ -166,7 +170,7 @@
 
                 <div class="p-4 border-t border-slate-800 mt-auto">
                     <p class="text-xs font-bold text-slate-500 uppercase tracking-wider px-2">Soporte Técnico ETL</p>
-                    <button onclick="switchTab('etl')" id="nav-etl" class="w-full mt-3 flex items-center justify-between px-3 py-2 rounded-lg text-xs font-medium bg-slate-800/50 hover:bg-slate-800 text-slate-300 transition-all">
+                    <button data-tab="etl" class="nav-btn w-full mt-3 flex items-center justify-between px-3 py-2 rounded-lg text-xs font-medium bg-slate-800/50 hover:bg-slate-800 text-slate-300 transition-all">
                         <span class="flex items-center space-x-2">
                             <i class="fa-solid fa-gears text-indigo-400"></i>
                             <span>Linstelec Logs & Config</span>
@@ -185,14 +189,14 @@
                             <span class="text-xs font-bold uppercase text-slate-400">Filtros Activos:</span>
                         </div>
                         
-                        <select id="filter-origen" onchange="applyFilters()" class="bg-slate-800 border border-slate-700 text-slate-200 text-xs rounded-lg px-3 py-2 focus:ring-1 focus:ring-copec-orange focus:outline-none">
+                        <select id="filter-origen" class="bg-slate-800 border border-slate-700 text-slate-200 text-xs rounded-lg px-3 py-2 focus:ring-1 focus:ring-copec-orange focus:outline-none">
                             <option value="ALL">Todas las Divisiones</option>
                             <option value="VOLTEX">Copec Voltex (Proyectos)</option>
                             <option value="FLUX">Flux (Proyectos)</option>
                             <option value="PV">PostVenta (General)</option>
                         </select>
 
-                        <select id="filter-estado" onchange="applyFilters()" class="bg-slate-800 border border-slate-700 text-slate-200 text-xs rounded-lg px-3 py-2 focus:ring-1 focus:ring-copec-orange focus:outline-none">
+                        <select id="filter-estado" class="bg-slate-800 border border-slate-700 text-slate-200 text-xs rounded-lg px-3 py-2 focus:ring-1 focus:ring-copec-orange focus:outline-none">
                             <option value="ALL">Todos los Estados (Adm 1 o Adm 2)</option>
                             <option value="CERRADO">CERRADO</option>
                             <option value="EDP">EDP (Estado de Pago)</option>
@@ -200,7 +204,7 @@
                             <option value="NO APLICA">NO APLICA</option>
                         </select>
 
-                        <select id="filter-mes" onchange="applyFilters()" class="bg-slate-800 border border-slate-700 text-slate-200 text-xs rounded-lg px-3 py-2 focus:ring-1 focus:ring-copec-orange focus:outline-none">
+                        <select id="filter-mes" class="bg-slate-800 border border-slate-700 text-slate-200 text-xs rounded-lg px-3 py-2 focus:ring-1 focus:ring-copec-orange focus:outline-none">
                             <option value="ALL">Histórico Completo (Todos los meses)</option>
                             <option value="2026-01">Enero 2026</option>
                             <option value="2026-02">Febrero 2026</option>
@@ -212,19 +216,19 @@
                     </div>
                     
                     <div class="flex items-center space-x-2">
-                        <button onclick="resetFilters()" class="px-3 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg text-xs font-semibold transition-all">
+                        <button id="btn-reset-filters" class="px-3 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg text-xs font-semibold transition-all">
                             Limpiar Filtros
                         </button>
-                        <button onclick="openImportModal()" class="px-3 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-lg text-xs font-bold shadow-lg shadow-blue-500/15 transition-all flex items-center space-x-1.5">
+                        <button id="btn-import-excel" class="px-3 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-lg text-xs font-bold shadow-lg shadow-blue-500/15 transition-all flex items-center space-x-1.5">
                             <i class="fa-solid fa-file-excel"></i>
                             <span>Importar Excel</span>
                         </button>
-                        <button onclick="openFormModal(null)" class="px-3 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-xs font-bold shadow-lg shadow-emerald-500/15 transition-all flex items-center space-x-1.5">
+                        <button id="btn-add-record" class="px-3 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-xs font-bold shadow-lg shadow-emerald-500/15 transition-all flex items-center space-x-1.5">
                             <i class="fa-solid fa-circle-plus"></i>
                             <span>+ Añadir Registro</span>
                         </button>
-                        <button onclick="triggerEtlExecution()" class="px-3 py-2 bg-gradient-to-r from-copec-orange to-amber-500 hover:from-copec-orangeHover text-white rounded-lg text-xs font-bold shadow-lg shadow-copec-orange/15 transition-all flex items-center space-x-1.5">
-                            <i class="fa-solid fa-arrows-rotate animate-spin" id="etl-btn-icon" style="animation-duration: 3s;"></i>
+                        <button id="btn-reload" class="px-3 py-2 bg-gradient-to-r from-copec-orange to-amber-500 hover:from-copec-orangeHover text-white rounded-lg text-xs font-bold shadow-lg shadow-copec-orange/15 transition-all flex items-center space-x-1.5">
+                            <i class="fa-solid fa-arrows-rotate"></i>
                             <span>Recargar Linstelec</span>
                         </button>
                     </div>
@@ -327,7 +331,7 @@
                                 <div class="space-y-3" id="risk-alerts-container"></div>
                             </div>
                             <div class="pt-4 border-t border-slate-800/60 mt-4">
-                                <button onclick="switchTab('calidad')" class="w-full text-center text-xs text-copec-orange hover:text-copec-orangeHover font-semibold flex items-center justify-center space-x-1">
+                                <button data-tab="calidad" class="nav-btn w-full text-center text-xs text-copec-orange hover:text-copec-orangeHover font-semibold flex items-center justify-center space-x-1">
                                     <span>Ver listado de calidad detallado</span>
                                     <i class="fa-solid fa-arrow-right"></i>
                                 </button>
@@ -350,7 +354,7 @@
                             </div>
                         </div>
                         <div class="flex items-center justify-between mb-4">
-                            <input id="quality-search" type="text" onkeyup="renderQualityTable()" placeholder="Buscar proyecto o cliente..." class="bg-slate-800 border border-slate-700 text-slate-200 text-xs rounded-lg px-3 py-2 w-full max-w-md focus:ring-1 focus:ring-copec-orange focus:outline-none">
+                            <input id="quality-search" type="text" placeholder="Buscar proyecto o cliente..." class="bg-slate-800 border border-slate-700 text-slate-200 text-xs rounded-lg px-3 py-2 w-full max-w-md focus:ring-1 focus:ring-copec-orange focus:outline-none">
                             <div class="text-xs text-slate-400" id="quality-table-info">Mostrando 0 de 0 proyectos</div>
                         </div>
                         <div class="overflow-x-auto border border-slate-800 rounded-lg">
@@ -435,12 +439,12 @@
                                 <h3 class="font-bold text-lg text-white">Explorador Master del Data Lakehouse</h3>
                                 <p class="text-xs text-slate-400">Acceso a la base de datos completa unificada y unpivoted en memoria.</p>
                             </div>
-                            <button onclick="exportToCSV()" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-xs font-bold flex items-center space-x-1.5 shadow-lg shadow-emerald-500/10 transition-all">
+                            <button id="btn-export-csv" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-xs font-bold flex items-center space-x-1.5 shadow-lg shadow-emerald-500/10 transition-all">
                                 <i class="fa-solid fa-file-excel"></i><span>Exportar Excel (CSV)</span>
                             </button>
                         </div>
                         <div class="flex items-center justify-between gap-4 mb-4">
-                            <input id="explorer-search" type="text" onkeyup="renderExplorer()" placeholder="Buscar en toda la base de datos..." class="bg-slate-800 border border-slate-700 text-slate-200 text-xs rounded-lg px-3 py-2 w-full max-w-lg focus:ring-1 focus:ring-copec-orange focus:outline-none">
+                            <input id="explorer-search" type="text" placeholder="Buscar en toda la base de datos..." class="bg-slate-800 border border-slate-700 text-slate-200 text-xs rounded-lg px-3 py-2 w-full max-w-lg focus:ring-1 focus:ring-copec-orange focus:outline-none">
                             <div class="text-xs text-slate-400" id="explorer-count">Visualizando 0 de 0 registros totales</div>
                         </div>
                         <div class="overflow-x-auto border border-slate-800 rounded-lg max-h-[500px]">
@@ -498,9 +502,9 @@
                 <h3 class="font-bold text-base text-white flex items-center space-x-2" id="modal-title">
                     <i class="fa-solid fa-pen-to-square text-copec-orange"></i><span>Administrar Registro</span>
                 </h3>
-                <button onclick="closeFormModal()" class="text-slate-400 hover:text-slate-200"><i class="fa-solid fa-xmark text-lg"></i></button>
+                <button id="btn-close-form" class="text-slate-400 hover:text-slate-200"><i class="fa-solid fa-xmark text-lg"></i></button>
             </div>
-            <form id="record-form" onsubmit="saveRecord(event)" class="p-6 overflow-y-auto space-y-4 text-xs">
+            <form id="record-form" class="p-6 overflow-y-auto space-y-4 text-xs">
                 <input type="hidden" id="form-action-type" value="NEW">
                 <input type="hidden" id="form-original-id" value="">
                 <div id="form-error" class="hidden text-rose-500 text-xs font-semibold bg-rose-500/10 border border-rose-500/20 p-2.5 rounded-lg"></div>
@@ -511,7 +515,7 @@
                     </div>
                     <div>
                         <label class="block text-xs font-semibold text-slate-400 mb-1">Origen / División</label>
-                        <select id="form-origen" onchange="toggleFormDocumentChecklist()" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-slate-200 text-xs focus:ring-1 focus:ring-copec-orange focus:outline-none">
+                        <select id="form-origen" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-slate-200 text-xs focus:ring-1 focus:ring-copec-orange focus:outline-none">
                             <option value="VOLTEX">Copec Voltex (Proyecto)</option>
                             <option value="FLUX">Flux (Proyecto)</option>
                             <option value="VOLTEX-PV">Copec Voltex (PostVenta)</option>
@@ -541,7 +545,7 @@
                 <div class="grid grid-cols-2 gap-4">
                     <div>
                         <label class="block text-xs font-semibold text-slate-400 mb-1">Administrativo 2 (Cierre)</label>
-                        <select id="form-administ2" onchange="handleAdminist2Change()" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-slate-200 text-xs focus:ring-1 focus:ring-copec-orange focus:outline-none">
+                        <select id="form-administ2" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-slate-200 text-xs focus:ring-1 focus:ring-copec-orange focus:outline-none">
                             <option value="">(Ninguno)</option>
                             <option value="EJECUTANDO">EJECUTANDO</option>
                             <option value="EDP">EDP</option>
@@ -553,7 +557,7 @@
                         <div class="flex items-center justify-between mb-1">
                             <label class="block text-xs font-semibold text-slate-400">Fecha Cierre</label>
                             <label class="inline-flex items-center space-x-1 cursor-pointer">
-                                <input type="checkbox" id="form-fecha2-na" onchange="toggleFecha2NA()" class="rounded bg-slate-800 border-slate-700 text-copec-orange focus:ring-0">
+                                <input type="checkbox" id="form-fecha2-na" class="rounded bg-slate-800 border-slate-700 text-copec-orange focus:ring-0">
                                 <span class="text-[10px] text-slate-400 font-semibold">N/A</span>
                             </label>
                         </div>
@@ -587,7 +591,7 @@
                     </div>
                 </div>
                 <div class="border-t border-slate-800 pt-4 flex justify-end space-x-2">
-                    <button type="button" onclick="closeFormModal()" class="px-4 py-2 bg-slate-800 text-slate-300 rounded-lg">Cancelar</button>
+                    <button type="button" id="btn-cancel-form" class="px-4 py-2 bg-slate-800 text-slate-300 rounded-lg">Cancelar</button>
                     <button type="submit" class="px-4 py-2 bg-gradient-to-r from-copec-orange to-amber-500 text-white font-bold rounded-lg">Guardar</button>
                 </div>
             </form>
@@ -600,7 +604,7 @@
                 <h3 class="font-bold text-base text-white flex items-center space-x-2">
                     <i class="fa-solid fa-file-excel text-blue-400"></i><span>Importar Clientes desde Excel</span>
                 </h3>
-                <button onclick="closeImportModal()" class="text-slate-400 hover:text-slate-200"><i class="fa-solid fa-xmark text-lg"></i></button>
+                <button id="btn-close-import" class="text-slate-400 hover:text-slate-200"><i class="fa-solid fa-xmark text-lg"></i></button>
             </div>
             <div class="p-6 overflow-y-auto space-y-4">
                 <div class="bg-blue-500/10 border border-blue-500/20 rounded-lg p-4">
@@ -622,7 +626,7 @@
                     <p class="text-sm font-semibold text-slate-300 mb-2">Arrastra tu archivo Excel aquí</p>
                     <p class="text-xs text-slate-500 mb-4">o haz clic para seleccionar</p>
                     <input type="file" id="excel-file-input" accept=".xlsx,.xls" class="hidden">
-                    <button onclick="document.getElementById('excel-file-input').click()" class="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-lg text-xs font-bold">
+                    <button id="btn-select-file" class="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-lg text-xs font-bold">
                         Seleccionar Archivo
                     </button>
                 </div>
@@ -635,8 +639,8 @@
                         </table>
                     </div>
                     <div class="flex justify-end space-x-2 mt-4">
-                        <button onclick="closeImportModal()" class="px-4 py-2 bg-slate-800 text-slate-300 rounded-lg">Cancelar</button>
-                        <button onclick="confirmImport()" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-lg">
+                        <button id="btn-cancel-import" class="px-4 py-2 bg-slate-800 text-slate-300 rounded-lg">Cancelar</button>
+                        <button id="btn-confirm-import" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-lg">
                             <i class="fa-solid fa-upload mr-2"></i>Importar Datos
                         </button>
                     </div>
@@ -651,11 +655,15 @@
             <div class="flex items-center space-x-3 text-rose-500"><i class="fa-solid fa-triangle-exclamation text-2xl"></i><h3 class="font-bold text-white">¿Eliminar Registro?</h3></div>
             <p class="text-xs text-slate-300">Esta acción eliminará de forma permanente el registro <span id="delete-target-id" class="font-bold text-white"></span>.</p>
             <input type="hidden" id="delete-target-uid"><input type="hidden" id="delete-target-type">
-            <div class="flex justify-end space-x-2"><button onclick="closeDeleteModal()" class="px-4 py-2 bg-slate-800 text-slate-300 rounded-lg text-xs">Cancelar</button><button onclick="executeDeleteRecord()" class="px-4 py-2 bg-rose-600 text-white font-bold rounded-lg text-xs">Eliminar</button></div>
+            <div class="flex justify-end space-x-2">
+                <button id="btn-cancel-delete" class="px-4 py-2 bg-slate-800 text-slate-300 rounded-lg text-xs">Cancelar</button>
+                <button id="btn-confirm-delete" class="px-4 py-2 bg-rose-600 text-white font-bold rounded-lg text-xs">Eliminar</button>
+            </div>
         </div>
     </div>
 
     <script>
+        // Variables globales
         let dbProyectos = {};
         let dbPostventa = {};
         let filteredProyectos = [];
@@ -665,7 +673,19 @@
         let chartTe6Instance = null;
         let importedData = [];
 
-        function executeLogin(e) {
+        // Verificar que XLSX esté cargado
+        window.addEventListener('load', () => {
+            if (typeof XLSX !== 'undefined') {
+                console.log('✅ Librería XLSX cargada correctamente');
+                logEtl('✅ Librería XLSX cargada correctamente');
+            } else {
+                console.error('❌ Error: Librería XLSX no cargada');
+                logEtl('❌ Error: Librería XLSX no cargada');
+            }
+        });
+
+        // ========== AUTENTICACIÓN ==========
+        document.getElementById('login-form').addEventListener('submit', (e) => {
             e.preventDefault();
             const email = document.getElementById('login-email').value.trim();
             const pass = document.getElementById('login-password').value;
@@ -673,16 +693,42 @@
             errDiv.classList.add('hidden');
 
             window.fbSignIn(window.fbAuth, email, pass)
+                .then(() => {
+                    console.log('✅ Login exitoso');
+                    logEtl('✅ Login exitoso');
+                })
                 .catch(err => {
+                    console.error('❌ Error de login:', err);
                     errDiv.innerText = "Error: Credenciales inválidas o sin permisos asignados.";
                     errDiv.classList.remove('hidden');
                 });
-        }
+        });
 
-        function executeLogout() {
+        document.getElementById('logout-btn').addEventListener('click', () => {
             window.fbSignOut(window.fbAuth);
+        });
+
+        // ========== NAVEGACIÓN ==========
+        document.querySelectorAll('.nav-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const tabId = btn.getAttribute('data-tab');
+                switchTab(tabId);
+            });
+        });
+
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(t => t.classList.add('hidden'));
+            document.getElementById(`tab-${tabId}`).classList.remove('hidden');
+            document.querySelectorAll('.nav-btn').forEach(b => {
+                b.className = "nav-btn w-full flex items-center space-x-3 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-400 hover:bg-slate-800/50 hover:text-slate-200 transition-all border-l-2 border-transparent";
+            });
+            const active = document.querySelector(`.nav-btn[data-tab="${tabId}"]`);
+            if (active) {
+                active.className = "nav-btn w-full flex items-center space-x-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all bg-gradient-to-r from-copec-orange/20 to-transparent text-copec-orange border-l-2 border-copec-orange";
+            }
         }
 
+        // ========== FIREBASE ==========
         function loadDatabaseState() {
             logEtl("DATALAKE LAYER: Conectando de forma remota a la nube de Firebase...");
             const dbRefProyectos = window.fbRef(window.fbDatabase, 'copec_db_proyectos');
@@ -691,12 +737,14 @@
 
             window.fbOnValue(dbRefProyectos, (snapshot) => {
                 const data = snapshot.val();
+                console.log('📥 Proyectos cargados desde Firebase:', data);
                 dbProyectos = data || {};
                 triggerEtlExecution();
             });
 
             window.fbOnValue(dbRefPostventa, (snapshot) => {
                 const data = snapshot.val();
+                console.log('📥 Postventa cargada desde Firebase:', data);
                 dbPostventa = data || {};
                 triggerEtlExecution();
             });
@@ -711,13 +759,27 @@
             const dbRefPostventa = window.fbRef(window.fbDatabase, 'copec_db_postventa');
             const dbRefTimestamp = window.fbRef(window.fbDatabase, 'copec_db_last_modified');
 
+            console.log('💾 Guardando proyectos en Firebase:', dbProyectos);
             window.fbSet(dbRefProyectos, dbProyectos)
-                .then(() => logEtl("✓ Proyectos guardados en Firebase"))
-                .catch(err => logEtl("✗ Error guardando proyectos: " + err.message));
+                .then(() => {
+                    console.log('✅ Proyectos guardados correctamente');
+                    logEtl("✓ Proyectos guardados en Firebase");
+                })
+                .catch(err => {
+                    console.error('❌ Error guardando proyectos:', err);
+                    logEtl("✗ Error guardando proyectos: " + err.message);
+                });
 
+            console.log('💾 Guardando postventa en Firebase:', dbPostventa);
             window.fbSet(dbRefPostventa, dbPostventa)
-                .then(() => logEtl("✓ Postventa guardada en Firebase"))
-                .catch(err => logEtl("✗ Error guardando postventa: " + err.message));
+                .then(() => {
+                    console.log('✅ Postventa guardada correctamente');
+                    logEtl("✓ Postventa guardada en Firebase");
+                })
+                .catch(err => {
+                    console.error('❌ Error guardando postventa:', err);
+                    logEtl("✗ Error guardando postventa: " + err.message);
+                });
             
             const now = new Date();
             const formattedDate = `${String(now.getDate()).padStart(2, '0')}/${String(now.getMonth() + 1).padStart(2, '0')}/${now.getFullYear()} ${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}:${String(now.getSeconds()).padStart(2, '0')}`;
@@ -728,13 +790,11 @@
             document.getElementById('header-last-modified').innerHTML = `<i class="fa-regular fa-clock text-copec-orange mr-1"></i> Última modificación: <span class="text-slate-200 font-semibold">${timestamp || 'Sin cambios'}</span>`;
         }
 
-        function switchTab(tabId) {
-            document.querySelectorAll('.tab-content').forEach(t => t.classList.add('hidden'));
-            document.getElementById(`tab-${tabId}`).classList.remove('hidden');
-            document.querySelectorAll('aside nav button').forEach(b => b.className = "w-full flex items-center space-x-3 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-400 hover:bg-slate-800/50 hover:text-slate-200 transition-all border-l-2 border-transparent");
-            const active = document.getElementById(`nav-${tabId}`);
-            if (active) active.className = "w-full flex items-center space-x-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all bg-gradient-to-r from-copec-orange/20 to-transparent text-copec-orange border-l-2 border-copec-orange";
-        }
+        // ========== FILTROS ==========
+        document.getElementById('filter-origen').addEventListener('change', applyFilters);
+        document.getElementById('filter-estado').addEventListener('change', applyFilters);
+        document.getElementById('filter-mes').addEventListener('change', applyFilters);
+        document.getElementById('btn-reset-filters').addEventListener('click', resetFilters);
 
         function triggerEtlExecution() {
             filteredProyectos = Object.values(dbProyectos);
@@ -776,6 +836,7 @@
             applyFilters();
         }
 
+        // ========== KPIs Y GRÁFICOS ==========
         function renderKPIs() {
             const grandTotal = filteredProyectos.length + filteredPostventa.length;
             document.getElementById('kpi-total-servicios').innerText = grandTotal;
@@ -844,6 +905,7 @@
             document.getElementById('risk-alerts-container').innerHTML = `<div class="p-3 bg-slate-800/20 text-slate-400 text-xs rounded-lg text-center">Sin anomalías críticas reportadas.</div>`;
         }
 
+        // ========== UTILIDADES ==========
         function getAdministBadge(val) {
             if (val === 'CERRADO') return `<span class="px-2 py-1 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">CERRADO</span>`;
             if (val === 'EDP') return `<span class="px-2 py-1 rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/20">EDP</span>`;
@@ -857,16 +919,30 @@
             return `<i class="fa-solid fa-circle-minus text-slate-700"></i>`;
         }
 
+        function logEtl(msg) {
+            const t = document.getElementById('etl-terminal');
+            if (t) t.innerHTML += `<div>[${new Date().toLocaleTimeString()}] ${msg}</div>`;
+        }
+
+        function clearTerminal() { 
+            const t = document.getElementById('etl-terminal'); 
+            if (t) t.innerHTML = ''; 
+        }
+
+        // ========== TABLAS ==========
         function renderQualityTable() {
             const tbody = document.getElementById('quality-table-body');
             tbody.innerHTML = '';
             const searchTerm = document.getElementById('quality-search').value.toLowerCase();
             
-            [...filteredProyectos, ...filteredPostventa].filter(r => {
+            const filtered = [...filteredProyectos, ...filteredPostventa].filter(r => {
                 if (!searchTerm) return true;
                 return (r.ID && r.ID.toLowerCase().includes(searchTerm)) || 
                        (r['CLIENTE/PROYECTO'] && r['CLIENTE/PROYECTO'].toLowerCase().includes(searchTerm));
-            }).forEach(r => {
+            });
+            
+            filtered.forEach(r => {
+                const isPV = r.ORIGEN && r.ORIGEN.includes('PV');
                 tbody.innerHTML += `
                     <tr class="hover:bg-slate-900/40 text-center">
                         <td class="p-3 text-left sticky left-0 bg-slate-950 font-bold">${r.ID} - ${r['CLIENTE/PROYECTO']}</td>
@@ -880,12 +956,12 @@
                         <td class="p-3">${getAdministBadge(r.ADMINIST)}</td>
                         <td class="p-3">${getAdministBadge(r.ADMINIST2)}</td>
                         <td class="p-3">
-                            <button onclick="openFormModal('${r._uid}', ${!!r.ORIGEN.includes('PV')})" class="text-slate-400 hover:text-copec-orange mx-1"><i class="fa-solid fa-pen-to-square"></i></button>
-                            <button onclick="openDeleteModal('${r._uid}', ${!!r.ORIGEN.includes('PV')})" class="text-slate-400 hover:text-rose-500 mx-1"><i class="fa-solid fa-trash-can"></i></button>
+                            <button onclick="openFormModal('${r._uid}', ${isPV})" class="text-slate-400 hover:text-copec-orange mx-1"><i class="fa-solid fa-pen-to-square"></i></button>
+                            <button onclick="openDeleteModal('${r._uid}', ${isPV})" class="text-slate-400 hover:text-rose-500 mx-1"><i class="fa-solid fa-trash-can"></i></button>
                         </td>
                     </tr>`;
             });
-            document.getElementById('quality-table-info').innerText = `Total unificado: ${filteredProyectos.length + filteredPostventa.length}`;
+            document.getElementById('quality-table-info').innerText = `Total unificado: ${filtered.length}`;
         }
 
         function renderPostVentaAnalysis() {
@@ -930,6 +1006,7 @@
             });
             
             filtered.forEach(r => {
+                const isPV = r.ORIGEN && r.ORIGEN.includes('PV');
                 tbody.innerHTML += `
                     <tr class="hover:bg-slate-900/30">
                         <td class="p-3 font-mono font-bold">${r.ID}</td>
@@ -942,40 +1019,35 @@
                         <td class="p-3">${getAdministBadge(r.ADMINIST2)}</td>
                         <td class="p-3 font-mono">${r.Fecha2 || '-'}</td>
                         <td class="p-3 text-center">
-                            <button onclick="openFormModal('${r._uid}', ${!!r.ORIGEN.includes('PV')})" class="text-slate-400 hover:text-copec-orange"><i class="fa-solid fa-pen-to-square"></i></button>
+                            <button onclick="openFormModal('${r._uid}', ${isPV})" class="text-slate-400 hover:text-copec-orange"><i class="fa-solid fa-pen-to-square"></i></button>
                         </td>
                     </tr>`;
             });
             document.getElementById('explorer-count').innerText = `Visualizando ${filtered.length} de ${filteredProyectos.length + filteredPostventa.length} registros totales`;
         }
 
-        function logEtl(msg) {
-            const t = document.getElementById('etl-terminal');
-            if (t) t.innerHTML += `<div>[${new Date().toLocaleTimeString()}] ${msg}</div>`;
-        }
-        function clearTerminal() { const t = document.getElementById('etl-terminal'); if (t) t.innerHTML = ''; }
+        document.getElementById('quality-search').addEventListener('input', renderQualityTable);
+        document.getElementById('explorer-search').addEventListener('input', renderExplorer);
 
-        function toggleFormDocumentChecklist() {
-            const origen = document.getElementById('form-origen').value;
+        // ========== MODAL FORMULARIO ==========
+        document.getElementById('btn-add-record').addEventListener('click', () => openFormModal(null, false));
+        document.getElementById('btn-close-form').addEventListener('click', closeFormModal);
+        document.getElementById('btn-cancel-form').addEventListener('click', closeFormModal);
+
+        document.getElementById('form-origen').addEventListener('change', function() {
+            const origen = this.value;
             const isPV = origen.includes('PV');
             document.getElementById('form-checklist-proyectos').classList.toggle('hidden', isPV);
             document.getElementById('form-checklist-postventa').classList.toggle('hidden', !isPV);
-        }
+        });
 
-        function handleAdminist2Change() {
-            const val = document.getElementById('form-administ2').value;
-            if (val === 'CERRADO' || val === 'NO APLICA') {
-                document.getElementById('form-fecha2').value = new Date().toISOString().split('T')[0];
-            }
-        }
-
-        function toggleFecha2NA() {
-            const checked = document.getElementById('form-fecha2-na').checked;
+        document.getElementById('form-fecha2-na').addEventListener('change', function() {
+            const checked = this.checked;
             document.getElementById('form-fecha2').disabled = checked;
             if (checked) {
                 document.getElementById('form-fecha2').value = '';
             }
-        }
+        });
 
         function openFormModal(uid, isPV) {
             document.getElementById('form-modal').classList.remove('hidden');
@@ -1006,14 +1078,18 @@
                     document.getElementById('sel-ot').value = record['01 Reporte OT'] || '';
                     document.getElementById('sel-ast').value = record['02 AST'] || '';
                     
-                    toggleFormDocumentChecklist();
+                    const origen = record.ORIGEN || 'VOLTEX';
+                    const isPVRecord = origen.includes('PV');
+                    document.getElementById('form-checklist-proyectos').classList.toggle('hidden', isPVRecord);
+                    document.getElementById('form-checklist-postventa').classList.toggle('hidden', !isPVRecord);
                 }
             } else {
                 document.getElementById('form-action-type').value = 'NEW';
                 document.getElementById('form-original-id').value = '';
                 document.getElementById('modal-title').innerHTML = '<i class="fa-solid fa-circle-plus text-emerald-500"></i><span>Nuevo Registro</span>';
                 document.getElementById('record-form').reset();
-                toggleFormDocumentChecklist();
+                document.getElementById('form-checklist-proyectos').classList.remove('hidden');
+                document.getElementById('form-checklist-postventa').classList.add('hidden');
             }
         }
 
@@ -1021,7 +1097,7 @@
             document.getElementById('form-modal').classList.add('hidden'); 
         }
 
-        function saveRecord(e) {
+        document.getElementById('record-form').addEventListener('submit', (e) => {
             e.preventDefault();
             
             const actionType = document.getElementById('form-action-type').value;
@@ -1070,7 +1146,11 @@
             saveDatabaseToStorage();
             closeFormModal();
             triggerEtlExecution();
-        }
+        });
+
+        // ========== MODAL ELIMINAR ==========
+        document.getElementById('btn-cancel-delete').addEventListener('click', closeDeleteModal);
+        document.getElementById('btn-confirm-delete').addEventListener('click', executeDeleteRecord);
 
         function openDeleteModal(uid, isPV) {
             document.getElementById('delete-modal').classList.remove('hidden');
@@ -1103,6 +1183,26 @@
             triggerEtlExecution();
         }
 
+        // ========== MODAL IMPORTAR EXCEL ==========
+        document.getElementById('btn-import-excel').addEventListener('click', openImportModal);
+        document.getElementById('btn-close-import').addEventListener('click', closeImportModal);
+        document.getElementById('btn-cancel-import').addEventListener('click', closeImportModal);
+        document.getElementById('btn-select-file').addEventListener('click', () => {
+            document.getElementById('excel-file-input').click();
+        });
+        document.getElementById('btn-confirm-import').addEventListener('click', confirmImport);
+
+        document.getElementById('excel-file-input').addEventListener('change', function(e) {
+            console.log('📁 Evento change disparado');
+            const file = e.target.files[0];
+            if (file) {
+                console.log('📁 Archivo seleccionado:', file.name);
+                handleExcelFile(file);
+            } else {
+                console.log('❌ No se seleccionó archivo');
+            }
+        });
+
         function openImportModal() {
             document.getElementById('import-modal').classList.remove('hidden');
             document.getElementById('import-preview').classList.add('hidden');
@@ -1116,31 +1216,32 @@
         }
 
         function handleExcelFile(file) {
-            console.log('Procesando archivo:', file.name);
+            console.log('📂 Procesando archivo:', file.name);
             logEtl(`Leyendo archivo Excel: ${file.name}`);
             
             const reader = new FileReader();
             
             reader.onload = function(e) {
-                console.log('Archivo leído correctamente');
+                console.log('✅ Archivo leído correctamente');
                 try {
                     const data = new Uint8Array(e.target.result);
-                    console.log('Datos binarios cargados, longitud:', data.length);
+                    console.log('📊 Datos binarios cargados, longitud:', data.length);
                     
                     if (typeof XLSX === 'undefined') {
-                        console.error('Librería XLSX no cargada');
+                        console.error('❌ Librería XLSX no cargada');
                         alert('Error: La librería de Excel no se cargó correctamente. Recarga la página.');
                         return;
                     }
                     
-                    console.log('Parseando Excel...');
+                    console.log('🔄 Parseando Excel...');
                     const workbook = XLSX.read(data, { type: 'array' });
-                    console.log('Workbook creado, hojas:', workbook.SheetNames);
+                    console.log('✅ Workbook creado, hojas:', workbook.SheetNames);
                     
                     const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
                     const jsonData = XLSX.utils.sheet_to_json(firstSheet);
                     
-                    console.log('Datos extraídos:', jsonData.length, 'filas');
+                    console.log('✅ Datos extraídos:', jsonData.length, 'filas');
+                    console.log('📋 Primera fila:', jsonData[0]);
                     
                     if (jsonData.length === 0) {
                         alert('El archivo Excel está vacío o no tiene datos válidos');
@@ -1148,36 +1249,26 @@
                     }
                     
                     importedData = jsonData;
-                    console.log('Datos guardados en importedData');
+                    console.log('💾 Datos guardados en importedData');
                     showImportPreview(jsonData);
                     logEtl(`✓ ${jsonData.length} filas leídas del Excel`);
                 } catch (error) {
-                    console.error('Error procesando Excel:', error);
+                    console.error('❌ Error procesando Excel:', error);
                     alert('Error al procesar el archivo Excel: ' + error.message);
                     logEtl(`✗ Error: ${error.message}`);
                 }
             };
             
             reader.onerror = function(e) {
-                console.error('Error leyendo archivo:', e);
+                console.error('❌ Error leyendo archivo:', e);
                 alert('Error al leer el archivo');
             };
             
             reader.readAsArrayBuffer(file);
         }
 
-        document.getElementById('excel-file-input').addEventListener('change', function(e) {
-            console.log('Evento change disparado');
-            const file = e.target.files[0];
-            if (file) {
-                handleExcelFile(file);
-            } else {
-                console.log('No se seleccionó archivo');
-            }
-        });
-
         function showImportPreview(data) {
-            console.log('Mostrando vista previa de', data.length, 'registros');
+            console.log('👁️ Mostrando vista previa de', data.length, 'registros');
             const preview = document.getElementById('import-preview');
             const head = document.getElementById('import-preview-head');
             const body = document.getElementById('import-preview-body');
@@ -1190,7 +1281,7 @@
             }
             
             const headers = Object.keys(data[0]);
-            console.log('Columnas detectadas:', headers);
+            console.log('📋 Columnas detectadas:', headers);
             
             head.innerHTML = '<tr>' + headers.map(h => `<th class="p-2 bg-slate-900 text-xs font-bold text-slate-300">${h}</th>`).join('') + '</tr>';
             
@@ -1203,11 +1294,11 @@
             }
             
             preview.classList.remove('hidden');
-            console.log('Vista previa mostrada correctamente');
+            console.log('✅ Vista previa mostrada correctamente');
         }
 
         function confirmImport() {
-            console.log('Confirmando importación de', importedData.length, 'registros');
+            console.log('🚀 Confirmando importación de', importedData.length, 'registros');
             
             if (importedData.length === 0) {
                 alert('No hay datos para importar');
@@ -1246,7 +1337,7 @@
                 importCount++;
             });
             
-            console.log('Guardando en Firebase...');
+            console.log('💾 Guardando en Firebase...');
             saveDatabaseToStorage();
             logEtl(`✓ ${importCount} registros importados desde Excel`);
             
@@ -1263,6 +1354,27 @@
                 triggerEtlExecution();
             }, 2000);
         }
+
+        // Drag and drop
+        const importDropZone = document.getElementById('import-drop-zone');
+        importDropZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            importDropZone.classList.add('border-blue-500');
+        });
+        importDropZone.addEventListener('dragleave', () => {
+            importDropZone.classList.remove('border-blue-500');
+        });
+        importDropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            importDropZone.classList.remove('border-blue-500');
+            const file = e.dataTransfer.files[0];
+            if (file) {
+                handleExcelFile(file);
+            }
+        });
+
+        // ========== EXPORTAR CSV ==========
+        document.getElementById('btn-export-csv').addEventListener('click', exportToCSV);
 
         function exportToCSV() {
             const data = [...filteredProyectos, ...filteredPostventa];
@@ -1284,23 +1396,16 @@
             link.click();
         }
 
-        // Setup drag and drop for import
-        const importDropZone = document.getElementById('import-drop-zone');
-        importDropZone.addEventListener('dragover', (e) => {
-            e.preventDefault();
-            importDropZone.classList.add('border-blue-500');
+        // ========== RECARGAR ==========
+        document.getElementById('btn-reload').addEventListener('click', () => {
+            console.log('🔄 Recargando datos desde Firebase...');
+            logEtl('🔄 Recargando datos desde Firebase...');
+            loadDatabaseState();
         });
-        importDropZone.addEventListener('dragleave', () => {
-            importDropZone.classList.remove('border-blue-500');
-        });
-        importDropZone.addEventListener('drop', (e) => {
-            e.preventDefault();
-            importDropZone.classList.remove('border-blue-500');
-            const file = e.dataTransfer.files[0];
-            if (file) {
-                handleExcelFile(file);
-            }
-        });
+
+        // Inicialización
+        console.log('✅ Aplicación inicializada correctamente');
+        logEtl('✅ Aplicación inicializada correctamente');
     </script>
 </body>
 </html>
