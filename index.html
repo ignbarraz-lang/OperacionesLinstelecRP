@@ -582,6 +582,57 @@
         let gsScriptUrl = localStorage.getItem('gs_script_url') || '';
         let dataLoaded = false;
 
+        // ========== DATOS INICIALES ==========
+        const rawProyectos = [
+            { ORIGEN: "VOLTEX", ID: "VX-01", CLIENTE_PROYECTO: "Bahia Magica", Fecha: "2026-01-13", ADMINIST: "CERRADO", ADMINIST2: "CERRADO", "01_Plano": "Realizado", "02_Memoria": "Realizado", "03_Cert": "Realizado", "04_Gantt": "Realizado", "04_AST": "Realizado" },
+            { ORIGEN: "VOLTEX", ID: "VX-02", CLIENTE_PROYECTO: "Edificio Playa Hornitos", Fecha: "2026-03-30", ADMINIST: "EDP", ADMINIST2: "EDP", "01_Plano": "Realizado", "02_Memoria": "No Aplica", "04_AST": "" },
+            { ORIGEN: "VOLTEX", ID: "VX-03", CLIENTE_PROYECTO: "Mall puertas del Mar", Fecha: "2026-03-31", ADMINIST: "CERRADO", ADMINIST2: "CERRADO", "01_Plano": "Realizado", "02_Memoria": "Realizado", "04_AST": "Realizado" },
+            { ORIGEN: "VOLTEX", ID: "VX-04", CLIENTE_PROYECTO: "Hotel Park In", Fecha: "2026-03-03", ADMINIST: "CERRADO", ADMINIST2: "CERRADO", "04_AST": "" },
+            { ORIGEN: "VOLTEX", ID: "VX-05", CLIENTE_PROYECTO: "Casa de Campo", Fecha: "2026-03-10", ADMINIST: "CERRADO", ADMINIST2: "CERRADO", "04_AST": "Realizado" },
+            { ORIGEN: "VOLTEX", ID: "VX-06", CLIENTE_PROYECTO: "TE6 Hoteles Privado a Publico", Fecha: "2026-03-19", ADMINIST: "EJECUTANDO", INST: "TE6 EMIT", ADMINIST2: "EDP", Fecha2: "2026-06-02", "01_Plano": "Realizado", "02_Memoria": "Realizado", "03_Cert": "Realizado", "04_Gantt": "Realizado", "04_AST": "Realizado" },
+            { ORIGEN: "VOLTEX", ID: "VX-07", CLIENTE_PROYECTO: "Edificio Costa Coquimbo", Fecha: "2026-03-24", ADMINIST: "CERRADO", ADMINIST2: "CERRADO", "04_AST": "" },
+            { ORIGEN: "VOLTEX", ID: "VX-08", CLIENTE_PROYECTO: "Hotel Club", Fecha: "2026-01-27", ADMINIST: "CERRADO", INST: "TE6 APROB", ADMINIST2: "EDP", Fecha2: "2026-04-20", "01_Plano": "Realizado", "02_Memoria": "Realizado", "03_Cert": "Realizado", "04_Gantt": "Realizado", "04_AST": "Realizado" },
+            { ORIGEN: "VOLTEX", ID: "VX-09", CLIENTE_PROYECTO: "Cargador Publico Centro", Fecha: "2026-04-05", ADMINIST: "EJECUTANDO", ADMINIST2: "EJECUTANDO", "04_AST": "" },
+            { ORIGEN: "VOLTEX", ID: "VX-10", CLIENTE_PROYECTO: "Terminal Buses Copec", Fecha: "2026-05-12", ADMINIST: "EDP", ADMINIST2: "EDP", "04_AST": "Realizado" },
+            { ORIGEN: "FLUX", ID: "FX-01", CLIENTE_PROYECTO: "Haras de Pirque", Fecha: "2026-02-15", ADMINIST: "CERRADO", ADMINIST2: "CERRADO", "04_AST": "Realizado" },
+            { ORIGEN: "FLUX", ID: "FX-02", CLIENTE_PROYECTO: "Rene Arriagada", Fecha: "2025-05-28", ADMINIST: "CERRADO", INST: "TE6 APROB", ADMINIST2: "CERRADO", "04_AST": "Realizado" },
+            { ORIGEN: "FLUX", ID: "FX-03", CLIENTE_PROYECTO: "Mauricio Vargas", Fecha: "2025-12-02", ADMINIST: "CERRADO", INST: "TE6 APROB", ADMINIST2: "CERRADO", Fecha2: "2026-03-09", "01_Plano": "Realizado", "02_Memoria": "Realizado", "03_Cert": "Realizado", "04_AST": "Realizado" },
+            { ORIGEN: "FLUX", ID: "FX-04", CLIENTE_PROYECTO: "Enrique Rosselot", Fecha: "2026-03-05", ADMINIST: "CERRADO", ADMINIST2: "CERRADO", "04_AST": "" },
+            { ORIGEN: "FLUX", ID: "FX-05", CLIENTE_PROYECTO: "Soprole Planta", Fecha: "2026-03-20", ADMINIST: "CERRADO", ADMINIST2: "CERRADO", "04_AST": "" },
+            { ORIGEN: "FLUX", ID: "FX-06", CLIENTE_PROYECTO: "Karen Steinlen", Fecha: "2026-03-23", ADMINIST: "CERRADO", INST: "TE6 APROB", ADMINIST2: "EDP", Fecha2: "2026-05-14", "01_Plano": "Realizado", "02_Memoria": "Realizado", "03_Cert": "Realizado", "04_Gantt": "Realizado", "04_AST": "Realizado" },
+            { ORIGEN: "FLUX", ID: "FX-07", CLIENTE_PROYECTO: "Natasha Vera", Fecha: "2026-03-31", ADMINIST: "CERRADO", ADMINIST2: "CERRADO", "01_Plano": "Realizado", "02_Memoria": "Realizado", "04_AST": "Realizado" },
+            { ORIGEN: "FLUX", ID: "FX-08", CLIENTE_PROYECTO: "Mauricio Vargas V2", Fecha: "2026-03-31", ADMINIST: "CERRADO", ADMINIST2: "CERRADO", "04_AST": "No Aplica" },
+            { ORIGEN: "FLUX", ID: "FX-09", CLIENTE_PROYECTO: "Olga Quiroga", Fecha: "2026-03-26", ADMINIST: "CERRADO", ADMINIST2: "CERRADO", "01_Plano": "Realizado", "02_Memoria": "Realizado", "03_Cert": "Realizado", "04_AST": "Realizado" },
+            { ORIGEN: "FLUX", ID: "FX-10", CLIENTE_PROYECTO: "Carlos Barria", Fecha: "2026-04-28", ADMINIST: "CERRADO", ADMINIST2: "CERRADO", "04_AST": "" },
+            { ORIGEN: "FLUX", ID: "FX-11", CLIENTE_PROYECTO: "Loreto Rojas", Fecha: "2026-04-30", ADMINIST: "CERRADO", INST: "TE6 EMIT", ADMINIST2: "EDP", Fecha2: "2026-06-17", "01_Plano": "Realizado", "02_Memoria": "Realizado", "03_Cert": "Realizado", "04_Gantt": "Realizado", "04_AST": "Realizado" },
+            { ORIGEN: "FLUX", ID: "FX-12", CLIENTE_PROYECTO: "Carlos Barria V2", Fecha: "2026-05-05", ADMINIST: "CERRADO", ADMINIST2: "CERRADO", "04_AST": "" },
+            { ORIGEN: "FLUX", ID: "FX-13", CLIENTE_PROYECTO: "Jose Moreno", Fecha: "2026-05-08", ADMINIST: "CERRADO", INST: "TE6 APROB", ADMINIST2: "EDP", Fecha2: "2026-06-03", "01_Plano": "Realizado", "02_Memoria": "Realizado", "03_Cert": "Realizado", "04_Gantt": "Realizado", "04_AST": "Realizado" },
+            { ORIGEN: "FLUX", ID: "FX-14", CLIENTE_PROYECTO: "Hector Soto", Fecha: "2026-05-05", ADMINIST: "CERRADO", INST: "TE6 EMIT", ADMINIST2: "EDP", "01_Plano": "Realizado", "02_Memoria": "Realizado", "04_AST": "Realizado" },
+            { ORIGEN: "FLUX", ID: "FX-15", CLIENTE_PROYECTO: "Viña San Pedro", Fecha: "2026-06-10", ADMINIST: "EJECUTANDO", ADMINIST2: "EJECUTANDO", "04_AST": "" },
+            { ORIGEN: "FLUX", ID: "FX-16", CLIENTE_PROYECTO: "Condominio Las Brisas", Fecha: "2026-06-14", ADMINIST: "EDP", ADMINIST2: "EDP", "04_AST": "" },
+            { ORIGEN: "FLUX", ID: "FX-17", CLIENTE_PROYECTO: "Agrícola Lo Orozco", Fecha: "2026-06-22", ADMINIST: "EDP", ADMINIST2: "EDP", "04_AST": "" },
+            { ORIGEN: "FLUX", ID: "FX-18", CLIENTE_PROYECTO: "Agrícola Gacitua", Fecha: "2026-06-25", ADMINIST: "CERRADO", ADMINIST2: "CERRADO", "04_AST": "Realizado" }
+        ];
+        const rawPostventa = [
+            { ORIGEN: "FLUX-PV", ID: "FX-PV-01", CLIENTE_PROYECTO: "Sergio Contreras (V1)", Fecha: "2026-02-09", ADMINIST: "CERRADO", ADMINIST2: "CERRADO" },
+            { ORIGEN: "FLUX-PV", ID: "FX-PV-01", CLIENTE_PROYECTO: "Sergio Contreras (V2)", Fecha: "2026-02-25", ADMINIST: "CERRADO", ADMINIST2: "CERRADO" },
+            { ORIGEN: "FLUX-PV", ID: "FX-PV-01", CLIENTE_PROYECTO: "Sergio Contreras (V3)", Fecha: "2026-02-26", ADMINIST: "CERRADO", INST: "REALIZADA", ADMINIST2: "CERRADO", Fecha2: "2026-02-26", "01_Reporte_OT": "Realizado", "02_AST": "No Aplica" },
+            { ORIGEN: "FLUX-PV", ID: "FX-PV-01", CLIENTE_PROYECTO: "Sergio Contreras (V4)", Fecha: "2026-02-27", ADMINIST: "CERRADO", ADMINIST2: "CERRADO" },
+            { ORIGEN: "FLUX-PV", ID: "FX-PV-01", CLIENTE_PROYECTO: "Sergio Contreras (V5)", Fecha: "2026-04-10", ADMINIST: "CERRADO", ADMINIST2: "CERRADO" },
+            { ORIGEN: "FLUX-PV", ID: "FX-PV-02", CLIENTE_PROYECTO: "Walter Camus (V1)", Fecha: "2026-02-09", ADMINIST: "CERRADO", ADMINIST2: "CERRADO" },
+            { ORIGEN: "FLUX-PV", ID: "FX-PV-02", CLIENTE_PROYECTO: "Walter Camus (V2)", Fecha: "2026-02-25", ADMINIST: "CERRADO", INST: "AGENDADA", ADMINIST2: "CERRADO", Fecha2: "2026-02-25", "01_Reporte_OT": "Realizado", "02_AST": "Realizado" },
+            { ORIGEN: "FLUX-PV", ID: "FX-PV-03", CLIENTE_PROYECTO: "Karla Malebran (V1)", Fecha: "2026-03-23", ADMINIST: "CERRADO", ADMINIST2: "CERRADO" },
+            { ORIGEN: "FLUX-PV", ID: "FX-PV-03", CLIENTE_PROYECTO: "Karla Malebran (V2)", Fecha: "2026-05-15", ADMINIST: "EDP", ADMINIST2: "EDP" },
+            { ORIGEN: "FLUX-PV", ID: "FX-PV-04", CLIENTE_PROYECTO: "Patricia Sanhueza", Fecha: "2026-03-30", ADMINIST: "CERRADO", ADMINIST2: "CERRADO" },
+            { ORIGEN: "FLUX-PV", ID: "FX-PV-05", CLIENTE_PROYECTO: "Cinthia Carvajal", Fecha: "2026-03-26", ADMINIST: "CERRADO", ADMINIST2: "CERRADO" },
+            { ORIGEN: "FLUX-PV", ID: "FX-PV-06", CLIENTE_PROYECTO: "Héctor Soto SEC", Fecha: "2026-07-02", ADMINIST: "EDP", ADMINIST2: "EDP" },
+            { ORIGEN: "VOLTEX-PV", ID: "VX-PV-01", CLIENTE_PROYECTO: "Casa Molle", Fecha: "2026-04-01", ADMINIST: "CERRADO", ADMINIST2: "CERRADO" },
+            { ORIGEN: "VOLTEX-PV", ID: "VX-PV-02", CLIENTE_PROYECTO: "Casona Distante", Fecha: "2026-05-06", ADMINIST: "CERRADO", ADMINIST2: "CERRADO" },
+            { ORIGEN: "VOLTEX-PV", ID: "VX-PV-03", CLIENTE_PROYECTO: "Inmobiliaria Elqui", Fecha: "2026-05-18", ADMINIST: "CERRADO", ADMINIST2: "CERRADO" },
+            { ORIGEN: "VOLTEX-PV", ID: "VX-PV-04", CLIENTE_PROYECTO: "Minera Teck", Fecha: "2026-06-02", ADMINIST: "EJECUTANDO", ADMINIST2: "EJECUTANDO" },
+            { ORIGEN: "VOLTEX-PV", ID: "VX-PV-05", CLIENTE_PROYECTO: "Mall Plaza La Serena", Fecha: "2026-06-15", ADMINIST: "EDP", ADMINIST2: "EDP" }
+        ];
+
         // ========== INICIALIZACIÓN ==========
         window.onload = function() {
             logEtl("SISTEMA INICIADO");
@@ -614,21 +665,27 @@
                 dbClientes = clientesSnap.val() ? Object.values(clientesSnap.val()) : [];
                 dbPagos = pagosSnap.val() ? Object.values(pagosSnap.val()) : [];
 
-                // Asegurar que todos tengan _uid
-                dbProyectos.forEach(p => { if (!p._uid) p._uid = `proj_${uidCounter++}`; });
-                dbPostventa.forEach(pv => { if (!pv._uid) pv._uid = `pv_${uidCounter++}`; });
-                dbClientes.forEach(c => { if (!c._uid) c._uid = `client_${uidCounter++}`; });
-                dbPagos.forEach(p => { if (!p._uid) p._uid = `pago_${uidCounter++}`; });
+                // Si Firebase está vacío, usar datos iniciales
+                if (dbProyectos.length === 0 && dbPostventa.length === 0) {
+                    dbProyectos = rawProyectos.map(p => ({ ...p, _uid: `proj_${uidCounter++}` }));
+                    dbPostventa = rawPostventa.map(pv => ({ ...pv, _uid: `pv_${uidCounter++}` }));
+                    autoGenerateClientes();
+                    await saveDatabaseToStorage();
+                    logEtl("✅ Datos iniciales cargados en Firebase");
+                } else {
+                    dbProyectos.forEach(p => { if (!p._uid) p._uid = `proj_${uidCounter++}`; });
+                    dbPostventa.forEach(pv => { if (!pv._uid) pv._uid = `pv_${uidCounter++}`; });
+                    dbClientes.forEach(c => { if (!c._uid) c._uid = `client_${uidCounter++}`; });
+                    dbPagos.forEach(p => { if (!p._uid) p._uid = `pago_${uidCounter++}`; });
+                    autoGenerateClientes();
+                    logEtl(`✅ Cargados: ${dbProyectos.length} proyectos, ${dbPostventa.length} postventa, ${dbClientes.length} clientes, ${dbPagos.length} pagos`);
+                }
 
-                // Auto-generar clientes desde proyectos si no existen
-                autoGenerateClientes();
-
-                logEtl(`✅ Cargados: ${dbProyectos.length} proyectos, ${dbPostventa.length} postventa, ${dbClientes.length} clientes, ${dbPagos.length} pagos`);
                 dataLoaded = true;
                 triggerEtlExecution();
                 updateNotificationBadge();
             } catch (error) {
-                logEtl(" Error: " + error.message);
+                logEtl("❌ Error: " + error.message);
                 dataLoaded = true;
             }
         }
@@ -638,7 +695,7 @@
             dbClientes.forEach(c => { clientesMap[c.nombre.toLowerCase()] = c; });
             
             [...dbProyectos, ...dbPostventa].forEach(p => {
-                const nombre = p['CLIENTE/PROYECTO'] || p.CLIENTE_PROYECTO || '';
+                const nombre = p.CLIENTE_PROYECTO || '';
                 if (nombre && !clientesMap[nombre.toLowerCase()]) {
                     const newClient = {
                         _uid: `client_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
@@ -676,7 +733,7 @@
                 logEtl("✓ Datos guardados en Firebase");
                 return true;
             } catch (error) {
-                logEtl("❌ Error guardando: " + error.message);
+                logEtl(" Error guardando: " + error.message);
                 alert('Error al guardar en Firebase: ' + error.message);
                 return false;
             }
@@ -845,13 +902,13 @@
             );
 
             if (clientesFiltrados.length === 0) {
-                grid.innerHTML = '<p class="text-slate-400 text-center col-span-3 py-8">No hay clientes registrados. Agrega uno nuevo o importa datos.</p>';
+                grid.innerHTML = '<p class="text-slate-400 text-center col-span-3 py-8">No hay clientes registrados.</p>';
                 return;
             }
 
             grid.innerHTML = clientesFiltrados.map(c => {
                 const proyectosCliente = [...dbProyectos, ...dbPostventa].filter(p => 
-                    (p['CLIENTE/PROYECTO'] || p.CLIENTE_PROYECTO || '').toLowerCase() === c.nombre.toLowerCase()
+                    (p.CLIENTE_PROYECTO || '').toLowerCase() === c.nombre.toLowerCase()
                 );
                 const pagosCliente = dbPagos.filter(p => p.clienteId === c._uid);
                 const totalPagado = pagosCliente.filter(p => p.estado === 'REALIZADO').reduce((sum, p) => sum + (parseInt(p.monto) || 0), 0);
@@ -886,13 +943,10 @@
 
         function openClientDetail(clientId) {
             const cliente = dbClientes.find(c => c._uid === clientId);
-            if (!cliente) { 
-                alert('Cliente no encontrado. Intenta recargar la página.');
-                return; 
-            }
+            if (!cliente) { alert('Cliente no encontrado'); return; }
             
             const proyectosCliente = [...dbProyectos, ...dbPostventa].filter(p => 
-                (p['CLIENTE/PROYECTO'] || p.CLIENTE_PROYECTO || '').toLowerCase() === cliente.nombre.toLowerCase()
+                (p.CLIENTE_PROYECTO || '').toLowerCase() === cliente.nombre.toLowerCase()
             );
             const pagosCliente = dbPagos.filter(p => p.clienteId === clientId);
             const totalPagado = pagosCliente.filter(p => p.estado === 'REALIZADO').reduce((sum, p) => sum + (parseInt(p.monto) || 0), 0);
@@ -965,7 +1019,7 @@
                     <div class="grid grid-cols-2 md:grid-cols-4 gap-2">
                         ${['Plano', 'Memoria', 'TE6', 'Gantt', 'AST', 'Fotos'].map(doc => {
                             const tieneDoc = proyectosCliente.some(p => {
-                                const docKey = doc === 'Plano' ? '01 Plano' : doc === 'Memoria' ? '02 Memoria' : doc === 'TE6' ? 'INST' : doc === 'Gantt' ? '04 Gantt' : doc === 'AST' ? '04 AST' : '01 Foto Ini';
+                                const docKey = doc === 'Plano' ? '01_Plano' : doc === 'Memoria' ? '02_Memoria' : doc === 'TE6' ? 'INST' : doc === 'Gantt' ? '04_Gantt' : doc === 'AST' ? '04_AST' : '01_Foto_Ini';
                                 return p[docKey] === 'Realizado' || p[docKey] === 'TE6 APROB';
                             });
                             return `
@@ -988,10 +1042,7 @@
 
         function editClient(clientId) {
             const cliente = dbClientes.find(c => c._uid === clientId);
-            if (!cliente) { 
-                alert('Cliente no encontrado');
-                return; 
-            }
+            if (!cliente) { alert('Cliente no encontrado'); return; }
             
             document.getElementById('client-modal-title').innerText = `Editar: ${cliente.nombre}`;
             document.getElementById('client-modal-content').innerHTML = `
@@ -1015,10 +1066,7 @@
         async function updateClient(e, clientId) {
             e.preventDefault();
             const idx = dbClientes.findIndex(c => c._uid === clientId);
-            if (idx === -1) {
-                alert('Cliente no encontrado en la base de datos');
-                return;
-            }
+            if (idx === -1) { alert('Cliente no encontrado'); return; }
             
             dbClientes[idx] = {
                 ...dbClientes[idx],
@@ -1183,13 +1231,13 @@
         // ========== TIMELINE ==========
         function renderTimeline() {
             const select = document.getElementById('timeline-cliente');
-            const clientesUnicos = [...new Set([...dbProyectos, ...dbPostventa].map(p => p['CLIENTE/PROYECTO'] || p.CLIENTE_PROYECTO))].filter(Boolean);
+            const clientesUnicos = [...new Set([...dbProyectos, ...dbPostventa].map(p => p.CLIENTE_PROYECTO))].filter(Boolean);
             select.innerHTML = '<option value="ALL">Todos los clientes</option>' + clientesUnicos.map(c => `<option value="${c}">${c}</option>`).join('');
             
             const filterCliente = select.value;
             let proyectos = [...dbProyectos, ...dbPostventa];
             if (filterCliente !== 'ALL') {
-                proyectos = proyectos.filter(p => (p['CLIENTE/PROYECTO'] || p.CLIENTE_PROYECTO) === filterCliente);
+                proyectos = proyectos.filter(p => p.CLIENTE_PROYECTO === filterCliente);
             }
 
             proyectos.sort((a, b) => (a.Fecha || '').localeCompare(b.Fecha || ''));
@@ -1208,7 +1256,7 @@
                                 <h4 class="font-bold text-slate-200">${p.ID}</h4>
                                 <span class="px-2 py-1 rounded-full text-[10px] font-bold ${p.ADMINIST === 'CERRADO' ? 'bg-emerald-500/10 text-emerald-400' : p.ADMINIST === 'EDP' ? 'bg-amber-500/10 text-amber-400' : 'bg-blue-500/10 text-blue-400'}">${p.ADMINIST}</span>
                             </div>
-                            <p class="text-sm text-slate-300">${p['CLIENTE/PROYECTO'] || p.CLIENTE_PROYECTO}</p>
+                            <p class="text-sm text-slate-300">${p.CLIENTE_PROYECTO}</p>
                             <div class="flex items-center space-x-4 mt-2 text-xs text-slate-400">
                                 <span><i class="fa-solid fa-calendar mr-1"></i>${p.Fecha || 'Sin fecha'}</span>
                                 <span><i class="fa-solid fa-tag mr-1"></i>${p.ORIGEN}</span>
@@ -1269,7 +1317,7 @@
             const searchTerm = (document.getElementById('quality-search').value || '').toLowerCase();
             const combined = [...filteredProyectos, ...filteredPostventa].filter(r => 
                 (r.ID || '').toLowerCase().includes(searchTerm) || 
-                (r['CLIENTE/PROYECTO'] || r.CLIENTE_PROYECTO || '').toLowerCase().includes(searchTerm)
+                (r.CLIENTE_PROYECTO || '').toLowerCase().includes(searchTerm)
             );
             
             document.getElementById('quality-table-info').innerText = `${combined.length} registros`;
@@ -1279,12 +1327,12 @@
             }
             tbody.innerHTML = combined.map(r => `
                 <tr class="hover:bg-slate-900/50">
-                    <td class="p-3"><div class="font-bold text-slate-200">${r.ID}</div><div class="text-[10px] text-slate-400">${r['CLIENTE/PROYECTO'] || r.CLIENTE_PROYECTO}</div></td>
-                    <td class="p-3 text-center">${r['01 Plano'] === 'Realizado' ? '<i class="fa-solid fa-circle-check text-emerald-500"></i>' : '<i class="fa-solid fa-circle-minus text-slate-700"></i>'}</td>
-                    <td class="p-3 text-center">${r['02 Memoria'] === 'Realizado' ? '<i class="fa-solid fa-circle-check text-emerald-500"></i>' : '<i class="fa-solid fa-circle-minus text-slate-700"></i>'}</td>
+                    <td class="p-3"><div class="font-bold text-slate-200">${r.ID}</div><div class="text-[10px] text-slate-400">${r.CLIENTE_PROYECTO}</div></td>
+                    <td class="p-3 text-center">${r['01_Plano'] === 'Realizado' ? '<i class="fa-solid fa-circle-check text-emerald-500"></i>' : '<i class="fa-solid fa-circle-minus text-slate-700"></i>'}</td>
+                    <td class="p-3 text-center">${r['02_Memoria'] === 'Realizado' ? '<i class="fa-solid fa-circle-check text-emerald-500"></i>' : '<i class="fa-solid fa-circle-minus text-slate-700"></i>'}</td>
                     <td class="p-3 text-center">${r.INST === 'TE6 APROB' ? '<i class="fa-solid fa-circle-check text-emerald-500"></i>' : r.INST === 'TE6 EMIT' ? '<i class="fa-solid fa-circle-info text-amber-500"></i>' : '<i class="fa-solid fa-circle-minus text-slate-700"></i>'}</td>
-                    <td class="p-3 text-center">${r['04 Gantt'] === 'Realizado' ? '<i class="fa-solid fa-circle-check text-emerald-500"></i>' : '<i class="fa-solid fa-circle-minus text-slate-700"></i>'}</td>
-                    <td class="p-3 text-center">${r['04 AST'] === 'Realizado' ? '<i class="fa-solid fa-circle-check text-emerald-500"></i>' : '<i class="fa-solid fa-circle-minus text-slate-700"></i>'}</td>
+                    <td class="p-3 text-center">${r['04_Gantt'] === 'Realizado' ? '<i class="fa-solid fa-circle-check text-emerald-500"></i>' : '<i class="fa-solid fa-circle-minus text-slate-700"></i>'}</td>
+                    <td class="p-3 text-center">${r['04_AST'] === 'Realizado' ? '<i class="fa-solid fa-circle-check text-emerald-500"></i>' : '<i class="fa-solid fa-circle-minus text-slate-700"></i>'}</td>
                     <td class="p-3 text-center"><span class="px-2 py-1 rounded-full text-[10px] font-bold ${r.ADMINIST === 'CERRADO' ? 'bg-emerald-500/10 text-emerald-400' : 'bg-blue-500/10 text-blue-400'}">${r.ADMINIST}</span></td>
                     <td class="p-3 text-center"><button onclick="openFormModal('${r._uid}')" class="text-slate-400 hover:text-copec-orange"><i class="fa-solid fa-pen-to-square"></i></button></td>
                 </tr>
@@ -1300,7 +1348,7 @@
             tbody.innerHTML = filteredPostventa.map(pv => `
                 <tr class="hover:bg-slate-900/50">
                     <td class="p-3 font-bold">${pv.ID}</td>
-                    <td class="p-3">${pv['CLIENTE/PROYECTO'] || pv.CLIENTE_PROYECTO}</td>
+                    <td class="p-3">${pv.CLIENTE_PROYECTO}</td>
                     <td class="p-3 text-slate-400">${pv.Fecha || '-'}</td>
                     <td class="p-3"><span class="px-2 py-1 rounded-full text-[10px] font-bold ${pv.ADMINIST === 'CERRADO' ? 'bg-emerald-500/10 text-emerald-400' : 'bg-blue-500/10 text-blue-400'}">${pv.ADMINIST}</span></td>
                     <td class="p-3 text-center"><button onclick="openFormModal('${pv._uid}')" class="text-slate-400 hover:text-copec-orange"><i class="fa-solid fa-pen-to-square"></i></button></td>
@@ -1313,7 +1361,7 @@
             const searchTerm = (document.getElementById('explorer-search').value || '').toLowerCase();
             const combined = [...filteredProyectos, ...filteredPostventa].filter(r => 
                 (r.ID || '').toLowerCase().includes(searchTerm) || 
-                (r['CLIENTE/PROYECTO'] || r.CLIENTE_PROYECTO || '').toLowerCase().includes(searchTerm)
+                (r.CLIENTE_PROYECTO || '').toLowerCase().includes(searchTerm)
             );
             if (combined.length === 0) {
                 tbody.innerHTML = '<tr><td colspan="5" class="p-4 text-center text-slate-500">No hay registros</td></tr>';
@@ -1322,7 +1370,7 @@
             tbody.innerHTML = combined.map(r => `
                 <tr class="hover:bg-slate-900/50">
                     <td class="p-3 font-bold">${r.ID}</td>
-                    <td class="p-3">${r['CLIENTE/PROYECTO'] || r.CLIENTE_PROYECTO}</td>
+                    <td class="p-3">${r.CLIENTE_PROYECTO}</td>
                     <td class="p-3 text-slate-400">${r.Fecha || '-'}</td>
                     <td class="p-3"><span class="px-2 py-1 rounded-full text-[10px] font-bold ${r.ADMINIST === 'CERRADO' ? 'bg-emerald-500/10 text-emerald-400' : 'bg-blue-500/10 text-blue-400'}">${r.ADMINIST}</span></td>
                     <td class="p-3 text-center"><button onclick="openFormModal('${r._uid}')" class="text-slate-400 hover:text-copec-orange"><i class="fa-solid fa-pen-to-square"></i></button></td>
@@ -1339,7 +1387,7 @@
                     document.getElementById('form-original-id').value = uid;
                     document.getElementById('form-id').value = target.ID;
                     document.getElementById('form-origen').value = target.ORIGEN;
-                    document.getElementById('form-cliente').value = target['CLIENTE/PROYECTO'] || target.CLIENTE_PROYECTO || '';
+                    document.getElementById('form-cliente').value = target.CLIENTE_PROYECTO || '';
                     document.getElementById('form-fecha').value = target.Fecha || '';
                     document.getElementById('form-administ').value = target.ADMINIST || 'EJECUTANDO';
                 }
@@ -1362,7 +1410,7 @@
             const payload = {
                 ID: document.getElementById('form-id').value,
                 ORIGEN: document.getElementById('form-origen').value,
-                'CLIENTE/PROYECTO': document.getElementById('form-cliente').value,
+                CLIENTE_PROYECTO: document.getElementById('form-cliente').value,
                 Fecha: document.getElementById('form-fecha').value,
                 ADMINIST: document.getElementById('form-administ').value
             };
@@ -1409,9 +1457,9 @@
         function exportToCSV() {
             const combined = [...filteredProyectos, ...filteredPostventa];
             if (combined.length === 0) { alert('No hay datos'); return; }
-            let csv = "\uFEFFID;ORIGEN;CLIENTE;FECHA;ESTADO\n";
+            let csv = "\uFEFFID;ORIGEN;CLIENTE_PROYECTO;FECHA;ESTADO\n";
             combined.forEach(r => {
-                csv += `${r.ID};${r.ORIGEN};"${r['CLIENTE/PROYECTO'] || r.CLIENTE_PROYECTO}";${r.Fecha};${r.ADMINIST}\n`;
+                csv += `${r.ID};${r.ORIGEN};"${r.CLIENTE_PROYECTO}";${r.Fecha};${r.ADMINIST}\n`;
             });
             const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
             const link = document.createElement('a');
@@ -1449,7 +1497,7 @@
                             _uid: `proj_${Date.now()}_${i}`,
                             ORIGEN: row[1] || 'VOLTEX',
                             ID: row[0] || `EXT-${i}`,
-                            'CLIENTE/PROYECTO': row[2] ? row[2].replace(/"/g, '') : 'Cliente',
+                            CLIENTE_PROYECTO: row[2] ? row[2].replace(/"/g, '') : 'Cliente',
                             Fecha: row[3] || new Date().toISOString().split('T')[0],
                             ADMINIST: row[4] || 'EJECUTANDO'
                         });
@@ -1481,7 +1529,7 @@
                                 _uid: `imp_${Date.now()}_${count}`,
                                 ID: row.ID || `IMP-${count}`,
                                 ORIGEN: row.ORIGEN || 'VOLTEX',
-                                'CLIENTE/PROYECTO': row.CLIENTE_PROYECTO || row.CLIENTE || 'Sin nombre',
+                                CLIENTE_PROYECTO: row.CLIENTE_PROYECTO || row.CLIENTE || 'Sin nombre',
                                 Fecha: row.Fecha || new Date().toISOString().split('T')[0],
                                 ADMINIST: row.ADMINIST || 'EJECUTANDO',
                                 ADMINIST2: row.ADMINIST2 || ''
