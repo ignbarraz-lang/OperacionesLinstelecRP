@@ -25,6 +25,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.0/package/dist/xlsx.full.min.js"></script>
     <style>
         body { font-family: 'Inter', sans-serif; }
         ::-webkit-scrollbar { width: 6px; height: 6px; }
@@ -35,7 +36,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-app.js";
-        import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-database.js";
+        import { getDatabase, ref, set, onValue, push } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-database.js";
         import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-auth.js";
 
         const firebaseConfig = {
@@ -53,28 +54,25 @@
         const db = getDatabase(app);
         const auth = getAuth(app);
 
-        // Compartir referencias al entorno global de la página
         window.fbDatabase = db;
         window.fbRef = ref;
         window.fbSet = set;
+        window.fbPush = push;
         window.fbOnValue = onValue;
         window.fbAuth = auth;
         window.fbSignIn = signInWithEmailAndPassword;
         window.fbSignOut = signOut;
 
-        // Escucha activa del estado de sesión
         onAuthStateChanged(auth, (user) => {
             const loginSection = document.getElementById('login-screen');
             const mainAppSection = document.getElementById('main-app-layout');
             
             if (user) {
-                // Usuario autenticado
                 loginSection.classList.add('hidden');
                 mainAppSection.classList.remove('hidden');
                 document.getElementById('user-display-name').innerText = user.email;
-                loadDatabaseState(); // Ejecuta la lectura en tiempo real de la base de datos
+                loadDatabaseState();
             } else {
-                // Sesión cerrada
                 loginSection.classList.remove('hidden');
                 mainAppSection.classList.add('hidden');
                 clearTerminal();
@@ -216,6 +214,10 @@
                     <div class="flex items-center space-x-2">
                         <button onclick="resetFilters()" class="px-3 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg text-xs font-semibold transition-all">
                             Limpiar Filtros
+                        </button>
+                        <button onclick="openImportModal()" class="px-3 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-lg text-xs font-bold shadow-lg shadow-blue-500/15 transition-all flex items-center space-x-1.5">
+                            <i class="fa-solid fa-file-excel"></i>
+                            <span>Importar Excel</span>
                         </button>
                         <button onclick="openFormModal(null)" class="px-3 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-xs font-bold shadow-lg shadow-emerald-500/15 transition-all flex items-center space-x-1.5">
                             <i class="fa-solid fa-circle-plus"></i>
@@ -592,6 +594,58 @@
         </div>
     </div>
 
+    <div id="import-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-slate-900 border border-slate-800 rounded-xl max-w-2xl w-full max-h-[90vh] flex flex-col overflow-hidden shadow-2xl">
+            <div class="p-5 border-b border-slate-800 flex items-center justify-between shrink-0">
+                <h3 class="font-bold text-base text-white flex items-center space-x-2">
+                    <i class="fa-solid fa-file-excel text-blue-400"></i><span>Importar Clientes desde Excel</span>
+                </h3>
+                <button onclick="closeImportModal()" class="text-slate-400 hover:text-slate-200"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+            <div class="p-6 overflow-y-auto space-y-4">
+                <div class="bg-blue-500/10 border border-blue-500/20 rounded-lg p-4">
+                    <h4 class="text-sm font-bold text-blue-300 mb-2">Formato del Excel</h4>
+                    <p class="text-xs text-slate-300 mb-3">El archivo Excel debe tener las siguientes columnas en la primera fila:</p>
+                    <div class="grid grid-cols-2 gap-2 text-xs text-slate-400">
+                        <div>• ID</div>
+                        <div>• ORIGEN (VOLTEX, FLUX, VOLTEX-PV, FLUX-PV)</div>
+                        <div>• CLIENTE/PROYECTO</div>
+                        <div>• Fecha (YYYY-MM-DD)</div>
+                        <div>• ADMINIST (EJECUTANDO, EDP, CERRADO, NO APLICA)</div>
+                        <div>• ADMINIST2 (EJECUTANDO, EDP, CERRADO, NO APLICA)</div>
+                        <div>• INST (TE6 EMIT, TE6 APROB, REALIZADA, AGENDADA, NO APLICA)</div>
+                        <div>• Fecha2 (YYYY-MM-DD)</div>
+                    </div>
+                </div>
+                <div class="border-2 border-dashed border-slate-700 hover:border-blue-500/50 rounded-lg p-8 text-center cursor-pointer transition-all" id="import-drop-zone">
+                    <i class="fa-solid fa-file-arrow-up text-4xl text-slate-500 mb-3"></i>
+                    <p class="text-sm font-semibold text-slate-300 mb-2">Arrastra tu archivo Excel aquí</p>
+                    <p class="text-xs text-slate-500 mb-4">o haz clic para seleccionar</p>
+                    <input type="file" id="excel-file-input" accept=".xlsx,.xls" class="hidden">
+                    <button onclick="document.getElementById('excel-file-input').click()" class="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-lg text-xs font-bold">
+                        Seleccionar Archivo
+                    </button>
+                </div>
+                <div id="import-preview" class="hidden">
+                    <h4 class="text-sm font-bold text-slate-200 mb-2">Vista Previa de Datos</h4>
+                    <div class="overflow-x-auto border border-slate-800 rounded-lg max-h-64">
+                        <table class="w-full text-left border-collapse text-xs">
+                            <thead id="import-preview-head" class="bg-slate-900 sticky top-0"></thead>
+                            <tbody id="import-preview-body" class="divide-y divide-slate-800 bg-slate-950"></tbody>
+                        </table>
+                    </div>
+                    <div class="flex justify-end space-x-2 mt-4">
+                        <button onclick="closeImportModal()" class="px-4 py-2 bg-slate-800 text-slate-300 rounded-lg">Cancelar</button>
+                        <button onclick="confirmImport()" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-lg">
+                            <i class="fa-solid fa-upload mr-2"></i>Importar Datos
+                        </button>
+                    </div>
+                </div>
+                <div id="import-status" class="hidden"></div>
+            </div>
+        </div>
+    </div>
+
     <div id="delete-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
         <div class="bg-slate-900 border border-slate-800 rounded-xl max-w-sm w-full p-6 space-y-4 shadow-2xl">
             <div class="flex items-center space-x-3 text-rose-500"><i class="fa-solid fa-triangle-exclamation text-2xl"></i><h3 class="font-bold text-white">¿Eliminar Registro?</h3></div>
@@ -602,26 +656,15 @@
     </div>
 
     <script>
-        // Datasets iniciales alternativos de fallback
-        const rawProyectos = [
-            { ORIGEN: "VOLTEX", ID: "VX-01", "CLIENTE/PROYECTO": "Bahia Magica", "Carpeta General ": "Realizado", VT: "ENVIADA", Fecha: "2026-01-13", ADMINIST: "CERRADO", ADMINIST2: "CERRADO", "01 Plano": "Realizado", "02 Memoria": "Realizado", "03 Cert": "Realizado", "04 Gantt": "Realizado", "04 AST": "Realizado" },
-            { ORIGEN: "VOLTEX", ID: "VX-06", "CLIENTE/PROYECTO": "TE6 Hoteles Privado a Publico", "Carpeta General ": "Realizado", VT: "ENVIADA", Fecha: "2026-03-19", ADMINIST: "EJECUTANDO", INST: "TE6 EMIT", ADMINIST2: "EDP", Fecha2: "2026-06-02", "01 Plano": "Realizado", "02 Memoria": "Realizado", "03 Cert": "Realizado", "04 Gantt": "Realizado", "04 AST": "Realizado" },
-            { ORIGEN: "FLUX", ID: "FX-06", "CLIENTE/PROYECTO": "Karen Steinlen", "Carpeta General ": "Realizado", VT: "ENVIADA", Fecha: "2026-03-23", ADMINIST: "CERRADO", INST: "TE6 APROB", ADMINIST2: "EDP", Fecha2: "2026-05-14", "01 Plano": "Realizado", "02 Memoria": "Realizado", "03 Cert": "Realizado", "04 Gantt": "Realizado", "04 AST": "Realizado" }
-        ];
-        const rawPostventa = [
-            { ORIGEN: "FLUX-PV", ID: "FX-PV-01", "CLIENTE/PROYECTO": "Sergio Contreras (V3)", "Carpeta General": "Realizado", VT: "ENVIADA", Fecha: "2026-02-26", ADMINIST: "CERRADO", INST: "REALIZADA", ADMINIST2: "CERRADO", Fecha2: "2026-02-26", "01 Reporte OT": "Realizado", "02 AST": "No Aplica" }
-        ];
-
-        let dbProyectos = [];
-        let dbPostventa = [];
+        let dbProyectos = {};
+        let dbPostventa = {};
         let filteredProyectos = [];
         let filteredPostventa = [];
         let chartMensualInstance = null;
         let chartOrigenInstance = null;
         let chartTe6Instance = null;
-        let uidCounter = 1;
+        let importedData = [];
 
-        // Autenticación: Ejecutar Inicio de Sesión
         function executeLogin(e) {
             e.preventDefault();
             const email = document.getElementById('login-email').value.trim();
@@ -636,7 +679,6 @@
                 });
         }
 
-        // Autenticación: Cerrar Sesión
         function executeLogout() {
             window.fbSignOut(window.fbAuth);
         }
@@ -649,23 +691,13 @@
 
             window.fbOnValue(dbRefProyectos, (snapshot) => {
                 const data = snapshot.val();
-                if (data) { dbProyectos = data; } 
-                else {
-                    dbProyectos = rawProyectos.map(p => ({ ...p, _uid: `proj_${uidCounter++}` }));
-                    window.fbSet(dbRefProyectos, dbProyectos);
-                }
-                dbProyectos.forEach(p => { if (!p._uid) p._uid = `proj_${uidCounter++}`; });
+                dbProyectos = data || {};
                 triggerEtlExecution();
             });
 
             window.fbOnValue(dbRefPostventa, (snapshot) => {
                 const data = snapshot.val();
-                if (data) { dbPostventa = data; } 
-                else {
-                    dbPostventa = rawPostventa.map(pv => ({ ...pv, _uid: `pv_${uidCounter++}` }));
-                    window.fbSet(dbRefPostventa, dbPostventa);
-                }
-                dbPostventa.forEach(pv => { if (!pv._uid) pv._uid = `pv_${uidCounter++}`; });
+                dbPostventa = data || {};
                 triggerEtlExecution();
             });
 
@@ -674,14 +706,18 @@
             });
         }
 
-        function saveDatabaseToStorage(isInit = false) {
-            if (isInit) return;
+        function saveDatabaseToStorage() {
             const dbRefProyectos = window.fbRef(window.fbDatabase, 'copec_db_proyectos');
             const dbRefPostventa = window.fbRef(window.fbDatabase, 'copec_db_postventa');
             const dbRefTimestamp = window.fbRef(window.fbDatabase, 'copec_db_last_modified');
 
-            window.fbSet(dbRefProyectos, dbProyectos);
-            window.fbSet(dbRefPostventa, dbPostventa);
+            window.fbSet(dbRefProyectos, dbProyectos)
+                .then(() => logEtl("✓ Proyectos guardados en Firebase"))
+                .catch(err => logEtl("✗ Error guardando proyectos: " + err.message));
+
+            window.fbSet(dbRefPostventa, dbPostventa)
+                .then(() => logEtl("✓ Postventa guardada en Firebase"))
+                .catch(err => logEtl("✗ Error guardando postventa: " + err.message));
             
             const now = new Date();
             const formattedDate = `${String(now.getDate()).padStart(2, '0')}/${String(now.getMonth() + 1).padStart(2, '0')}/${now.getFullYear()} ${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}:${String(now.getSeconds()).padStart(2, '0')}`;
@@ -701,8 +737,8 @@
         }
 
         function triggerEtlExecution() {
-            filteredProyectos = [...dbProyectos];
-            filteredPostventa = [...dbPostventa];
+            filteredProyectos = Object.values(dbProyectos);
+            filteredPostventa = Object.values(dbPostventa);
             applyFilters();
         }
 
@@ -711,15 +747,15 @@
             const estadoVal = document.getElementById('filter-estado').value;
             const mesVal = document.getElementById('filter-mes').value;
 
-            filteredProyectos = dbProyectos.filter(p => {
+            filteredProyectos = Object.values(dbProyectos).filter(p => {
                 const matchOrigin = (originVal === 'ALL') || (p.ORIGEN === originVal);
                 const matchEstado = (estadoVal === 'ALL') || (p.ADMINIST === estadoVal || p.ADMINIST2 === estadoVal);
                 const matchMes = (mesVal === 'ALL') || (p.Fecha && p.Fecha.startsWith(mesVal));
                 return matchOrigin && matchEstado && matchMes;
             });
 
-            filteredPostventa = dbPostventa.filter(pv => {
-                const matchOrigin = (originVal === 'ALL') || (originVal === 'PV' || pv.ORIGEN.includes(originVal));
+            filteredPostventa = Object.values(dbPostventa).filter(pv => {
+                const matchOrigin = (originVal === 'ALL') || (originVal === 'PV' && pv.ORIGEN.includes('PV'));
                 const matchEstado = (estadoVal === 'ALL') || (pv.ADMINIST === estadoVal || pv.ADMINIST2 === estadoVal);
                 const matchMes = (mesVal === 'ALL') || (pv.Fecha && pv.Fecha.startsWith(mesVal));
                 return matchOrigin && matchEstado && matchMes;
@@ -758,27 +794,48 @@
             if (chartOrigenInstance) chartOrigenInstance.destroy();
             if (chartTe6Instance) chartTe6Instance.destroy();
 
+            const meses = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio'];
+            const dataMensual = new Array(6).fill(0);
+            
+            [...filteredProyectos, ...filteredPostventa].forEach(r => {
+                if (r.Fecha) {
+                    const mes = parseInt(r.Fecha.split('-')[1]) - 1;
+                    if (mes >= 0 && mes < 6) dataMensual[mes]++;
+                }
+            });
+
             const ctx1 = document.getElementById('chart-mensual').getContext('2d');
             chartMensualInstance = new Chart(ctx1, {
                 type: 'bar',
                 data: {
-                    labels: ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio'],
-                    datasets: [{ label: 'Servicios Activos', data: [filteredProyectos.length, 0, filteredPostventa.length, 1, 2, 0], backgroundColor: '#FF4500' }]
+                    labels: meses,
+                    datasets: [{ label: 'Servicios Activos', data: dataMensual, backgroundColor: '#FF4500' }]
                 },
                 options: { responsive: true, maintainAspectRatio: false }
             });
 
+            const voltexCount = [...filteredProyectos, ...filteredPostventa].filter(r => r.ORIGEN.includes('VOLTEX')).length;
+            const fluxCount = [...filteredProyectos, ...filteredPostventa].filter(r => r.ORIGEN.includes('FLUX')).length;
+
             const ctx2 = document.getElementById('chart-origen').getContext('2d');
             chartOrigenInstance = new Chart(ctx2, {
                 type: 'doughnut',
-                data: { labels: ['Voltex', 'Flux'], datasets: [{ data: [10, 5], backgroundColor: ['#00B5AD', '#F1C40F'] }] },
+                data: { labels: ['Voltex', 'Flux'], datasets: [{ data: [voltexCount, fluxCount], backgroundColor: ['#00B5AD', '#F1C40F'] }] },
                 options: { responsive: true, maintainAspectRatio: false }
             });
+
+            const te6Aprob = [...filteredProyectos, ...filteredPostventa].filter(r => r.INST === 'TE6 APROB').length;
+            const te6Emit = [...filteredProyectos, ...filteredPostventa].filter(r => r.INST === 'TE6 EMIT').length;
+            const te6Pend = [...filteredProyectos, ...filteredPostventa].filter(r => !r.INST || r.INST === '').length;
+
+            document.getElementById('stat-te6-aprobados').innerText = te6Aprob;
+            document.getElementById('stat-te6-emitidos').innerText = te6Emit;
+            document.getElementById('stat-te6-pendientes').innerText = te6Pend;
 
             const ctx3 = document.getElementById('chart-te6').getContext('2d');
             chartTe6Instance = new Chart(ctx3, {
                 type: 'bar',
-                data: { labels: ['SEC'], datasets: [{ data: [5], backgroundColor: '#10B981' }] },
+                data: { labels: ['TE6 Aprobados', 'TE6 Emitidos', 'Pendientes'], datasets: [{ data: [te6Aprob, te6Emit, te6Pend], backgroundColor: ['#10B981', '#F59E0B', '#64748B'] }] },
                 options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false }
             });
         }
@@ -803,7 +860,13 @@
         function renderQualityTable() {
             const tbody = document.getElementById('quality-table-body');
             tbody.innerHTML = '';
-            [...filteredProyectos, ...filteredPostventa].forEach(r => {
+            const searchTerm = document.getElementById('quality-search').value.toLowerCase();
+            
+            [...filteredProyectos, ...filteredPostventa].filter(r => {
+                if (!searchTerm) return true;
+                return (r.ID && r.ID.toLowerCase().includes(searchTerm)) || 
+                       (r['CLIENTE/PROYECTO'] && r['CLIENTE/PROYECTO'].toLowerCase().includes(searchTerm));
+            }).forEach(r => {
                 tbody.innerHTML += `
                     <tr class="hover:bg-slate-900/40 text-center">
                         <td class="p-3 text-left sticky left-0 bg-slate-950 font-bold">${r.ID} - ${r['CLIENTE/PROYECTO']}</td>
@@ -828,6 +891,8 @@
         function renderPostVentaAnalysis() {
             const tbody = document.getElementById('pv-table-body');
             tbody.innerHTML = '';
+            document.getElementById('pv-count-badge').innerText = `${filteredPostventa.length} Registros`;
+            
             filteredPostventa.forEach(pv => {
                 tbody.innerHTML += `
                     <tr class="hover:bg-slate-900/40">
@@ -839,15 +904,32 @@
                         <td class="p-3">${getDocBadge(pv['01 Reporte OT'])}</td>
                         <td class="p-3 text-center">
                             <button onclick="openFormModal('${pv._uid}', true)" class="text-slate-400 hover:text-copec-orange mx-1"><i class="fa-solid fa-pen-to-square"></i></button>
+                            <button onclick="openDeleteModal('${pv._uid}', true)" class="text-slate-400 hover:text-rose-500 mx-1"><i class="fa-solid fa-trash-can"></i></button>
                         </td>
                     </tr>`;
             });
+
+            const otCount = filteredPostventa.filter(pv => pv['01 Reporte OT'] === 'Realizado').length;
+            const astCount = filteredPostventa.filter(pv => pv['02 AST'] === 'Realizado').length;
+            const total = filteredPostventa.length || 1;
+            
+            document.getElementById('pv-ot-percent').innerText = `${((otCount/total)*100).toFixed(0)}%`;
+            document.getElementById('pv-ot-bar').style.width = `${(otCount/total)*100}%`;
+            document.getElementById('pv-ast-percent').innerText = `${((astCount/total)*100).toFixed(0)}%`;
+            document.getElementById('pv-ast-bar').style.width = `${(astCount/total)*100}%`;
         }
 
         function renderExplorer() {
             const tbody = document.getElementById('explorer-table-body');
             tbody.innerHTML = '';
-            [...filteredProyectos, ...filteredPostventa].forEach(r => {
+            const searchTerm = document.getElementById('explorer-search').value.toLowerCase();
+            
+            const filtered = [...filteredProyectos, ...filteredPostventa].filter(r => {
+                if (!searchTerm) return true;
+                return JSON.stringify(r).toLowerCase().includes(searchTerm);
+            });
+            
+            filtered.forEach(r => {
                 tbody.innerHTML += `
                     <tr class="hover:bg-slate-900/30">
                         <td class="p-3 font-mono font-bold">${r.ID}</td>
@@ -864,6 +946,7 @@
                         </td>
                     </tr>`;
             });
+            document.getElementById('explorer-count').innerText = `Visualizando ${filtered.length} de ${filteredProyectos.length + filteredPostventa.length} registros totales`;
         }
 
         function logEtl(msg) {
@@ -872,31 +955,310 @@
         }
         function clearTerminal() { const t = document.getElementById('etl-terminal'); if (t) t.innerHTML = ''; }
 
+        function toggleFormDocumentChecklist() {
+            const origen = document.getElementById('form-origen').value;
+            const isPV = origen.includes('PV');
+            document.getElementById('form-checklist-proyectos').classList.toggle('hidden', isPV);
+            document.getElementById('form-checklist-postventa').classList.toggle('hidden', !isPV);
+        }
+
+        function handleAdminist2Change() {
+            const val = document.getElementById('form-administ2').value;
+            if (val === 'CERRADO' || val === 'NO APLICA') {
+                document.getElementById('form-fecha2').value = new Date().toISOString().split('T')[0];
+            }
+        }
+
+        function toggleFecha2NA() {
+            const checked = document.getElementById('form-fecha2-na').checked;
+            document.getElementById('form-fecha2').disabled = checked;
+            if (checked) {
+                document.getElementById('form-fecha2').value = '';
+            }
+        }
+
         function openFormModal(uid, isPV) {
             document.getElementById('form-modal').classList.remove('hidden');
-            // La lógica interna de mapeo del formulario se mantiene idéntica a tu código previo
+            document.getElementById('form-error').classList.add('hidden');
+            
+            if (uid) {
+                document.getElementById('form-action-type').value = 'EDIT';
+                document.getElementById('form-original-id').value = uid;
+                document.getElementById('modal-title').innerHTML = '<i class="fa-solid fa-pen-to-square text-copec-orange"></i><span>Editar Registro</span>';
+                
+                const record = [...Object.values(dbProyectos), ...Object.values(dbPostventa)].find(r => r._uid === uid);
+                if (record) {
+                    document.getElementById('form-id').value = record.ID || '';
+                    document.getElementById('form-origen').value = record.ORIGEN || 'VOLTEX';
+                    document.getElementById('form-cliente').value = record['CLIENTE/PROYECTO'] || '';
+                    document.getElementById('form-fecha').value = record.Fecha || '';
+                    document.getElementById('form-administ').value = record.ADMINIST || 'EJECUTANDO';
+                    document.getElementById('form-administ2').value = record.ADMINIST2 || '';
+                    document.getElementById('form-fecha2').value = record.Fecha2 || '';
+                    document.getElementById('form-inst').value = record.INST || '';
+                    
+                    document.getElementById('sel-plano').value = record['01 Plano'] || '';
+                    document.getElementById('sel-memoria').value = record['02 Memoria'] || '';
+                    document.getElementById('sel-gantt').value = record['04 Gantt'] || '';
+                    document.getElementById('sel-fotomontaje').value = record['03 Fotom'] || '';
+                    document.getElementById('sel-ast-proj').value = record['04 AST'] || '';
+                    document.getElementById('sel-fotos-ini').value = record['Fotos Terreno'] || '';
+                    document.getElementById('sel-ot').value = record['01 Reporte OT'] || '';
+                    document.getElementById('sel-ast').value = record['02 AST'] || '';
+                    
+                    toggleFormDocumentChecklist();
+                }
+            } else {
+                document.getElementById('form-action-type').value = 'NEW';
+                document.getElementById('form-original-id').value = '';
+                document.getElementById('modal-title').innerHTML = '<i class="fa-solid fa-circle-plus text-emerald-500"></i><span>Nuevo Registro</span>';
+                document.getElementById('record-form').reset();
+                toggleFormDocumentChecklist();
+            }
         }
-        function closeFormModal() { document.getElementById('form-modal').classList.add('hidden'); }
+
+        function closeFormModal() { 
+            document.getElementById('form-modal').classList.add('hidden'); 
+        }
+
+        function saveRecord(e) {
+            e.preventDefault();
+            
+            const actionType = document.getElementById('form-action-type').value;
+            const originalUid = document.getElementById('form-original-id').value;
+            const origen = document.getElementById('form-origen').value;
+            const isPV = origen.includes('PV');
+            
+            const record = {
+                ID: document.getElementById('form-id').value,
+                ORIGEN: origen,
+                'CLIENTE/PROYECTO': document.getElementById('form-cliente').value,
+                Fecha: document.getElementById('form-fecha').value,
+                ADMINIST: document.getElementById('form-administ').value,
+                ADMINIST2: document.getElementById('form-administ2').value,
+                Fecha2: document.getElementById('form-fecha2').value,
+                INST: document.getElementById('form-inst').value,
+                '01 Plano': document.getElementById('sel-plano').value,
+                '02 Memoria': document.getElementById('sel-memoria').value,
+                '04 Gantt': document.getElementById('sel-gantt').value,
+                '03 Fotom': document.getElementById('sel-fotomontaje').value,
+                '04 AST': document.getElementById('sel-ast-proj').value,
+                'Fotos Terreno': document.getElementById('sel-fotos-ini').value,
+                '01 Reporte OT': document.getElementById('sel-ot').value,
+                '02 AST': document.getElementById('sel-ast').value
+            };
+            
+            if (actionType === 'EDIT') {
+                record._uid = originalUid;
+                if (isPV) {
+                    dbPostventa[originalUid] = record;
+                } else {
+                    dbProyectos[originalUid] = record;
+                }
+                logEtl(`✓ Registro ${record.ID} actualizado`);
+            } else {
+                const uid = `record_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+                record._uid = uid;
+                if (isPV) {
+                    dbPostventa[uid] = record;
+                } else {
+                    dbProyectos[uid] = record;
+                }
+                logEtl(`✓ Nuevo registro ${record.ID} creado`);
+            }
+            
+            saveDatabaseToStorage();
+            closeFormModal();
+            triggerEtlExecution();
+        }
+
         function openDeleteModal(uid, isPV) {
             document.getElementById('delete-modal').classList.remove('hidden');
+            const record = isPV ? dbPostventa[uid] : dbProyectos[uid];
+            document.getElementById('delete-target-id').innerText = record ? record.ID : uid;
             document.getElementById('delete-target-uid').value = uid;
             document.getElementById('delete-target-type').value = isPV ? "PV" : "PROJ";
         }
-        function closeDeleteModal() { document.getElementById('delete-modal').classList.add('hidden'); }
+
+        function closeDeleteModal() { 
+            document.getElementById('delete-modal').classList.add('hidden'); 
+        }
+
         function executeDeleteRecord() {
             const uid = document.getElementById('delete-target-uid').value;
             const type = document.getElementById('delete-target-type').value;
-            if (type === "PV") { dbPostventa = dbPostventa.filter(pv => pv._uid !== uid); } 
-            else { dbProyectos = dbProyectos.filter(p => p._uid !== uid); }
+            
+            if (type === "PV") {
+                const record = dbPostventa[uid];
+                delete dbPostventa[uid];
+                logEtl(`✓ Registro ${record?.ID || uid} eliminado de PostVenta`);
+            } else {
+                const record = dbProyectos[uid];
+                delete dbProyectos[uid];
+                logEtl(`✓ Registro ${record?.ID || uid} eliminado de Proyectos`);
+            }
+            
             saveDatabaseToStorage();
             closeDeleteModal();
+            triggerEtlExecution();
         }
-        function saveRecord(e) {
-            e.preventDefault();
-            // Lógica unificada de guardado nativo estructurado
+
+        function openImportModal() {
+            document.getElementById('import-modal').classList.remove('hidden');
+            document.getElementById('import-preview').classList.add('hidden');
+            document.getElementById('import-status').classList.add('hidden');
+            importedData = [];
+        }
+
+        function closeImportModal() {
+            document.getElementById('import-modal').classList.add('hidden');
+        }
+
+        document.getElementById('excel-file-input').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const data = new Uint8Array(e.target.result);
+                    const workbook = XLSX.read(data, { type: 'array' });
+                    const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+                    const jsonData = XLSX.utils.sheet_to_json(firstSheet);
+                    
+                    if (jsonData.length === 0) {
+                        alert('El archivo Excel está vacío');
+                        return;
+                    }
+                    
+                    importedData = jsonData;
+                    showImportPreview(jsonData);
+                } catch (error) {
+                    alert('Error al leer el archivo Excel: ' + error.message);
+                }
+            };
+            reader.readAsArrayBuffer(file);
+        });
+
+        function showImportPreview(data) {
+            const preview = document.getElementById('import-preview');
+            const head = document.getElementById('import-preview-head');
+            const body = document.getElementById('import-preview-body');
+            
+            if (data.length === 0) {
+                head.innerHTML = '';
+                body.innerHTML = '<tr><td class="p-3 text-center text-slate-400">No hay datos para mostrar</td></tr>';
+                preview.classList.remove('hidden');
+                return;
+            }
+            
+            const headers = Object.keys(data[0]);
+            head.innerHTML = '<tr>' + headers.map(h => `<th class="p-2 bg-slate-900 text-xs font-bold text-slate-300">${h}</th>`).join('') + '</tr>';
+            
+            body.innerHTML = data.slice(0, 10).map(row => 
+                '<tr>' + headers.map(h => `<td class="p-2 text-xs">${row[h] || ''}</td>`).join('') + '</tr>'
+            ).join('');
+            
+            if (data.length > 10) {
+                body.innerHTML += `<tr><td colspan="${headers.length}" class="p-2 text-center text-xs text-slate-400">... y ${data.length - 10} registros más</td></tr>`;
+            }
+            
+            preview.classList.remove('hidden');
+        }
+
+        function confirmImport() {
+            if (importedData.length === 0) {
+                alert('No hay datos para importar');
+                return;
+            }
+            
+            let importCount = 0;
+            importedData.forEach(row => {
+                const uid = `import_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+                const record = {
+                    _uid: uid,
+                    ID: row.ID || `IMP-${importCount + 1}`,
+                    ORIGEN: row.ORIGEN || 'VOLTEX',
+                    'CLIENTE/PROYECTO': row['CLIENTE/PROYECTO'] || row.CLIENTE || 'Sin nombre',
+                    Fecha: row.Fecha || new Date().toISOString().split('T')[0],
+                    ADMINIST: row.ADMINIST || 'EJECUTANDO',
+                    ADMINIST2: row.ADMINIST2 || '',
+                    Fecha2: row.Fecha2 || '',
+                    INST: row.INST || '',
+                    '01 Plano': row['01 Plano'] || '',
+                    '02 Memoria': row['02 Memoria'] || '',
+                    '04 Gantt': row['04 Gantt'] || '',
+                    '03 Fotom': row['03 Fotom'] || '',
+                    '04 AST': row['04 AST'] || '',
+                    'Fotos Terreno': row['Fotos Terreno'] || '',
+                    '01 Reporte OT': row['01 Reporte OT'] || '',
+                    '02 AST': row['02 AST'] || ''
+                };
+                
+                const isPV = record.ORIGEN.includes('PV');
+                if (isPV) {
+                    dbPostventa[uid] = record;
+                } else {
+                    dbProyectos[uid] = record;
+                }
+                importCount++;
+            });
+            
             saveDatabaseToStorage();
-            closeFormModal();
+            logEtl(`✓ ${importCount} registros importados desde Excel`);
+            
+            const status = document.getElementById('import-status');
+            status.innerHTML = `<div class="bg-emerald-500/10 border border-emerald-500/20 rounded-lg p-4 text-center">
+                <i class="fa-solid fa-circle-check text-emerald-400 text-2xl mb-2"></i>
+                <p class="text-sm font-bold text-emerald-300">¡Importación exitosa!</p>
+                <p class="text-xs text-slate-400 mt-1">${importCount} registros agregados a la base de datos</p>
+            </div>`;
+            status.classList.remove('hidden');
+            
+            setTimeout(() => {
+                closeImportModal();
+                triggerEtlExecution();
+            }, 2000);
         }
+
+        function exportToCSV() {
+            const data = [...filteredProyectos, ...filteredPostventa];
+            if (data.length === 0) {
+                alert('No hay datos para exportar');
+                return;
+            }
+            
+            const headers = Object.keys(data[0]).filter(k => k !== '_uid');
+            const csv = [
+                headers.join(','),
+                ...data.map(row => headers.map(h => `"${(row[h] || '').toString().replace(/"/g, '""')}"`).join(','))
+            ].join('\n');
+            
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = `export_copec_${new Date().toISOString().split('T')[0]}.csv`;
+            link.click();
+        }
+
+        // Setup drag and drop for import
+        const importDropZone = document.getElementById('import-drop-zone');
+        importDropZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            importDropZone.classList.add('border-blue-500');
+        });
+        importDropZone.addEventListener('dragleave', () => {
+            importDropZone.classList.remove('border-blue-500');
+        });
+        importDropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            importDropZone.classList.remove('border-blue-500');
+            const file = e.dataTransfer.files[0];
+            if (file) {
+                document.getElementById('excel-file-input').files = e.dataTransfer.files;
+                document.getElementById('excel-file-input').dispatchEvent(new Event('change'));
+            }
+        });
     </script>
 </body>
 </html>
