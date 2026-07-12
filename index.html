@@ -36,7 +36,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-app.js";
-        import { getDatabase, ref, set, onValue, remove } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-database.js";
+        import { getDatabase, ref, set, onValue, off } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-database.js";
         import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-auth.js";
 
         const firebaseConfig = {
@@ -58,7 +58,7 @@
         window.fbRef = ref;
         window.fbSet = set;
         window.fbOnValue = onValue;
-        window.fbRemove = remove;
+        window.fbOff = off;
         window.fbAuth = auth;
         window.fbSignIn = signInWithEmailAndPassword;
         window.fbSignOut = signOut;
@@ -672,6 +672,8 @@
         let chartOrigenInstance = null;
         let chartTe6Instance = null;
         let importedData = [];
+        let isSaving = false; // Bandera para evitar loop infinito
+        let listenersAttached = false; // Bandera para evitar listeners duplicados
 
         // Verificar que XLSX esté cargado
         window.addEventListener('load', () => {
@@ -730,6 +732,11 @@
 
         // ========== FIREBASE ==========
         function loadDatabaseState() {
+            if (listenersAttached) {
+                console.log('⚠️ Listeners ya están activos, no se crean duplicados');
+                return;
+            }
+            
             logEtl("DATALAKE LAYER: Conectando de forma remota a la nube de Firebase...");
             const dbRefProyectos = window.fbRef(window.fbDatabase, 'copec_db_proyectos');
             const dbRefPostventa = window.fbRef(window.fbDatabase, 'copec_db_postventa');
@@ -739,27 +746,42 @@
                 const data = snapshot.val();
                 console.log('📥 Proyectos cargados desde Firebase:', data);
                 dbProyectos = data || {};
-                triggerEtlExecution();
+                if (!isSaving) {
+                    triggerEtlExecution();
+                }
             });
 
             window.fbOnValue(dbRefPostventa, (snapshot) => {
                 const data = snapshot.val();
                 console.log('📥 Postventa cargada desde Firebase:', data);
                 dbPostventa = data || {};
-                triggerEtlExecution();
+                if (!isSaving) {
+                    triggerEtlExecution();
+                }
             });
 
             window.fbOnValue(dbRefTimestamp, (snapshot) => {
                 renderLastModifiedHeader(snapshot.val());
             });
+
+            listenersAttached = true;
+            console.log('✅ Listeners de Firebase activados');
         }
 
         function saveDatabaseToStorage() {
+            if (isSaving) {
+                console.log('⚠️ Ya hay una operación de guardado en curso');
+                return;
+            }
+            
+            isSaving = true;
+            console.log('🔒 Bloqueando listeners para evitar loop infinito');
+            
             const dbRefProyectos = window.fbRef(window.fbDatabase, 'copec_db_proyectos');
             const dbRefPostventa = window.fbRef(window.fbDatabase, 'copec_db_postventa');
             const dbRefTimestamp = window.fbRef(window.fbDatabase, 'copec_db_last_modified');
 
-            console.log('💾 Guardando proyectos en Firebase:', dbProyectos);
+            console.log('💾 Guardando proyectos en Firebase:', Object.keys(dbProyectos).length, 'registros');
             window.fbSet(dbRefProyectos, dbProyectos)
                 .then(() => {
                     console.log('✅ Proyectos guardados correctamente');
@@ -770,7 +792,7 @@
                     logEtl("✗ Error guardando proyectos: " + err.message);
                 });
 
-            console.log('💾 Guardando postventa en Firebase:', dbPostventa);
+            console.log('💾 Guardando postventa en Firebase:', Object.keys(dbPostventa).length, 'registros');
             window.fbSet(dbRefPostventa, dbPostventa)
                 .then(() => {
                     console.log('✅ Postventa guardada correctamente');
@@ -778,12 +800,18 @@
                 })
                 .catch(err => {
                     console.error('❌ Error guardando postventa:', err);
-                    logEtl("✗ Error guardando postventa: " + err.message);
+                    logEtl(" Error guardando postventa: " + err.message);
                 });
             
             const now = new Date();
             const formattedDate = `${String(now.getDate()).padStart(2, '0')}/${String(now.getMonth() + 1).padStart(2, '0')}/${now.getFullYear()} ${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}:${String(now.getSeconds()).padStart(2, '0')}`;
             window.fbSet(dbRefTimestamp, formattedDate);
+            
+            // Desbloquear después de 2 segundos
+            setTimeout(() => {
+                isSaving = false;
+                console.log('🔓 Listeners desbloqueados');
+            }, 2000);
         }
 
         function renderLastModifiedHeader(timestamp) {
@@ -1094,7 +1122,8 @@
         }
 
         function closeFormModal() { 
-            document.getElementById('form-modal').classList.add('hidden'); 
+            document.getElementById('form-modal').classList.add('hidden');
+            console.log('✅ Modal de formulario cerrado');
         }
 
         document.getElementById('record-form').addEventListener('submit', (e) => {
@@ -1143,9 +1172,16 @@
                 logEtl(`✓ Nuevo registro ${record.ID} creado`);
             }
             
+            console.log('💾 Guardando registro en Firebase...');
             saveDatabaseToStorage();
+            
+            // Cerrar modal inmediatamente
             closeFormModal();
-            triggerEtlExecution();
+            
+            // Actualizar vista después de un pequeño delay
+            setTimeout(() => {
+                triggerEtlExecution();
+            }, 500);
         });
 
         // ========== MODAL ELIMINAR ==========
@@ -1161,7 +1197,8 @@
         }
 
         function closeDeleteModal() { 
-            document.getElementById('delete-modal').classList.add('hidden'); 
+            document.getElementById('delete-modal').classList.add('hidden');
+            console.log('✅ Modal de eliminación cerrado');
         }
 
         function executeDeleteRecord() {
@@ -1180,7 +1217,9 @@
             
             saveDatabaseToStorage();
             closeDeleteModal();
-            triggerEtlExecution();
+            setTimeout(() => {
+                triggerEtlExecution();
+            }, 500);
         }
 
         // ========== MODAL IMPORTAR EXCEL ==========
@@ -1196,7 +1235,7 @@
             console.log('📁 Evento change disparado');
             const file = e.target.files[0];
             if (file) {
-                console.log('📁 Archivo seleccionado:', file.name);
+                console.log(' Archivo seleccionado:', file.name);
                 handleExcelFile(file);
             } else {
                 console.log('❌ No se seleccionó archivo');
@@ -1209,10 +1248,12 @@
             document.getElementById('import-status').classList.add('hidden');
             importedData = [];
             document.getElementById('excel-file-input').value = '';
+            console.log('✅ Modal de importación abierto');
         }
 
         function closeImportModal() {
             document.getElementById('import-modal').classList.add('hidden');
+            console.log('✅ Modal de importación cerrado');
         }
 
         function handleExcelFile(file) {
@@ -1400,7 +1441,8 @@
         document.getElementById('btn-reload').addEventListener('click', () => {
             console.log('🔄 Recargando datos desde Firebase...');
             logEtl('🔄 Recargando datos desde Firebase...');
-            loadDatabaseState();
+            // No recargar listeners, solo forzar actualización
+            triggerEtlExecution();
         });
 
         // Inicialización
