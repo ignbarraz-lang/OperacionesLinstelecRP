@@ -493,55 +493,9 @@
     </script>
 
     <script>
-        const rawProyectos = [
-            { ORIGEN: "VOLTEX", ID: "VX-01", CLIENTE_PROYECTO: "Bahia Magica", Fecha: "2026-01-13", ADMINIST: "CERRADO", ADMINIST2: "CERRADO", "01_Plano": "Realizado", "02_Memoria": "Realizado", "03_Cert": "Realizado", "04_Gantt": "Realizado", "04_AST": "Realizado" },
-            { ORIGEN: "VOLTEX", ID: "VX-02", CLIENTE_PROYECTO: "Edificio Playa Hornitos", Fecha: "2026-03-30", ADMINIST: "EDP", ADMINIST2: "EDP", "01_Plano": "Realizado", "02_Memoria": "No Aplica", "04_AST": "" },
-            { ORIGEN: "VOLTEX", ID: "VX-03", CLIENTE_PROYECTO: "Mall puertas del Mar", Fecha: "2026-03-31", ADMINIST: "CERRADO", ADMINIST2: "CERRADO", "01_Plano": "Realizado", "02_Memoria": "Realizado", "04_AST": "Realizado" },
-            { ORIGEN: "VOLTEX", ID: "VX-04", CLIENTE_PROYECTO: "Hotel Park In", Fecha: "2026-03-03", ADMINIST: "CERRADO", ADMINIST2: "CERRADO", "04_AST": "" },
-            { ORIGEN: "VOLTEX", ID: "VX-05", CLIENTE_PROYECTO: "Casa de Campo", Fecha: "2026-03-10", ADMINIST: "CERRADO", ADMINIST2: "CERRADO", "04_AST": "Realizado" },
-            { ORIGEN: "VOLTEX", ID: "VX-06", CLIENTE_PROYECTO: "TE6 Hoteles Privado a Publico", Fecha: "2026-03-19", ADMINIST: "EJECUTANDO", INST: "TE6 EMIT", ADMINIST2: "EDP", Fecha2: "2026-06-02", "01_Plano": "Realizado", "02_Memoria": "Realizado", "03_Cert": "Realizado", "04_Gantt": "Realizado", "04_AST": "Realizado" },
-            { ORIGEN: "VOLTEX", ID: "VX-07", CLIENTE_PROYECTO: "Edificio Costa Coquimbo", Fecha: "2026-03-24", ADMINIST: "CERRADO", ADMINIST2: "CERRADO", "04_AST": "" },
-            { ORIGEN: "VOLTEX", ID: "VX-08", CLIENTE_PROYECTO: "Hotel Club", Fecha: "2026-01-27", ADMINIST: "CERRADO", INST: "TE6 APROB", ADMINIST2: "EDP", Fecha2: "2026-04-20", "01_Plano": "Realizado", "02_Memoria": "Realizado", "03_Cert": "Realizado", "04_Gantt": "Realizado", "04_AST": "Realizado" },
-            { ORIGEN: "VOLTEX", ID: "VX-09", CLIENTE_PROYECTO: "Cargador Publico Centro", Fecha: "2026-04-05", ADMINIST: "EJECUTANDO", ADMINIST2: "EJECUTANDO", "04_AST": "" },
-            { ORIGEN: "VOLTEX", ID: "VX-10", CLIENTE_PROYECTO: "Terminal Buses Copec", Fecha: "2026-05-12", ADMINIST: "EDP", ADMINIST2: "EDP", "04_AST": "Realizado" },
-            { ORIGEN: "FLUX", ID: "FX-01", CLIENTE_PROYECTO: "Haras de Pirque", Fecha: "2026-02-15", ADMINIST: "CERRADO", ADMINIST2: "CERRADO", "04_AST": "Realizado" },
-            { ORIGEN: "FLUX", ID: "FX-02", CLIENTE_PROYECTO: "Rene Arriagada", Fecha: "2025-05-28", ADMINIST: "CERRADO", INST: "TE6 APROB", ADMINIST2: "CERRADO", "04_AST": "Realizado" },
-            { ORIGEN: "FLUX", ID: "FX-03", CLIENTE_PROYECTO: "Mauricio Vargas", Fecha: "2025-12-02", ADMINIST: "CERRADO", INST: "TE6 APROB", ADMINIST2: "CERRADO", Fecha2: "2026-03-09", "01_Plano": "Realizado", "02_Memoria": "Realizado", "03_Cert": "Realizado", "04_AST": "Realizado" },
-            { ORIGEN: "FLUX", ID: "FX-04", CLIENTE_PROYECTO: "Enrique Rosselot", Fecha: "2026-03-05", ADMINIST: "CERRADO", ADMINIST2: "CERRADO", "04_AST": "" },
-            { ORIGEN: "FLUX", ID: "FX-05", CLIENTE_PROYECTO: "Soprole Planta", Fecha: "2026-03-20", ADMINIST: "CERRADO", ADMINIST2: "CERRADO", "04_AST": "" },
-            { ORIGEN: "FLUX", ID: "FX-06", CLIENTE_PROYECTO: "Karen Steinlen", Fecha: "2026-03-23", ADMINIST: "CERRADO", INST: "TE6 APROB", ADMINIST2: "EDP", Fecha2: "2026-05-14", "01_Plano": "Realizado", "02_Memoria": "Realizado", "03_Cert": "Realizado", "04_Gantt": "Realizado", "04_AST": "Realizado" },
-            { ORIGEN: "FLUX", ID: "FX-07", CLIENTE_PROYECTO: "Natasha Vera", Fecha: "2026-03-31", ADMINIST: "CERRADO", ADMINIST2: "CERRADO", "01_Plano": "Realizado", "02_Memoria": "Realizado", "04_AST": "Realizado" },
-            { ORIGEN: "FLUX", ID: "FX-08", CLIENTE_PROYECTO: "Mauricio Vargas V2", Fecha: "2026-03-31", ADMINIST: "CERRADO", ADMINIST2: "CERRADO", "04_AST": "No Aplica" },
-            { ORIGEN: "FLUX", ID: "FX-09", CLIENTE_PROYECTO: "Olga Quiroga", Fecha: "2026-03-26", ADMINIST: "CERRADO", ADMINIST2: "CERRADO", "01_Plano": "Realizado", "02_Memoria": "Realizado", "03_Cert": "Realizado", "04_AST": "Realizado" },
-            { ORIGEN: "FLUX", ID: "FX-10", CLIENTE_PROYECTO: "Carlos Barria", Fecha: "2026-04-28", ADMINIST: "CERRADO", ADMINIST2: "CERRADO", "04_AST": "" },
-            { ORIGEN: "FLUX", ID: "FX-11", CLIENTE_PROYECTO: "Loreto Rojas", Fecha: "2026-04-30", ADMINIST: "CERRADO", INST: "TE6 EMIT", ADMINIST2: "EDP", Fecha2: "2026-06-17", "01_Plano": "Realizado", "02_Memoria": "Realizado", "03_Cert": "Realizado", "04_Gantt": "Realizado", "04_AST": "Realizado" },
-            { ORIGEN: "FLUX", ID: "FX-12", CLIENTE_PROYECTO: "Carlos Barria V2", Fecha: "2026-05-05", ADMINIST: "CERRADO", ADMINIST2: "CERRADO", "04_AST": "" },
-            { ORIGEN: "FLUX", ID: "FX-13", CLIENTE_PROYECTO: "Jose Moreno", Fecha: "2026-05-08", ADMINIST: "CERRADO", INST: "TE6 APROB", ADMINIST2: "EDP", Fecha2: "2026-06-03", "01_Plano": "Realizado", "02_Memoria": "Realizado", "03_Cert": "Realizado", "04_Gantt": "Realizado", "04_AST": "Realizado" },
-            { ORIGEN: "FLUX", ID: "FX-14", CLIENTE_PROYECTO: "Hector Soto", Fecha: "2026-05-05", ADMINIST: "CERRADO", INST: "TE6 EMIT", ADMINIST2: "EDP", "01_Plano": "Realizado", "02_Memoria": "Realizado", "04_AST": "Realizado" },
-            { ORIGEN: "FLUX", ID: "FX-15", CLIENTE_PROYECTO: "Viña San Pedro", Fecha: "2026-06-10", ADMINIST: "EJECUTANDO", ADMINIST2: "EJECUTANDO", "04_AST": "" },
-            { ORIGEN: "FLUX", ID: "FX-16", CLIENTE_PROYECTO: "Condominio Las Brisas", Fecha: "2026-06-14", ADMINIST: "EDP", ADMINIST2: "EDP", "04_AST": "" },
-            { ORIGEN: "FLUX", ID: "FX-17", CLIENTE_PROYECTO: "Agrícola Lo Orozco", Fecha: "2026-06-22", ADMINIST: "EDP", ADMINIST2: "EDP", "04_AST": "" },
-            { ORIGEN: "FLUX", ID: "FX-18", CLIENTE_PROYECTO: "Agrícola Gacitua", Fecha: "2026-06-25", ADMINIST: "CERRADO", ADMINIST2: "CERRADO", "04_AST": "Realizado" }
-        ];
-        const rawPostventa = [
-            { ORIGEN: "FLUX-PV", ID: "FX-PV-01", CLIENTE_PROYECTO: "Sergio Contreras (V1)", Fecha: "2026-02-09", ADMINIST: "CERRADO", ADMINIST2: "CERRADO" },
-            { ORIGEN: "FLUX-PV", ID: "FX-PV-01", CLIENTE_PROYECTO: "Sergio Contreras (V2)", Fecha: "2026-02-25", ADMINIST: "CERRADO", ADMINIST2: "CERRADO" },
-            { ORIGEN: "FLUX-PV", ID: "FX-PV-01", CLIENTE_PROYECTO: "Sergio Contreras (V3)", Fecha: "2026-02-26", ADMINIST: "CERRADO", INST: "REALIZADA", ADMINIST2: "CERRADO", Fecha2: "2026-02-26", "01_Reporte_OT": "Realizado", "02_AST": "No Aplica" },
-            { ORIGEN: "FLUX-PV", ID: "FX-PV-01", CLIENTE_PROYECTO: "Sergio Contreras (V4)", Fecha: "2026-02-27", ADMINIST: "CERRADO", ADMINIST2: "CERRADO" },
-            { ORIGEN: "FLUX-PV", ID: "FX-PV-01", CLIENTE_PROYECTO: "Sergio Contreras (V5)", Fecha: "2026-04-10", ADMINIST: "CERRADO", ADMINIST2: "CERRADO" },
-            { ORIGEN: "FLUX-PV", ID: "FX-PV-02", CLIENTE_PROYECTO: "Walter Camus (V1)", Fecha: "2026-02-09", ADMINIST: "CERRADO", ADMINIST2: "CERRADO" },
-            { ORIGEN: "FLUX-PV", ID: "FX-PV-02", CLIENTE_PROYECTO: "Walter Camus (V2)", Fecha: "2026-02-25", ADMINIST: "CERRADO", INST: "AGENDADA", ADMINIST2: "CERRADO", Fecha2: "2026-02-25", "01_Reporte_OT": "Realizado", "02_AST": "Realizado" },
-            { ORIGEN: "FLUX-PV", ID: "FX-PV-03", CLIENTE_PROYECTO: "Karla Malebran (V1)", Fecha: "2026-03-23", ADMINIST: "CERRADO", ADMINIST2: "CERRADO" },
-            { ORIGEN: "FLUX-PV", ID: "FX-PV-03", CLIENTE_PROYECTO: "Karla Malebran (V2)", Fecha: "2026-05-15", ADMINIST: "EDP", ADMINIST2: "EDP" },
-            { ORIGEN: "FLUX-PV", ID: "FX-PV-04", CLIENTE_PROYECTO: "Patricia Sanhueza", Fecha: "2026-03-30", ADMINIST: "CERRADO", ADMINIST2: "CERRADO" },
-            { ORIGEN: "FLUX-PV", ID: "FX-PV-05", CLIENTE_PROYECTO: "Cinthia Carvajal", Fecha: "2026-03-26", ADMINIST: "CERRADO", ADMINIST2: "CERRADO" },
-            { ORIGEN: "FLUX-PV", ID: "FX-PV-06", CLIENTE_PROYECTO: "Héctor Soto SEC", Fecha: "2026-07-02", ADMINIST: "EDP", ADMINIST2: "EDP" },
-            { ORIGEN: "VOLTEX-PV", ID: "VX-PV-01", CLIENTE_PROYECTO: "Casa Molle", Fecha: "2026-04-01", ADMINIST: "CERRADO", ADMINIST2: "CERRADO" },
-            { ORIGEN: "VOLTEX-PV", ID: "VX-PV-02", CLIENTE_PROYECTO: "Casona Distante", Fecha: "2026-05-06", ADMINIST: "CERRADO", ADMINIST2: "CERRADO" },
-            { ORIGEN: "VOLTEX-PV", ID: "VX-PV-03", CLIENTE_PROYECTO: "Inmobiliaria Elqui", Fecha: "2026-05-18", ADMINIST: "CERRADO", ADMINIST2: "CERRADO" },
-            { ORIGEN: "VOLTEX-PV", ID: "VX-PV-04", CLIENTE_PROYECTO: "Minera Teck", Fecha: "2026-06-02", ADMINIST: "EJECUTANDO", ADMINIST2: "EJECUTANDO" },
-            { ORIGEN: "VOLTEX-PV", ID: "VX-PV-05", CLIENTE_PROYECTO: "Mall Plaza La Serena", Fecha: "2026-06-15", ADMINIST: "EDP", ADMINIST2: "EDP" }
-        ];
+        // BASE DE DATOS VACÍA - Lista para recibir datos desde Excel o agregar manualmente
+        const rawProyectos = [];
+        const rawPostventa = [];
 
         let dbProyectos = [];
         let dbPostventa = [];
@@ -573,8 +527,8 @@
                     dbProyectos = Object.values(proyectosData);
                     logEtl("✅ Proyectos cargados desde Firebase: " + dbProyectos.length);
                 } else {
-                    dbProyectos = rawProyectos.map(p => ({ ...p, _uid: `proj_${uidCounter++}` }));
-                    logEtl("⚠️ No hay proyectos en Firebase, usando datos iniciales");
+                    dbProyectos = [];
+                    logEtl("⚠️ Firebase vacío. Base de datos inicializada vacía.");
                 }
 
                 const postventaSnapshot = await window.fbGet(dbRefPostventa);
@@ -583,8 +537,8 @@
                     dbPostventa = Object.values(postventaData);
                     logEtl("✅ Postventa cargada desde Firebase: " + dbPostventa.length);
                 } else {
-                    dbPostventa = rawPostventa.map(pv => ({ ...pv, _uid: `pv_${uidCounter++}` }));
-                    logEtl("⚠️ No hay postventa en Firebase, usando datos iniciales");
+                    dbPostventa = [];
+                    logEtl("⚠️ Firebase vacío. Base de datos inicializada vacía.");
                 }
 
                 const timestampSnapshot = await window.fbGet(dbRefTimestamp);
@@ -596,8 +550,8 @@
             } catch (error) {
                 console.error('Error:', error);
                 logEtl("❌ Error: " + error.message);
-                dbProyectos = rawProyectos.map(p => ({ ...p, _uid: `proj_${uidCounter++}` }));
-                dbPostventa = rawPostventa.map(pv => ({ ...pv, _uid: `pv_${uidCounter++}` }));
+                dbProyectos = [];
+                dbPostventa = [];
                 triggerEtlExecution();
             }
         }
@@ -750,8 +704,6 @@
             let risks = [];
             const pendingSec = filteredProyectos.filter(p => p.INST === 'TE6 EMIT');
             if (pendingSec.length > 0) risks.push({ type: 'medium', title: `${pendingSec.length} Declaraciones en trámite SEC`, desc: `Proyectos como '${pendingSec[0].CLIENTE_PROYECTO}' requieren empuje.` });
-            const rawRecurrent = dbPostventa.filter(pv => pv.ID === 'FX-PV-01');
-            if (rawRecurrent.length > 3) risks.push({ type: 'high', title: 'Falla Recurrente en Flux', desc: `Cliente Sergio Contreras acumula ${rawRecurrent.length} incidencias.` });
             const edpCount = filteredProyectos.filter(p => (p.ADMINIST2 && p.ADMINIST2.trim() === 'EDP') || (p.ADMINIST && p.ADMINIST.trim() === 'EDP')).length;
             if (edpCount > 2) risks.push({ type: 'low', title: `${edpCount} Estados de Pago pendientes`, desc: 'Cierre documental listo para facturación.' });
             if (risks.length === 0) { container.innerHTML = `<div class="p-3 bg-slate-800/20 text-slate-400 text-xs rounded-lg text-center">No se detectaron anomalías.</div>`; return; }
